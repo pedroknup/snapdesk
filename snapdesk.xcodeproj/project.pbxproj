@@ -32,7 +32,7 @@
 		130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647422DB38DF100A63735 /* Cocoa.framework */; };
 		130647452DB38DFA00A63735 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647442DB38DFA00A63735 /* Foundation.framework */; };
 		130647472DB38E0200A63735 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647462DB38E0200A63735 /* IOKit.framework */; };
-		1306474A2DB38F2800A63735 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 130647492DB38F2800A63735 /* HotKey */; };
+		1345B2C32DB3C13E00B675E6 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 1345B2C22DB3C13E00B675E6 /* HotKey */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,7 +128,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1306474A2DB38F2800A63735 /* HotKey in Frameworks */,
+				1345B2C32DB3C13E00B675E6 /* HotKey in Frameworks */,
 				1306473F2DB38DE600A63735 /* ApplicationServices.framework in Frameworks */,
 				130647412DB38DEC00A63735 /* Carbon.framework in Frameworks */,
 				130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */,
@@ -304,7 +304,7 @@
 			);
 			name = snapdesk;
 			packageProductDependencies = (
-				130647492DB38F2800A63735 /* HotKey */,
+				1345B2C22DB3C13E00B675E6 /* HotKey */,
 			);
 			productName = snapdesk;
 			productReference = 130646C92DB38D4D00A63735 /* snapdesk.app */;
@@ -620,7 +620,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		130647492DB38F2800A63735 /* HotKey */ = {
+		1345B2C22DB3C13E00B675E6 /* HotKey */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */;
 			productName = HotKey;
