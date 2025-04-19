@@ -23,6 +23,9 @@ class WindowController {
     // Store window positions within layouts
     private var layoutWindowPositions: [String: [String: Int]] = [:] // groupID → [bundleID: position]
     
+    // Global full screen state
+    private var isFullScreenMode: Bool = false
+    
     init() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.scanAndTrackWindows()
@@ -95,6 +98,50 @@ class WindowController {
     
         
         
+        func toggleFullScreen() {
+            guard let currentWindow = currentlyFocusedWindow else {
+                log("❌ No focused window to toggle full screen")
+                return
+            }
+            
+            isFullScreenMode.toggle()
+            log("🔄 Toggling full screen mode: \(isFullScreenMode)")
+            
+            // Get the screen for the current window
+            if let screen = screenForWindow(currentWindow) {
+                if isFullScreenMode {
+                    maximizeToFullScreen(window: currentWindow, screen: screen)
+                } else {
+                    // If window was in a layout, restore the layout
+                    if let bundleID = findBundleID(for: currentWindow),
+                       let groupID = appToGroup[bundleID] {
+                        applyLayout(groupID: groupID, screen: screen)
+                    }
+                }
+            }
+        }
+        
+        private func maximizeToFullScreen(window: SIWindow, screen: NSScreen) {
+            log("🖥 Setting full screen for: \(window.title() ?? "<no title>")")
+            let screenFrame = screen.visibleFrame
+            let frame = CGRect(x: screenFrame.origin.x,
+                              y: screenFrame.origin.y,
+                              width: screenFrame.width,
+                              height: screenFrame.height)
+            try? window.setFrame(frame)
+            window.focus()
+            currentlyFocusedWindow = window
+        }
+        
+        private func findBundleID(for window: SIWindow) -> String? {
+            for (bundleID, windows) in appWindows {
+                if windows.contains(where: { $0 == window }) {
+                    return bundleID
+                }
+            }
+            return nil
+        }
+        
         func focusApp(_ bundleID: String) {
             log("🎯 Attempting to focus app: \(bundleID)")
             log("Current windows for app: \(appWindows[bundleID] ?? [])")
@@ -134,7 +181,11 @@ class WindowController {
                             }
                         }
                         
-                        applyLayout(groupID: groupID, screen: screen)
+                        if isFullScreenMode {
+                            maximizeToFullScreen(window: window, screen: screen)
+                        } else {
+                            applyLayout(groupID: groupID, screen: screen)
+                        }
                     } else {
                         log("⚠️ Could not find screen for window, using default screen")
                         applyLayout(groupID: groupID)
@@ -166,7 +217,13 @@ class WindowController {
 
             // Focus & maximize
             window.focus()
-            maximize(window: window)
+            if isFullScreenMode {
+                if let screen = screenForWindow(window) {
+                    maximizeToFullScreen(window: window, screen: screen)
+                }
+            } else {
+                maximize(window: window)
+            }
             
             // Update and log the focused window
             currentlyFocusedWindow = window

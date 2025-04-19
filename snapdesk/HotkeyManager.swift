@@ -34,6 +34,13 @@ class HotkeyManager {
             "com.apple.dt.Xcode": (.three, [.command, .option, .shift])
         ]
 
+        // Add full screen toggle shortcut
+        let fullScreenHotKey = HotKey(key: .zero, modifiers: [.command, .option])
+        fullScreenHotKey.keyDownHandler = { [weak self] in
+            self?.windowController.toggleFullScreen()
+        }
+        hotKeys.append(fullScreenHotKey)
+
         for (bundleID, (key, modifiers)) in appShortcuts { 
             let hotKey = HotKey(key: key, modifiers: modifiers)
             hotKey.keyDownHandler = { [weak self] in
