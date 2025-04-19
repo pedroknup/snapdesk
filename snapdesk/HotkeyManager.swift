@@ -41,6 +41,13 @@ class HotkeyManager {
         }
         hotKeys.append(fullScreenHotKey)
 
+         // Add full screen toggle shortcut
+        let removeCurrentWindowFromLayoutKey = HotKey(key: .two, modifiers: [.command, .option])
+        removeCurrentWindowFromLayoutKey.keyDownHandler = { [weak self] in
+            self?.windowController.removeCurrentWindowFromLayout()
+        }
+        hotKeys.append(removeCurrentWindowFromLayoutKey)
+
         for (bundleID, (key, modifiers)) in appShortcuts { 
             let hotKey = HotKey(key: key, modifiers: modifiers)
             hotKey.keyDownHandler = { [weak self] in
