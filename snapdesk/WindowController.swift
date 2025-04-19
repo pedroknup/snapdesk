@@ -121,6 +121,16 @@ class WindowController {
             }
         }
         
+        private func centerCursorInWindow(_ window: SIWindow) {
+            let frame = window.frame()
+            let centerX = frame.midX
+            let centerY = frame.midY
+            
+            // Convert to screen coordinates
+            let mouseLocation = CGPoint(x: centerX, y: centerY)
+            CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: mouseLocation, mouseButton: .left)?.post(tap: .cghidEventTap)
+        }
+
         private func maximizeToFullScreen(window: SIWindow, screen: NSScreen) {
             log("🖥 Setting full screen for: \(window.title() ?? "<no title>") on screen: \(screen.frame)")
             let screenFrame = screen.visibleFrame
@@ -130,6 +140,7 @@ class WindowController {
                               height: screenFrame.height)
             try? window.setFrame(frame)
             window.focus()
+            centerCursorInWindow(window)
             currentlyFocusedWindow = window
         }
         
@@ -217,6 +228,7 @@ class WindowController {
 
             // Focus & maximize
             window.focus()
+            centerCursorInWindow(window)
             if let screen = screenForWindow(window),
                screenFullScreenState[screen] ?? false {
                 maximizeToFullScreen(window: window, screen: screen)
@@ -432,11 +444,13 @@ class WindowController {
             if let targetWindow = targetWindow {
                 log("✨ Focusing provided target window: \(targetWindow.title() ?? "<no title>")")
                 targetWindow.focus()
+                centerCursorInWindow(targetWindow)
                 currentlyFocusedWindow = targetWindow
             } else if let targetBundleID = bundleIDs.first,
                       let targetWindow = appWindows[targetBundleID]?.first {
                 log("✨ Focusing first window in layout: \(targetWindow.title() ?? "<no title>")")
                 targetWindow.focus()
+                centerCursorInWindow(targetWindow)
                 currentlyFocusedWindow = targetWindow
             }
         }
