@@ -1,0 +1,631 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		130646CF2DB38D4D00A63735 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130646CE2DB38D4D00A63735 /* ContentView.swift */; };
+		130646D12DB38D4D00A63735 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130646D02DB38D4D00A63735 /* Item.swift */; };
+		130646D32DB38D4E00A63735 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 130646D22DB38D4E00A63735 /* Assets.xcassets */; };
+		130646D72DB38D4E00A63735 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 130646D62DB38D4E00A63735 /* Preview Assets.xcassets */; };
+		1306472A2DB38D6F00A63735 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 130646F02DB38D6E00A63735 /* README.md */; };
+		1306472B2DB38D6F00A63735 /* NSRunningApplication+Silica.m in Sources */ = {isa = PBXBuildFile; fileRef = 1306470F2DB38D6E00A63735 /* NSRunningApplication+Silica.m */; };
+		1306472C2DB38D6F00A63735 /* NSScreen+Silica.m in Sources */ = {isa = PBXBuildFile; fileRef = 130647112DB38D6E00A63735 /* NSScreen+Silica.m */; };
+		1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 130647132DB38D6E00A63735 /* SIAccessibilityElement.m */; };
+		1306472E2DB38D6F00A63735 /* SIApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 130647152DB38D6E00A63735 /* SIApplication.m */; };
+		1306472F2DB38D6F00A63735 /* SISystemWideElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 130647172DB38D6E00A63735 /* SISystemWideElement.m */; };
+		130647302DB38D6F00A63735 /* SIUniversalAccessHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 130647192DB38D6E00A63735 /* SIUniversalAccessHelper.m */; };
+		130647312DB38D6F00A63735 /* SIWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1306471B2DB38D6E00A63735 /* SIWindow.m */; };
+		130647322DB38D6F00A63735 /* SIWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306471D2DB38D6E00A63735 /* SIWindow.swift */; };
+		130647332DB38D6F00A63735 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306471E2DB38D6E00A63735 /* main.swift */; };
+		130647362DB38D6F00A63735 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 130647212DB38D6E00A63735 /* Assets.xcassets */; };
+		130647372DB38D6F00A63735 /* WindowDebugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647262DB38D6E00A63735 /* WindowDebugTest.swift */; };
+		130647382DB38D6F00A63735 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647272DB38D6E00A63735 /* WindowController.swift */; };
+		130647392DB38D6F00A63735 /* SIApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647282DB38D6E00A63735 /* SIApplication.swift */; };
+		1306473A2DB38D6F00A63735 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647292DB38D6E00A63735 /* HotkeyManager.swift */; };
+		1306473C2DB38DB000A63735 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306473B2DB38DB000A63735 /* snapdeskApp.swift */; };
+		1306473F2DB38DE600A63735 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1306473E2DB38DE600A63735 /* ApplicationServices.framework */; };
+		130647412DB38DEC00A63735 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647402DB38DEC00A63735 /* Carbon.framework */; };
+		130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647422DB38DF100A63735 /* Cocoa.framework */; };
+		130647452DB38DFA00A63735 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647442DB38DFA00A63735 /* Foundation.framework */; };
+		130647472DB38E0200A63735 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647462DB38E0200A63735 /* IOKit.framework */; };
+		1306474A2DB38F2800A63735 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 130647492DB38F2800A63735 /* HotKey */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		130646C92DB38D4D00A63735 /* snapdesk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = snapdesk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		130646CE2DB38D4D00A63735 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		130646D02DB38D4D00A63735 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		130646D22DB38D4E00A63735 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		130646D42DB38D4E00A63735 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
+		130646D62DB38D4E00A63735 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		130646DD2DB38D6E00A63735 /* CGSAccessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSAccessibility.h; sourceTree = "<group>"; };
+		130646DE2DB38D6E00A63735 /* CGSCIFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSCIFilter.h; sourceTree = "<group>"; };
+		130646DF2DB38D6E00A63735 /* CGSConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSConnection.h; sourceTree = "<group>"; };
+		130646E02DB38D6E00A63735 /* CGSCursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSCursor.h; sourceTree = "<group>"; };
+		130646E12DB38D6E00A63735 /* CGSDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSDebug.h; sourceTree = "<group>"; };
+		130646E22DB38D6E00A63735 /* CGSDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSDevice.h; sourceTree = "<group>"; };
+		130646E32DB38D6E00A63735 /* CGSDisplays.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSDisplays.h; sourceTree = "<group>"; };
+		130646E42DB38D6E00A63735 /* CGSEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSEvent.h; sourceTree = "<group>"; };
+		130646E52DB38D6E00A63735 /* CGSHotKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSHotKeys.h; sourceTree = "<group>"; };
+		130646E62DB38D6E00A63735 /* CGSInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSInternal.h; sourceTree = "<group>"; };
+		130646E72DB38D6E00A63735 /* CGSMisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSMisc.h; sourceTree = "<group>"; };
+		130646E82DB38D6E00A63735 /* CGSRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSRegion.h; sourceTree = "<group>"; };
+		130646E92DB38D6E00A63735 /* CGSSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSSession.h; sourceTree = "<group>"; };
+		130646EA2DB38D6E00A63735 /* CGSSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSSpace.h; sourceTree = "<group>"; };
+		130646EB2DB38D6E00A63735 /* CGSSurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSSurface.h; sourceTree = "<group>"; };
+		130646EC2DB38D6E00A63735 /* CGSTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSTile.h; sourceTree = "<group>"; };
+		130646ED2DB38D6E00A63735 /* CGSTransitions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSTransitions.h; sourceTree = "<group>"; };
+		130646EE2DB38D6E00A63735 /* CGSWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSWindow.h; sourceTree = "<group>"; };
+		130646EF2DB38D6E00A63735 /* CGSWorkspace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSWorkspace.h; sourceTree = "<group>"; };
+		130646F02DB38D6E00A63735 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		130646F22DB38D6E00A63735 /* CGSAccessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSAccessibility.h; sourceTree = "<group>"; };
+		130646F32DB38D6E00A63735 /* CGSCIFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSCIFilter.h; sourceTree = "<group>"; };
+		130646F42DB38D6E00A63735 /* CGSConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSConnection.h; sourceTree = "<group>"; };
+		130646F52DB38D6E00A63735 /* CGSCursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSCursor.h; sourceTree = "<group>"; };
+		130646F62DB38D6E00A63735 /* CGSDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSDebug.h; sourceTree = "<group>"; };
+		130646F72DB38D6E00A63735 /* CGSDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSDevice.h; sourceTree = "<group>"; };
+		130646F82DB38D6E00A63735 /* CGSDisplays.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSDisplays.h; sourceTree = "<group>"; };
+		130646F92DB38D6E00A63735 /* CGSEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSEvent.h; sourceTree = "<group>"; };
+		130646FA2DB38D6E00A63735 /* CGSHotKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSHotKeys.h; sourceTree = "<group>"; };
+		130646FB2DB38D6E00A63735 /* CGSInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSInternal.h; sourceTree = "<group>"; };
+		130646FC2DB38D6E00A63735 /* CGSMisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSMisc.h; sourceTree = "<group>"; };
+		130646FD2DB38D6E00A63735 /* CGSRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSRegion.h; sourceTree = "<group>"; };
+		130646FE2DB38D6E00A63735 /* CGSSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSSession.h; sourceTree = "<group>"; };
+		130646FF2DB38D6E00A63735 /* CGSSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSSpace.h; sourceTree = "<group>"; };
+		130647002DB38D6E00A63735 /* CGSSurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSSurface.h; sourceTree = "<group>"; };
+		130647012DB38D6E00A63735 /* CGSTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSTile.h; sourceTree = "<group>"; };
+		130647022DB38D6E00A63735 /* CGSTransitions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSTransitions.h; sourceTree = "<group>"; };
+		130647032DB38D6E00A63735 /* CGSWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSWindow.h; sourceTree = "<group>"; };
+		130647042DB38D6E00A63735 /* CGSWorkspace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSWorkspace.h; sourceTree = "<group>"; };
+		130647052DB38D6E00A63735 /* NSRunningApplication+Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSRunningApplication+Silica.h"; sourceTree = "<group>"; };
+		130647062DB38D6E00A63735 /* NSScreen+Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSScreen+Silica.h"; sourceTree = "<group>"; };
+		130647072DB38D6E00A63735 /* SIAccessibilityElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIAccessibilityElement.h; sourceTree = "<group>"; };
+		130647082DB38D6E00A63735 /* SIApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIApplication.h; sourceTree = "<group>"; };
+		130647092DB38D6E00A63735 /* Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Silica.h; sourceTree = "<group>"; };
+		1306470A2DB38D6E00A63735 /* SISystemWideElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SISystemWideElement.h; sourceTree = "<group>"; };
+		1306470B2DB38D6E00A63735 /* SIUniversalAccessHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIUniversalAccessHelper.h; sourceTree = "<group>"; };
+		1306470C2DB38D6E00A63735 /* SIWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIWindow.h; sourceTree = "<group>"; };
+		1306470E2DB38D6E00A63735 /* NSRunningApplication+Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSRunningApplication+Silica.h"; sourceTree = "<group>"; };
+		1306470F2DB38D6E00A63735 /* NSRunningApplication+Silica.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSRunningApplication+Silica.m"; sourceTree = "<group>"; };
+		130647102DB38D6E00A63735 /* NSScreen+Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSScreen+Silica.h"; sourceTree = "<group>"; };
+		130647112DB38D6E00A63735 /* NSScreen+Silica.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSScreen+Silica.m"; sourceTree = "<group>"; };
+		130647122DB38D6E00A63735 /* SIAccessibilityElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIAccessibilityElement.h; sourceTree = "<group>"; };
+		130647132DB38D6E00A63735 /* SIAccessibilityElement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SIAccessibilityElement.m; sourceTree = "<group>"; };
+		130647142DB38D6E00A63735 /* SIApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIApplication.h; sourceTree = "<group>"; };
+		130647152DB38D6E00A63735 /* SIApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SIApplication.m; sourceTree = "<group>"; };
+		130647162DB38D6E00A63735 /* SISystemWideElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SISystemWideElement.h; sourceTree = "<group>"; };
+		130647172DB38D6E00A63735 /* SISystemWideElement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SISystemWideElement.m; sourceTree = "<group>"; };
+		130647182DB38D6E00A63735 /* SIUniversalAccessHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIUniversalAccessHelper.h; sourceTree = "<group>"; };
+		130647192DB38D6E00A63735 /* SIUniversalAccessHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SIUniversalAccessHelper.m; sourceTree = "<group>"; };
+		1306471A2DB38D6E00A63735 /* SIWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIWindow.h; sourceTree = "<group>"; };
+		1306471B2DB38D6E00A63735 /* SIWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SIWindow.m; sourceTree = "<group>"; };
+		1306471D2DB38D6E00A63735 /* SIWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SIWindow.swift; sourceTree = "<group>"; };
+		1306471E2DB38D6E00A63735 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		130647202DB38D6E00A63735 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		130647212DB38D6E00A63735 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../../../snapdeskold/snapdesk/Assets.xcassets; sourceTree = "<group>"; };
+		130647222DB38D6E00A63735 /* Silica-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Silica-Prefix.pch"; sourceTree = "<group>"; };
+		130647232DB38D6E00A63735 /* Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Silica.h; sourceTree = "<group>"; };
+		130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SnapDesk-Bridging-Header.h"; sourceTree = "<group>"; };
+		130647252DB38D6E00A63735 /* snapdesk.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = snapdesk.entitlements; path = ../../../snapdeskold/snapdesk/snapdesk.entitlements; sourceTree = "<group>"; };
+		130647262DB38D6E00A63735 /* WindowDebugTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowDebugTest.swift; sourceTree = "<group>"; };
+		130647272DB38D6E00A63735 /* WindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
+		130647282DB38D6E00A63735 /* SIApplication.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SIApplication.swift; sourceTree = "<group>"; };
+		130647292DB38D6E00A63735 /* HotkeyManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		1306473B2DB38DB000A63735 /* snapdeskApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = snapdeskApp.swift; path = ../../../snapdeskold/snapdesk/snapdeskApp.swift; sourceTree = "<group>"; };
+		1306473E2DB38DE600A63735 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
+		130647402DB38DEC00A63735 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		130647422DB38DF100A63735 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		130647442DB38DFA00A63735 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		130647462DB38E0200A63735 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		130646C62DB38D4D00A63735 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1306474A2DB38F2800A63735 /* HotKey in Frameworks */,
+				1306473F2DB38DE600A63735 /* ApplicationServices.framework in Frameworks */,
+				130647412DB38DEC00A63735 /* Carbon.framework in Frameworks */,
+				130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */,
+				130647472DB38E0200A63735 /* IOKit.framework in Frameworks */,
+				130647452DB38DFA00A63735 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		130646C02DB38D4D00A63735 = {
+			isa = PBXGroup;
+			children = (
+				130646CB2DB38D4D00A63735 /* snapdesk */,
+				130646CA2DB38D4D00A63735 /* Products */,
+				1306473D2DB38DE600A63735 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		130646CA2DB38D4D00A63735 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				130646C92DB38D4D00A63735 /* snapdesk.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		130646CB2DB38D4D00A63735 /* snapdesk */ = {
+			isa = PBXGroup;
+			children = (
+				130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */,
+				130647252DB38D6E00A63735 /* snapdesk.entitlements */,
+				130647212DB38D6E00A63735 /* Assets.xcassets */,
+				130647292DB38D6E00A63735 /* HotkeyManager.swift */,
+				130647202DB38D6E00A63735 /* Info.plist */,
+				1306471E2DB38D6E00A63735 /* main.swift */,
+				130647282DB38D6E00A63735 /* SIApplication.swift */,
+				130647222DB38D6E00A63735 /* Silica-Prefix.pch */,
+				130647232DB38D6E00A63735 /* Silica.h */,
+				1306471D2DB38D6E00A63735 /* SIWindow.swift */,
+				1306473B2DB38DB000A63735 /* snapdeskApp.swift */,
+				1306471C2DB38D6E00A63735 /* Sources */,
+				130647272DB38D6E00A63735 /* WindowController.swift */,
+				130647262DB38D6E00A63735 /* WindowDebugTest.swift */,
+				130646CE2DB38D4D00A63735 /* ContentView.swift */,
+				130646D02DB38D4D00A63735 /* Item.swift */,
+				130646D22DB38D4E00A63735 /* Assets.xcassets */,
+				130646D42DB38D4E00A63735 /* snapdesk.entitlements */,
+				130646D52DB38D4E00A63735 /* Preview Content */,
+			);
+			path = snapdesk;
+			sourceTree = "<group>";
+		};
+		130646D52DB38D4E00A63735 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				130646D62DB38D4E00A63735 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		130646F12DB38D6E00A63735 /* CGSInternal */ = {
+			isa = PBXGroup;
+			children = (
+				130646DD2DB38D6E00A63735 /* CGSAccessibility.h */,
+				130646DE2DB38D6E00A63735 /* CGSCIFilter.h */,
+				130646DF2DB38D6E00A63735 /* CGSConnection.h */,
+				130646E02DB38D6E00A63735 /* CGSCursor.h */,
+				130646E12DB38D6E00A63735 /* CGSDebug.h */,
+				130646E22DB38D6E00A63735 /* CGSDevice.h */,
+				130646E32DB38D6E00A63735 /* CGSDisplays.h */,
+				130646E42DB38D6E00A63735 /* CGSEvent.h */,
+				130646E52DB38D6E00A63735 /* CGSHotKeys.h */,
+				130646E62DB38D6E00A63735 /* CGSInternal.h */,
+				130646E72DB38D6E00A63735 /* CGSMisc.h */,
+				130646E82DB38D6E00A63735 /* CGSRegion.h */,
+				130646E92DB38D6E00A63735 /* CGSSession.h */,
+				130646EA2DB38D6E00A63735 /* CGSSpace.h */,
+				130646EB2DB38D6E00A63735 /* CGSSurface.h */,
+				130646EC2DB38D6E00A63735 /* CGSTile.h */,
+				130646ED2DB38D6E00A63735 /* CGSTransitions.h */,
+				130646EE2DB38D6E00A63735 /* CGSWindow.h */,
+				130646EF2DB38D6E00A63735 /* CGSWorkspace.h */,
+				130646F02DB38D6E00A63735 /* README.md */,
+			);
+			path = CGSInternal;
+			sourceTree = "<group>";
+		};
+		1306470D2DB38D6E00A63735 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				130646F22DB38D6E00A63735 /* CGSAccessibility.h */,
+				130646F32DB38D6E00A63735 /* CGSCIFilter.h */,
+				130646F42DB38D6E00A63735 /* CGSConnection.h */,
+				130646F52DB38D6E00A63735 /* CGSCursor.h */,
+				130646F62DB38D6E00A63735 /* CGSDebug.h */,
+				130646F72DB38D6E00A63735 /* CGSDevice.h */,
+				130646F82DB38D6E00A63735 /* CGSDisplays.h */,
+				130646F92DB38D6E00A63735 /* CGSEvent.h */,
+				130646FA2DB38D6E00A63735 /* CGSHotKeys.h */,
+				130646FB2DB38D6E00A63735 /* CGSInternal.h */,
+				130646FC2DB38D6E00A63735 /* CGSMisc.h */,
+				130646FD2DB38D6E00A63735 /* CGSRegion.h */,
+				130646FE2DB38D6E00A63735 /* CGSSession.h */,
+				130646FF2DB38D6E00A63735 /* CGSSpace.h */,
+				130647002DB38D6E00A63735 /* CGSSurface.h */,
+				130647012DB38D6E00A63735 /* CGSTile.h */,
+				130647022DB38D6E00A63735 /* CGSTransitions.h */,
+				130647032DB38D6E00A63735 /* CGSWindow.h */,
+				130647042DB38D6E00A63735 /* CGSWorkspace.h */,
+				130647052DB38D6E00A63735 /* NSRunningApplication+Silica.h */,
+				130647062DB38D6E00A63735 /* NSScreen+Silica.h */,
+				130647072DB38D6E00A63735 /* SIAccessibilityElement.h */,
+				130647082DB38D6E00A63735 /* SIApplication.h */,
+				130647092DB38D6E00A63735 /* Silica.h */,
+				1306470A2DB38D6E00A63735 /* SISystemWideElement.h */,
+				1306470B2DB38D6E00A63735 /* SIUniversalAccessHelper.h */,
+				1306470C2DB38D6E00A63735 /* SIWindow.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		1306471C2DB38D6E00A63735 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				130646F12DB38D6E00A63735 /* CGSInternal */,
+				1306470D2DB38D6E00A63735 /* include */,
+				1306470E2DB38D6E00A63735 /* NSRunningApplication+Silica.h */,
+				1306470F2DB38D6E00A63735 /* NSRunningApplication+Silica.m */,
+				130647102DB38D6E00A63735 /* NSScreen+Silica.h */,
+				130647112DB38D6E00A63735 /* NSScreen+Silica.m */,
+				130647122DB38D6E00A63735 /* SIAccessibilityElement.h */,
+				130647132DB38D6E00A63735 /* SIAccessibilityElement.m */,
+				130647142DB38D6E00A63735 /* SIApplication.h */,
+				130647152DB38D6E00A63735 /* SIApplication.m */,
+				130647162DB38D6E00A63735 /* SISystemWideElement.h */,
+				130647172DB38D6E00A63735 /* SISystemWideElement.m */,
+				130647182DB38D6E00A63735 /* SIUniversalAccessHelper.h */,
+				130647192DB38D6E00A63735 /* SIUniversalAccessHelper.m */,
+				1306471A2DB38D6E00A63735 /* SIWindow.h */,
+				1306471B2DB38D6E00A63735 /* SIWindow.m */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		1306473D2DB38DE600A63735 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				130647462DB38E0200A63735 /* IOKit.framework */,
+				130647442DB38DFA00A63735 /* Foundation.framework */,
+				130647422DB38DF100A63735 /* Cocoa.framework */,
+				130647402DB38DEC00A63735 /* Carbon.framework */,
+				1306473E2DB38DE600A63735 /* ApplicationServices.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		130646C82DB38D4D00A63735 /* snapdesk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 130646DA2DB38D4E00A63735 /* Build configuration list for PBXNativeTarget "snapdesk" */;
+			buildPhases = (
+				130646C52DB38D4D00A63735 /* Sources */,
+				130646C62DB38D4D00A63735 /* Frameworks */,
+				130646C72DB38D4D00A63735 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = snapdesk;
+			packageProductDependencies = (
+				130647492DB38F2800A63735 /* HotKey */,
+			);
+			productName = snapdesk;
+			productReference = 130646C92DB38D4D00A63735 /* snapdesk.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		130646C12DB38D4D00A63735 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					130646C82DB38D4D00A63735 = {
+						CreatedOnToolsVersion = 15.3;
+					};
+				};
+			};
+			buildConfigurationList = 130646C42DB38D4D00A63735 /* Build configuration list for PBXProject "snapdesk" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 130646C02DB38D4D00A63735;
+			packageReferences = (
+				130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */,
+			);
+			productRefGroup = 130646CA2DB38D4D00A63735 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				130646C82DB38D4D00A63735 /* snapdesk */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		130646C72DB38D4D00A63735 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1306472A2DB38D6F00A63735 /* README.md in Resources */,
+				130646D72DB38D4E00A63735 /* Preview Assets.xcassets in Resources */,
+				130646D32DB38D4E00A63735 /* Assets.xcassets in Resources */,
+				130647362DB38D6F00A63735 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		130646C52DB38D4D00A63735 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1306473A2DB38D6F00A63735 /* HotkeyManager.swift in Sources */,
+				130646CF2DB38D4D00A63735 /* ContentView.swift in Sources */,
+				130647382DB38D6F00A63735 /* WindowController.swift in Sources */,
+				130647302DB38D6F00A63735 /* SIUniversalAccessHelper.m in Sources */,
+				130647332DB38D6F00A63735 /* main.swift in Sources */,
+				1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */,
+				1306473C2DB38DB000A63735 /* snapdeskApp.swift in Sources */,
+				130647322DB38D6F00A63735 /* SIWindow.swift in Sources */,
+				1306472C2DB38D6F00A63735 /* NSScreen+Silica.m in Sources */,
+				130646D12DB38D4D00A63735 /* Item.swift in Sources */,
+				1306472F2DB38D6F00A63735 /* SISystemWideElement.m in Sources */,
+				1306472B2DB38D6F00A63735 /* NSRunningApplication+Silica.m in Sources */,
+				130647312DB38D6F00A63735 /* SIWindow.m in Sources */,
+				1306472E2DB38D6F00A63735 /* SIApplication.m in Sources */,
+				130647392DB38D6F00A63735 /* SIApplication.swift in Sources */,
+				130647372DB38D6F00A63735 /* WindowDebugTest.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		130646D82DB38D4E00A63735 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		130646D92DB38D4E00A63735 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		130646DB2DB38D4E00A63735 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = snapdesk/snapdesk.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"snapdesk/Preview Content\"";
+				DEVELOPMENT_TEAM = JPTG2ZM8TX;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = pedroknup.snapdesk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "snapdesk/SnapDesk-Bridging-Header.h";
+				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "snapdesk/SnapDesk-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		130646DC2DB38D4E00A63735 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = snapdesk/snapdesk.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"snapdesk/Preview Content\"";
+				DEVELOPMENT_TEAM = JPTG2ZM8TX;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = pedroknup.snapdesk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "snapdesk/SnapDesk-Bridging-Header.h";
+				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "snapdesk/SnapDesk-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		130646C42DB38D4D00A63735 /* Build configuration list for PBXProject "snapdesk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				130646D82DB38D4E00A63735 /* Debug */,
+				130646D92DB38D4E00A63735 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		130646DA2DB38D4E00A63735 /* Build configuration list for PBXNativeTarget "snapdesk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				130646DB2DB38D4E00A63735 /* Debug */,
+				130646DC2DB38D4E00A63735 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/soffes/HotKey";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		130647492DB38F2800A63735 /* HotKey */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */;
+			productName = HotKey;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 130646C12DB38D4D00A63735 /* Project object */;
+}
