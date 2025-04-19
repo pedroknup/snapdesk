@@ -184,7 +184,7 @@ class WindowController {
                         if screenFullScreenState[screen] ?? false {
                             maximizeToFullScreen(window: window, screen: screen)
                         } else {
-                            applyLayout(groupID: groupID, screen: screen)
+                            applyLayout(groupID: groupID, screen: screen, targetWindow: window)
                         }
                     } else {
                         log("⚠️ Could not find screen for window, using default screen")
@@ -374,7 +374,7 @@ class WindowController {
             applyLayout(groupID: groupID, screen: currentScreen)
         }
         
-        func applyLayout(groupID: String, screen: NSScreen? = nil) {
+        func applyLayout(groupID: String, screen: NSScreen? = nil, targetWindow: SIWindow? = nil) {
             guard let bundleIDs = layoutGroups[groupID], !bundleIDs.isEmpty else { return }
             log("📐 Applying layout for group \(groupID)")
             log("   - Windows: \(bundleIDs)")
@@ -428,10 +428,14 @@ class WindowController {
                 }
             }
             
-            // Finally, focus the target window
-            if let targetBundleID = bundleIDs.first,
-               let targetWindow = appWindows[targetBundleID]?.first {
-                log("✨ Focusing target window: \(targetWindow.title() ?? "<no title>")")
+            // Focus the target window if provided, otherwise use the first window
+            if let targetWindow = targetWindow {
+                log("✨ Focusing provided target window: \(targetWindow.title() ?? "<no title>")")
+                targetWindow.focus()
+                currentlyFocusedWindow = targetWindow
+            } else if let targetBundleID = bundleIDs.first,
+                      let targetWindow = appWindows[targetBundleID]?.first {
+                log("✨ Focusing first window in layout: \(targetWindow.title() ?? "<no title>")")
                 targetWindow.focus()
                 currentlyFocusedWindow = targetWindow
             }
