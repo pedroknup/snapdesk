@@ -23,8 +23,8 @@ class WindowController {
     // Store window positions within layouts
     private var layoutWindowPositions: [String: [String: Int]] = [:] // groupID → [bundleID: position]
     
-    // Global full screen state
-    private var isFullScreenMode: Bool = false
+    // Track full screen state per screen
+    private var screenFullScreenState: [NSScreen: Bool] = [:] // screen → isFullScreen
     
     init() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -99,30 +99,30 @@ class WindowController {
         
         
         func toggleFullScreen() {
-            guard let currentWindow = currentlyFocusedWindow else {
-                log("❌ No focused window to toggle full screen")
+            guard let currentWindow = currentlyFocusedWindow,
+                  let screen = screenForWindow(currentWindow) else {
+                log("❌ No focused window or screen to toggle full screen")
                 return
             }
             
-            isFullScreenMode.toggle()
-            log("🔄 Toggling full screen mode: \(isFullScreenMode)")
+            // Toggle full screen state for this screen
+            let isCurrentlyFullScreen = screenFullScreenState[screen] ?? false
+            screenFullScreenState[screen] = !isCurrentlyFullScreen
+            log("🔄 Toggling full screen for screen: \(screen.frame), new state: \(!isCurrentlyFullScreen)")
             
-            // Get the screen for the current window
-            if let screen = screenForWindow(currentWindow) {
-                if isFullScreenMode {
-                    maximizeToFullScreen(window: currentWindow, screen: screen)
-                } else {
-                    // If window was in a layout, restore the layout
-                    if let bundleID = findBundleID(for: currentWindow),
-                       let groupID = appToGroup[bundleID] {
-                        applyLayout(groupID: groupID, screen: screen)
-                    }
+            if !isCurrentlyFullScreen {
+                maximizeToFullScreen(window: currentWindow, screen: screen)
+            } else {
+                // If window was in a layout, restore the layout
+                if let bundleID = findBundleID(for: currentWindow),
+                   let groupID = appToGroup[bundleID] {
+                    applyLayout(groupID: groupID, screen: screen)
                 }
             }
         }
         
         private func maximizeToFullScreen(window: SIWindow, screen: NSScreen) {
-            log("🖥 Setting full screen for: \(window.title() ?? "<no title>")")
+            log("🖥 Setting full screen for: \(window.title() ?? "<no title>") on screen: \(screen.frame)")
             let screenFrame = screen.visibleFrame
             let frame = CGRect(x: screenFrame.origin.x,
                               y: screenFrame.origin.y,
@@ -181,7 +181,7 @@ class WindowController {
                             }
                         }
                         
-                        if isFullScreenMode {
+                        if screenFullScreenState[screen] ?? false {
                             maximizeToFullScreen(window: window, screen: screen)
                         } else {
                             applyLayout(groupID: groupID, screen: screen)
@@ -217,10 +217,9 @@ class WindowController {
 
             // Focus & maximize
             window.focus()
-            if isFullScreenMode {
-                if let screen = screenForWindow(window) {
-                    maximizeToFullScreen(window: window, screen: screen)
-                }
+            if let screen = screenForWindow(window),
+               screenFullScreenState[screen] ?? false {
+                maximizeToFullScreen(window: window, screen: screen)
             } else {
                 maximize(window: window)
             }
