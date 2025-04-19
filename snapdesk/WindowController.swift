@@ -157,106 +157,90 @@ class WindowController {
             log("🎯 Attempting to focus app: \(bundleID)")
             log("Current windows for app: \(appWindows[bundleID] ?? [])")
             
-            // Get all windows for this app
-            guard let windows = appWindows[bundleID], !windows.isEmpty else {
-                log("🚀 No windows found, launching app")
-                launchAppIfNeeded(bundleID)
-                return
-            }
-            
-            // Get current index and cycle to next window
-            let currentIndex = currentWindowPerApp[bundleID] ?? 0
-            let nextIndex = (currentIndex + 1) % windows.count
-            currentWindowPerApp[bundleID] = nextIndex
-            let window = windows[nextIndex]
-            
-            log("📋 Cycling to window index: \(nextIndex) of \(windows.count)")
-            
-            // Get the screen for the window we want to focus
-            guard let targetScreen = screenForWindow(window) else {
-                log("⚠️ Could not find screen for window")
-                return
-            }
-            
-            // If the window is in a layout, handle it specially
             if let groupID = appToGroup[bundleID] {
                 log("🔄 Found existing layout group: \(groupID)")
                 log("Layout group details:")
                 log("  - Windows in group: \(layoutGroups[groupID] ?? [])")
                 log("  - Window positions: \(layoutWindowPositions[groupID] ?? [:])")
                 
-                // Get all screens that have windows in this layout
-                var layoutScreens = Set<NSScreen>()
-                for (layoutBundleID, _) in layoutWindowPositions[groupID] ?? [:] {
-                    if let layoutWindows = appWindows[layoutBundleID],
-                       let firstWindow = layoutWindows.first,
-                       let screen = screenForWindow(firstWindow) {
-                        layoutScreens.insert(screen)
-                    }
+                // Get all windows for this app
+                guard let windows = appWindows[bundleID], !windows.isEmpty else {
+                    log("⚠️ No windows found for app in layout")
+                    return
                 }
                 
-                // For each screen in the layout
-                for screen in layoutScreens {
-                    if screen == targetScreen {
-                        // This is the screen we're focusing - apply the layout and focus the window
-                        log("✅ Applying layout to target screen: \(screen.frame)")
-                        
-                        // Hide windows not in layout on this screen
-                        let layoutPositions = layoutWindowPositions[groupID] ?? [:]
-                        for (otherBundleID, otherWindows) in appWindows {
-                            if !layoutPositions.keys.contains(otherBundleID) {
-                                for otherWindow in otherWindows {
-                                    if screenForWindow(otherWindow) == screen {
-                                        log("🔒 Hiding window not in layout: \(otherWindow.title() ?? "<no title>")")
-                                        let axElement = otherWindow.axElement().takeUnretainedValue()
-                                        let hidden: CFTypeRef = kCFBooleanTrue
-                                        AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
-                                    }
-                                }
+                // Get current index and cycle to next window
+                let currentIndex = currentWindowPerApp[bundleID] ?? 0
+                let nextIndex = (currentIndex + 1) % windows.count
+                currentWindowPerApp[bundleID] = nextIndex
+                let window = windows[nextIndex]
+                
+                log("📋 Cycling to window index: \(nextIndex) of \(windows.count)")
+                
+                if let screen = screenForWindow(window) {
+                    log("✅ Found screen for window: \(screen.frame)")
+                    
+                    // Hide all windows that aren't in this layout group
+                    let layoutPositions = layoutWindowPositions[groupID] ?? [:]
+                    for (otherBundleID, otherWindows) in appWindows {
+                        if !layoutPositions.keys.contains(otherBundleID) {
+                            for otherWindow in otherWindows {
+                                log("🔒 Hiding window not in layout: \(otherWindow.title() ?? "<no title>")")
+                                let axElement = otherWindow.axElement().takeUnretainedValue()
+                                let hidden: CFTypeRef = kCFBooleanTrue
+                                AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
                             }
                         }
-                        
-                        // Show windows in layout on this screen
-                        for (layoutBundleID, _) in layoutPositions {
-                            if let windows = appWindows[layoutBundleID], let window = windows.first {
-                                if screenForWindow(window) == screen {
-                                    log("👁 Showing window in layout: \(window.title() ?? "<no title>")")
-                                    let axElement = window.axElement().takeUnretainedValue()
-                                    let visible: CFTypeRef = kCFBooleanFalse
-                                    AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
-                                }
-                            }
+                    }
+                    
+                    // Show all windows in the layout
+                    for (layoutBundleID, _) in layoutPositions {
+                        if let windows = appWindows[layoutBundleID], let window = windows.first {
+                            log("👁 Showing window in layout: \(window.title() ?? "<no title>")")
+                            let axElement = window.axElement().takeUnretainedValue()
+                            let visible: CFTypeRef = kCFBooleanFalse
+                            AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
                         }
-                        
-                        if screenFullScreenState[screen] ?? false {
-                            maximizeToFullScreen(window: window, screen: screen)
-                        } else {
-                            applyLayout(groupID: groupID, screen: screen, targetWindow: window)
-                        }
+                    }
+                    
+                    if screenFullScreenState[screen] ?? false {
+                        maximizeToFullScreen(window: window, screen: screen)
                     } else {
-                        // This is another screen with the same layout - preserve its state
-                        log("🔄 Preserving layout on screen: \(screen.frame)")
-                        if let firstBundleID = layoutGroups[groupID]?.first,
-                           let firstWindow = appWindows[firstBundleID]?.first {
-                            applyLayout(groupID: groupID, screen: screen, targetWindow: firstWindow)
-                        }
+                        applyLayout(groupID: groupID, screen: screen, targetWindow: window)
                     }
-                }
-            } else {
-                // Not in a layout - simple focus and maximize
-                log("ℹ️ No existing layout found for app")
-                
-                // Hide all others *before* we focus/maximize the target window
-                hideAllWindows(except: window)
-                
-                // Focus & maximize
-                window.focus()
-                centerCursorInWindow(window)
-                if screenFullScreenState[targetScreen] ?? false {
-                    maximizeToFullScreen(window: window, screen: targetScreen)
                 } else {
-                    maximize(window: window)
+                    log("⚠️ Could not find screen for window, using default screen")
+                    applyLayout(groupID: groupID)
                 }
+                return
+            }
+            
+            log("ℹ️ No existing layout found for app")
+            
+            guard let windows = appWindows[bundleID], !windows.isEmpty else {
+                log("🚀 No windows found, launching app")
+                launchAppIfNeeded(bundleID)
+                return
+            }
+
+            let currentIndex = currentWindowPerApp[bundleID] ?? 0
+            let window = windows[currentIndex]
+            log("📋 Cycling to window index: \(currentIndex) of \(windows.count)")
+
+            // Cycle to next on repeated key press
+            currentWindowPerApp[bundleID] = (currentIndex + 1) % windows.count
+
+            // Hide all others *before* we focus/maximize the target window
+            hideAllWindows(except: window)
+
+            // Focus & maximize
+            window.focus()
+            centerCursorInWindow(window)
+            if let screen = screenForWindow(window),
+               screenFullScreenState[screen] ?? false {
+                maximizeToFullScreen(window: window, screen: screen)
+            } else {
+                maximize(window: window)
             }
             
             // Update and log the focused window
