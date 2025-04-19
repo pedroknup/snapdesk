@@ -30,6 +30,7 @@ class HotkeyManager {
         let appSplitShortcuts: [String: (Key, NSEvent.ModifierFlags)] = [
             "company.thebrowser.Browser": (.one, [.command, .option, .shift]),
             "notion.id": (.eight, [.command, .option, .shift]),
+            "com.googlecode.iterm2": (.five, [.command, .option]),
             "com.apple.dt.Xcode": (.three, [.command, .option, .shift])
         ]
 
@@ -44,7 +45,7 @@ class HotkeyManager {
         for (bundleID, (key, modifiers)) in appSplitShortcuts {
             let hotKey = HotKey(key: key, modifiers: modifiers)
             hotKey.keyDownHandler = { [weak self] in
-                self?.windowController.addAppToSplit(bundleID)
+                self?.windowController.addWindowToLayout(bundleID)
             }
             hotKeys.append(hotKey)
         }
