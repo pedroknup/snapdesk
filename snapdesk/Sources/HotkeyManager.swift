@@ -59,6 +59,48 @@ class HotkeyManager {
                     guard !HotkeyManager.isRecordingShortcut else { return }
                     self?.windowController.removeCurrentWindowFromLayout()
                 }
+            // Focus Screen shortcuts
+            case "Focus Screen 1", "Focus Screen 2", "Focus Screen 3", "Focus Screen 4", "Focus Screen 5", "Focus Screen 6":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    if let screenNumber = Int(generalShortcut.name.split(separator: " ").last ?? "0") {
+                        self?.windowController.focusScreen(screenNumber)
+                    }
+                }
+            // Throw to Screen shortcuts
+            case "Throw to Screen 1", "Throw to Screen 2", "Throw to Screen 3", "Throw to Screen 4", "Throw to Screen 5", "Throw to Screen 6":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    if let screenNumber = Int(generalShortcut.name.split(separator: " ").last ?? "0") {
+                        self?.windowController.throwToScreen(screenNumber)
+                    }
+                }
+            // Layout management shortcuts
+            case "Throw app to current layout modifier":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    self?.windowController.throwToCurrentLayout()
+                }
+            case "Increase main panel count":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    self?.windowController.increaseMainPanelCount()
+                }
+            case "Decrease main panel count":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    self?.windowController.decreaseMainPanelCount()
+                }
+            case "Cycle current layout windows clockwise":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    self?.windowController.cycleWindowsClockwise()
+                }
+            case "Cycle current layout windows counterclockwise":
+                hotKey.keyDownHandler = { [weak self] in
+                    guard !HotkeyManager.isRecordingShortcut else { return }
+                    self?.windowController.cycleWindowsCounterclockwise()
+                }
             default:
                 continue
             }

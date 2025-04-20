@@ -109,6 +109,77 @@ public class ConfigurationManager {
                 GeneralShortcutConfig(
                     name: "Remove current window from layout",
                     shortcut: ShortcutConfig(key: "2", modifiers: ["command", "option"])
+                ),
+                // Focus Screen shortcuts
+                GeneralShortcutConfig(
+                    name: "Focus Screen 1",
+                    shortcut: ShortcutConfig(key: "1", modifiers: ["command", "control"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Focus Screen 2",
+                    shortcut: ShortcutConfig(key: "2", modifiers: ["command", "control"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Focus Screen 3",
+                    shortcut: ShortcutConfig(key: "3", modifiers: ["command", "control"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Focus Screen 4",
+                    shortcut: ShortcutConfig(key: "4", modifiers: ["command", "control"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Focus Screen 5",
+                    shortcut: ShortcutConfig(key: "5", modifiers: ["command", "control"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Focus Screen 6",
+                    shortcut: ShortcutConfig(key: "6", modifiers: ["command", "control"])
+                ),
+                // Throw to Screen shortcuts
+                GeneralShortcutConfig(
+                    name: "Throw to Screen 1",
+                    shortcut: ShortcutConfig(key: "1", modifiers: ["command", "shift"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Throw to Screen 2",
+                    shortcut: ShortcutConfig(key: "2", modifiers: ["command", "shift"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Throw to Screen 3",
+                    shortcut: ShortcutConfig(key: "3", modifiers: ["command", "shift"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Throw to Screen 4",
+                    shortcut: ShortcutConfig(key: "4", modifiers: ["command", "shift"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Throw to Screen 5",
+                    shortcut: ShortcutConfig(key: "5", modifiers: ["command", "shift"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Throw to Screen 6",
+                    shortcut: ShortcutConfig(key: "6", modifiers: ["command", "shift"])
+                ),
+                // Layout management shortcuts
+                GeneralShortcutConfig(
+                    name: "Throw app to current layout modifier",
+                    shortcut: ShortcutConfig(key: "t", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Increase main panel count",
+                    shortcut: ShortcutConfig(key: "=", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Decrease main panel count",
+                    shortcut: ShortcutConfig(key: "-", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Cycle current layout windows clockwise",
+                    shortcut: ShortcutConfig(key: "]", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Cycle current layout windows counterclockwise",
+                    shortcut: ShortcutConfig(key: "[", modifiers: ["command", "option"])
                 )
             ]
         )

@@ -123,6 +123,7 @@ struct ShortcutsTabView: View {
         .onAppear {
             Task {
                 await loadApps()
+                refreshConfig()
             }
         }
         .navigationTitle("Shortcuts")
@@ -175,14 +176,24 @@ struct ShortcutsTabView: View {
         return "\(modifiers) + \(shortcut.key.uppercased())"
     }
     
+    private func refreshConfig() {
+        if let loadedConfig = configManager.loadConfig() {
+            config = loadedConfig
+        } else {
+            config = configManager.getDefaultConfig()
+        }
+    }
+    
     private func removeShortcut(for name: String) {
         config.generalShortcuts.removeAll { $0.name == name }
         saveConfig()
+        refreshConfig()
     }
     
     private func removeAppShortcut(for bundleIdentifier: String) {
         config.appShortcuts.removeAll { $0.bundleIdentifier == bundleIdentifier }
         saveConfig()
+        refreshConfig()
     }
     
     private func saveConfig() {

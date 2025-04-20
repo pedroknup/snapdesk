@@ -29,6 +29,10 @@ class WindowController {
     // Add new property to store window identifiers
     private var windowIdentifiers: [SIWindow: String] = [:] // Window → unique ID
     
+    // Add new property to store window focus history
+    private var windowFocusHistory: [String] = [] // Array of window IDs in focus order
+    private let maxHistorySize = 10 // Maximum number of windows to keep in history
+    
     // Add new property to store screen information
     private struct ScreenInfo {
         let screen: NSScreen
@@ -363,6 +367,7 @@ class WindowController {
             
             // Update and log the focused window
             currentlyFocusedWindow = window
+            addWindowToFocusHistory(window)
             log("✅ Focused window: \(window.title() ?? "<No Title>") for \(bundleID)")
         }
         
@@ -425,6 +430,28 @@ class WindowController {
             
             window.setPosition(position)
             window.setSize(size)
+        }
+        
+        private func addWindowToFocusHistory(_ window: SIWindow) {
+            let windowId = getWindowIdentifier(window)
+            
+            // Remove window from history if it exists (to avoid duplicates)
+            windowFocusHistory.removeAll { $0 == windowId }
+            
+            // Add window to the beginning of history
+            windowFocusHistory.insert(windowId, at: 0)
+            
+            // Keep history size limited
+            if windowFocusHistory.count > maxHistorySize {
+                windowFocusHistory.removeLast()
+            }
+            
+            log("📜 Window focus history updated:")
+            for (index, id) in windowFocusHistory.enumerated() {
+                if let window = findWindowByIdentifier(id) {
+                    log("   \(index + 1). \(window.title() ?? "<No Title>")")
+                }
+            }
         }
         
         func getCurrentFocusedWindow() -> SIWindow? {
@@ -702,6 +729,187 @@ class WindowController {
                 }
             }
         }
+        
+        // Add new method to get focus history
+        func getWindowFocusHistory() -> [String] {
+            return windowFocusHistory
+        }
+        
+        // Screen focus methods
+        func focusScreen(_ screenNumber: Int) {
+            guard let screen = NSScreen.screens[safe: screenNumber - 1] else {
+                log("❌ Invalid screen number: \(screenNumber)")
+                return
+            }
+            
+            // Find the first window on this screen
+            for (_, windows) in appWindows {
+                for window in windows {
+                    if screenForWindow(window) == screen {
+                        window.focus()
+                        centerCursorInWindow(window)
+                        currentlyFocusedWindow = window
+                        return
+                    }
+                }
+            }
+            
+            log("ℹ️ No windows found on screen \(screenNumber)")
+        }
+        
+        func throwToScreen(_ screenNumber: Int) {
+            guard let currentWindow = currentlyFocusedWindow,
+                  let targetScreen = NSScreen.screens[safe: screenNumber - 1] else {
+                log("❌ No focused window or invalid screen number: \(screenNumber)")
+                return
+            }
+            
+            // Move the window to the target screen
+            currentWindow.move(to: targetScreen)
+            
+            // Update the window's screen mapping
+            let element = currentWindow.axElement().takeUnretainedValue()
+            windowScreenMap[element] = targetScreen
+            
+            // Focus the window
+            currentWindow.focus()
+            centerCursorInWindow(currentWindow)
+        }
+        
+        func throwToCurrentLayout() {
+            guard let currentWindow = currentlyFocusedWindow,
+                  let screen = screenForWindow(currentWindow) else {
+                log("❌ No focused window or screen")
+                return
+            }
+            
+            // Get the bundle ID of the current window
+            guard let bundleID = findBundleID(for: currentWindow) else {
+                log("❌ Could not determine bundle ID for current window")
+                return
+            }
+            
+            // Add the window to the current layout
+            addWindowToLayout(bundleID)
+        }
+        
+        func increaseMainPanelCount() {
+            guard let currentWindow = currentlyFocusedWindow,
+                  let screen = screenForWindow(currentWindow),
+                  let bundleID = findBundleID(for: currentWindow),
+                  let groupID = appToGroup[bundleID] else {
+                log("❌ No focused window or layout")
+                return
+            }
+            
+            // Get current positions
+            var positions = layoutWindowPositions[groupID] ?? [:]
+            let maxPosition = positions.values.max() ?? 0
+            
+            // Add a new position
+            positions[bundleID] = maxPosition + 1
+            layoutWindowPositions[groupID] = positions
+            
+            // Reapply the layout
+            applyLayout(groupID: groupID, screen: screen, targetWindow: currentWindow)
+        }
+        
+        func decreaseMainPanelCount() {
+            guard let currentWindow = currentlyFocusedWindow,
+                  let screen = screenForWindow(currentWindow),
+                  let bundleID = findBundleID(for: currentWindow),
+                  let groupID = appToGroup[bundleID] else {
+                log("❌ No focused window or layout")
+                return
+            }
+            
+            // Get current positions
+            var positions = layoutWindowPositions[groupID] ?? [:]
+            let currentPosition = positions[bundleID] ?? 0
+            
+            // Only decrease if we're not the last window
+            if currentPosition > 0 {
+                positions[bundleID] = currentPosition - 1
+                layoutWindowPositions[groupID] = positions
+                
+                // Reapply the layout
+                applyLayout(groupID: groupID, screen: screen, targetWindow: currentWindow)
+            }
+        }
+        
+        func cycleWindowsClockwise() {
+            guard let currentWindow = currentlyFocusedWindow,
+                  let screen = screenForWindow(currentWindow),
+                  let bundleID = findBundleID(for: currentWindow),
+                  let groupID = appToGroup[bundleID] else {
+                log("❌ No focused window or layout")
+                return
+            }
+            
+            // Get all windows in the layout
+            guard let groupWindows = layoutGroups[groupID],
+                  let positions = layoutWindowPositions[groupID] else {
+                return
+            }
+            
+            // Sort windows by position
+            let sortedWindows = groupWindows.sorted { positions[$0] ?? 0 < positions[$1] ?? 0 }
+            
+            // Find current window's index
+            guard let currentIndex = sortedWindows.firstIndex(of: bundleID) else { return }
+            
+            // Calculate next index (wrap around)
+            let nextIndex = (currentIndex + 1) % sortedWindows.count
+            let nextBundleID = sortedWindows[nextIndex]
+            
+            // Focus the next window
+            if let nextWindow = appWindows[nextBundleID]?.first {
+                nextWindow.focus()
+                centerCursorInWindow(nextWindow)
+                currentlyFocusedWindow = nextWindow
+            }
+        }
+        
+        func cycleWindowsCounterclockwise() {
+            guard let currentWindow = currentlyFocusedWindow,
+                  let screen = screenForWindow(currentWindow),
+                  let bundleID = findBundleID(for: currentWindow),
+                  let groupID = appToGroup[bundleID] else {
+                log("❌ No focused window or layout")
+                return
+            }
+            
+            // Get all windows in the layout
+            guard let groupWindows = layoutGroups[groupID],
+                  let positions = layoutWindowPositions[groupID] else {
+                return
+            }
+            
+            // Sort windows by position
+            let sortedWindows = groupWindows.sorted { positions[$0] ?? 0 < positions[$1] ?? 0 }
+            
+            // Find current window's index
+            guard let currentIndex = sortedWindows.firstIndex(of: bundleID) else { return }
+            
+            // Calculate next index (wrap around)
+            let nextIndex = (currentIndex - 1 + sortedWindows.count) % sortedWindows.count
+            let nextBundleID = sortedWindows[nextIndex]
+            
+            // Focus the next window
+            if let nextWindow = appWindows[nextBundleID]?.first {
+                nextWindow.focus()
+                centerCursorInWindow(nextWindow)
+                currentlyFocusedWindow = nextWindow
+            }
+        }
     }
+
+
+// Helper extension for safe array access
+private extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+}
 
 

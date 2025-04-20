@@ -30,6 +30,7 @@ struct ShortcutsTabView: View {
     @State private var isLoading = true
     @State private var config: Config
     @State private var searchText: String = ""
+    @State private var refreshTrigger: Bool = false
     private let configManager = ConfigurationManager.shared
     
     init() {
@@ -115,6 +116,7 @@ struct ShortcutsTabView: View {
                                                 config.generalShortcuts.remove(at: index)
                                             }
                                             saveConfig()
+                                            refreshTrigger.toggle()
                                         }
                                     }
                                 ))
@@ -166,6 +168,14 @@ struct ShortcutsTabView: View {
                                             config.appShortcuts.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
                                         }
                                         saveConfig()
+                                        
+                                        // Update the app's shortcut in the apps array
+                                        if let appIndex = apps.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
+                                            apps[appIndex].shortcut = newShortcut
+                                        }
+                                        
+                                        // Trigger UI refresh
+                                        refreshTrigger.toggle()
                                     }
                                 ))
                             }
@@ -179,6 +189,9 @@ struct ShortcutsTabView: View {
             Task {
                 await loadApps()
             }
+        }
+        .onChange(of: refreshTrigger) { _ in
+            // This will trigger a UI refresh when refreshTrigger changes
         }
         .navigationTitle("Shortcuts")
     }

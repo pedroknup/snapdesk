@@ -8,52 +8,85 @@ import SwiftUI
 
 struct AboutTabView: View {
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 24) {
             Spacer()
-
+            
+            // App Icon
             Image(systemName: "app.fill")
                 .resizable()
-                .foregroundColor(Color.blue)
-                .frame(width: 100, height: 100)
-                .cornerRadius(20)
-
-            Text("SnapDesk")
-                .font(.system(size: 28, weight: .bold))
-
-            Text("Version 0.0.1 (beta)")
-                .foregroundColor(.secondary)
-
+                .foregroundStyle(.linearGradient(
+                    colors: [.blue, .blue.opacity(0.8)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+                .frame(width: 120, height: 120)
+                .cornerRadius(24)
+                .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
+            
+            // App Name and Version
+            VStack(spacing: 8) {
+                Text("SnapDesk")
+                    .font(.system(size: 32, weight: .bold))
+                
+                Text("Version 0.0.1 (beta)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
             Divider()
                 .padding(.horizontal, 100)
-
-            VStack(spacing: 8) {
+            
+            // App Description
+            Text("Efficient window management and smart layout control for power users on macOS.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .foregroundColor(.secondary)
+            
+            // Authors and License
+            VStack(spacing: 12) {
                 HStack {
-                    Text("**Author**")
+                    Text("**Authors**")
+                        .font(.headline)
                     Spacer()
-                    Text("Pedro Knup")
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("Pedro Knup")
+                        Text("Cherry")
+                            .foregroundColor(.secondary)
+                    }
                 }
-
+                
                 HStack {
                     Text("**License**")
+                        .font(.headline)
                     Spacer()
                     Text("Proprietary – All rights reserved")
+                        .foregroundColor(.secondary)
                 }
             }
             .frame(maxWidth: 400)
             .padding(.horizontal)
-
-            Text("Efficient window management and smart layout control for power users on macOS.")
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .foregroundColor(.secondary)
-
+            .padding(.vertical, 8)
+            .background(Color.secondary.opacity(0.1))
+            .cornerRadius(12)
+            
+            // Update Button
             Button(action: {
                 // dummy action
             }) {
-                Text("Check for Updates")
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Check for Updates")
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
             }
-            .padding(.top, 12)
-
+            .buttonStyle(.plain)
+            .padding(.top, 8)
+            
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
