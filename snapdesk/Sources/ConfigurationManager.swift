@@ -55,10 +55,11 @@ public class ConfigurationManager {
     private init() {
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
         let configDirectory = homeDirectory.appendingPathComponent(".config")
-        configPath = configDirectory.appendingPathComponent(".snapdesk.yaml")
+        let snapdeskDirectory = configDirectory.appendingPathComponent("snapdesk")
+        configPath = snapdeskDirectory.appendingPathComponent("config.yaml")
         
         // Create config directory if it doesn't exist
-        try? FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: snapdeskDirectory, withIntermediateDirectories: true)
     }
     
     public func loadConfig() -> Config? {

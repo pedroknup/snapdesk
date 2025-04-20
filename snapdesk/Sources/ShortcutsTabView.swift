@@ -52,24 +52,19 @@ struct ShortcutsTabView: View {
                     HStack {
                         Text(shortcut.name)
                         Spacer()
-                        if let definedShortcut = shortcut.shortcut {
-                            HStack(spacing: 8) {
-                                Text(formatShortcut(definedShortcut))
-                                    .foregroundColor(.gray)
-                                Button(action: {
-                                    removeShortcut(for: shortcut.name)
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.gray)
+                        ShortcutRecorder(shortcut: Binding(
+                            get: { shortcut.shortcut },
+                            set: { newShortcut in
+                                if let index = config.generalShortcuts.firstIndex(where: { $0.name == shortcut.name }) {
+                                    if let newShortcut = newShortcut {
+                                        config.generalShortcuts[index].shortcut = newShortcut
+                                    } else {
+                                        config.generalShortcuts.remove(at: index)
+                                    }
+                                    saveConfig()
                                 }
-                                .buttonStyle(.borderless)
                             }
-                        } else {
-                            Button("Configure") {
-                                // TODO: Implement shortcut configuration
-                            }
-                            .buttonStyle(.borderless)
-                        }
+                        ))
                     }
                     .padding(.vertical, 4)
                 }
@@ -94,24 +89,26 @@ struct ShortcutsTabView: View {
                             
                             Spacer()
                             
-                            if let definedShortcut = app.shortcut {
-                                HStack(spacing: 8) {
-                                    Text(formatShortcut(definedShortcut))
-                                        .foregroundColor(.gray)
-                                    Button(action: {
-                                        removeAppShortcut(for: app.bundleIdentifier)
-                                    }) {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .foregroundColor(.gray)
+                            ShortcutRecorder(shortcut: Binding(
+                                get: { app.shortcut },
+                                set: { newShortcut in
+                                    if let newShortcut = newShortcut {
+                                        // Add or update shortcut
+                                        if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
+                                            config.appShortcuts[index].shortcut = newShortcut
+                                        } else {
+                                            config.appShortcuts.append(AppShortcutConfig(
+                                                bundleIdentifier: app.bundleIdentifier,
+                                                shortcut: newShortcut
+                                            ))
+                                        }
+                                    } else {
+                                        // Remove shortcut
+                                        config.appShortcuts.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
                                     }
-                                    .buttonStyle(.borderless)
+                                    saveConfig()
                                 }
-                            } else {
-                                Button("Configure") {
-                                    // TODO: Implement shortcut configuration
-                                }
-                                .buttonStyle(.borderless)
-                            }
+                            ))
                         }
                         .padding(.vertical, 4)
                     }

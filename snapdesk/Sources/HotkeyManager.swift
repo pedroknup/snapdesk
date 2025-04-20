@@ -14,6 +14,21 @@ class HotkeyManager {
     var hotKeys: [HotKey] = []
     let windowController: WindowController
     private let configManager = ConfigurationManager.shared
+    
+    // Static property to track if shortcuts are being recorded
+    static var isRecordingShortcut = false
+    
+    // Static method to pause all hotkeys
+    static func pauseAllHotkeys() {
+        isRecordingShortcut = true
+        log("⏸ Pausing all hotkeys for shortcut recording")
+    }
+    
+    // Static method to resume all hotkeys
+    static func resumeAllHotkeys() {
+        isRecordingShortcut = false
+        log("▶️ Resuming all hotkeys after shortcut recording")
+    }
 
     init(controller: WindowController) {
         self.windowController = controller
@@ -34,10 +49,14 @@ class HotkeyManager {
             switch generalShortcut.name {
             case "Toggle Full Screen layout for the current screen":
                 hotKey.keyDownHandler = { [weak self] in
+                    // Check if we're recording a shortcut before executing
+                    guard !HotkeyManager.isRecordingShortcut else { return }
                     self?.windowController.toggleFullScreen()
                 }
             case "Remove current window from layout":
                 hotKey.keyDownHandler = { [weak self] in
+                    // Check if we're recording a shortcut before executing
+                    guard !HotkeyManager.isRecordingShortcut else { return }
                     self?.windowController.removeCurrentWindowFromLayout()
                 }
             default:
@@ -54,6 +73,8 @@ class HotkeyManager {
             
             let hotKey = HotKey(key: key, modifiers: modifiers)
             hotKey.keyDownHandler = { [weak self] in
+                // Check if we're recording a shortcut before executing
+                guard !HotkeyManager.isRecordingShortcut else { return }
                 self?.windowController.focusApp(appShortcut.bundleIdentifier)
             }
             hotKeys.append(hotKey)

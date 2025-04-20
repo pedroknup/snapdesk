@@ -41,6 +41,7 @@
 		13E45B692DB515FB006FA7CB /* AboutTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B682DB515FB006FA7CB /* AboutTabView.swift */; };
 		13E45B6B2DB516C9006FA7CB /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */; };
 		13E45B6D2DB517BB006FA7CB /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */; };
+		13EEDACD2DB52F6D001133DA /* ShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EEDACC2DB52F6D001133DA /* ShortcutRecorder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -136,6 +137,7 @@
 		13E45B682DB515FB006FA7CB /* AboutTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutTabView.swift; sourceTree = "<group>"; };
 		13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		13EEDACC2DB52F6D001133DA /* ShortcutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -307,6 +309,7 @@
 				1306471D2DB38D6E00A63735 /* SIWindow.swift */,
 				130647272DB38D6E00A63735 /* WindowController.swift */,
 				130647262DB38D6E00A63735 /* WindowDebugTest.swift */,
+				13EEDACC2DB52F6D001133DA /* ShortcutRecorder.swift */,
 				130646CE2DB38D4D00A63735 /* ContentView.swift */,
 				13E45B622DB5156A006FA7CB /* SettingsView.swift */,
 				13E45B682DB515FB006FA7CB /* AboutTabView.swift */,
@@ -409,6 +412,7 @@
 				1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */,
 				1306473C2DB38DB000A63735 /* snapdeskApp.swift in Sources */,
 				130647322DB38D6F00A63735 /* SIWindow.swift in Sources */,
+				13EEDACD2DB52F6D001133DA /* ShortcutRecorder.swift in Sources */,
 				1306472C2DB38D6F00A63735 /* NSScreen+Silica.m in Sources */,
 				13A4B8AC2DB52B7400390915 /* ConfigurationManager.swift in Sources */,
 				130646D12DB38D4D00A63735 /* Item.swift in Sources */,
