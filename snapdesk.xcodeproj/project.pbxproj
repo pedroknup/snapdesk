@@ -21,7 +21,6 @@
 		130647312DB38D6F00A63735 /* SIWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1306471B2DB38D6E00A63735 /* SIWindow.m */; };
 		130647322DB38D6F00A63735 /* SIWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306471D2DB38D6E00A63735 /* SIWindow.swift */; };
 		130647332DB38D6F00A63735 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306471E2DB38D6E00A63735 /* main.swift */; };
-		130647362DB38D6F00A63735 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 130647212DB38D6E00A63735 /* Assets.xcassets */; };
 		130647372DB38D6F00A63735 /* WindowDebugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647262DB38D6E00A63735 /* WindowDebugTest.swift */; };
 		130647382DB38D6F00A63735 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647272DB38D6E00A63735 /* WindowController.swift */; };
 		130647392DB38D6F00A63735 /* SIApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130647282DB38D6E00A63735 /* SIApplication.swift */; };
@@ -115,7 +114,6 @@
 		1306471D2DB38D6E00A63735 /* SIWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SIWindow.swift; sourceTree = "<group>"; };
 		1306471E2DB38D6E00A63735 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		130647202DB38D6E00A63735 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		130647212DB38D6E00A63735 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../../../snapdeskold/snapdesk/Assets.xcassets; sourceTree = "<group>"; };
 		130647222DB38D6E00A63735 /* Silica-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Silica-Prefix.pch"; sourceTree = "<group>"; };
 		130647232DB38D6E00A63735 /* Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Silica.h; sourceTree = "<group>"; };
 		130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SnapDesk-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -181,7 +179,6 @@
 				13A4B8A82DB5293200390915 /* Sources */,
 				130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */,
 				130647252DB38D6E00A63735 /* snapdesk.entitlements */,
-				130647212DB38D6E00A63735 /* Assets.xcassets */,
 				130647202DB38D6E00A63735 /* Info.plist */,
 				130647222DB38D6E00A63735 /* Silica-Prefix.pch */,
 				1306471E2DB38D6E00A63735 /* main.swift */,
@@ -390,7 +387,6 @@
 				1306472A2DB38D6F00A63735 /* README.md in Resources */,
 				130646D72DB38D4E00A63735 /* Preview Assets.xcassets in Resources */,
 				130646D32DB38D4E00A63735 /* Assets.xcassets in Resources */,
-				130647362DB38D6F00A63735 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
