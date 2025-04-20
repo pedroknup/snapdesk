@@ -31,16 +31,29 @@ struct ShortcutRecorder: View {
                     .foregroundColor(.gray)
             }
             
-            Button(action: {
+            HStack(spacing: 8) {
                 if isRecording {
-                    stopRecording()
-                } else {
-                    startRecording()
+                    Button(action: {
+                        shortcut = nil
+                        stopRecording()
+                    }) {
+                        Text("Clear")
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundColor(.red)
                 }
-            }) {
-                Text(isRecording ? "Cancel" : "Configure")
+                
+                Button(action: {
+                    if isRecording {
+                        stopRecording()
+                    } else {
+                        startRecording()
+                    }
+                }) {
+                    Text(isRecording ? "Cancel" : "Configure")
+                }
+                .buttonStyle(.borderless)
             }
-            .buttonStyle(.borderless)
         }
         .onAppear {
             NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
