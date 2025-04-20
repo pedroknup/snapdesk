@@ -29,6 +29,7 @@ struct ShortcutsTabView: View {
     @State private var apps: [AppInfo] = []
     @State private var isLoading = true
     @State private var config: Config
+    @State private var searchText: String = ""
     private let configManager = ConfigurationManager.shared
     
     init() {
@@ -36,81 +37,140 @@ struct ShortcutsTabView: View {
     }
     
     private var generalShortcuts: [ShortcutItem] {
-        config.generalShortcuts.map { shortcut in
+        let shortcuts = config.generalShortcuts.map { shortcut in
             ShortcutItem(
                 name: shortcut.name,
                 shortcut: shortcut.shortcut,
                 action: {}
             )
         }
+        
+        // Filter general shortcuts based on search text
+        if searchText.isEmpty {
+            return shortcuts
+        } else {
+            return shortcuts.filter { shortcut in
+                shortcut.name.lowercased().contains(searchText.lowercased())
+            }
+        }
+    }
+    
+    private var filteredApps: [AppInfo] {
+        if searchText.isEmpty {
+            return apps
+        } else {
+            return apps.filter { app in
+                app.name.lowercased().contains(searchText.lowercased()) ||
+                app.bundleIdentifier.lowercased().contains(searchText.lowercased())
+            }
+        }
     }
 
     var body: some View {
-        List {
-            Section("General") {
-                ForEach(generalShortcuts) { shortcut in
-                    HStack {
-                        Text(shortcut.name)
-                        Spacer()
-                        ShortcutRecorder(shortcut: Binding(
-                            get: { shortcut.shortcut },
-                            set: { newShortcut in
-                                if let index = config.generalShortcuts.firstIndex(where: { $0.name == shortcut.name }) {
-                                    if let newShortcut = newShortcut {
-                                        config.generalShortcuts[index].shortcut = newShortcut
-                                    } else {
-                                        config.generalShortcuts.remove(at: index)
-                                    }
-                                    saveConfig()
-                                }
-                            }
-                        ))
+        VStack(spacing: 0) {
+            // Search bar at the top
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                
+                TextField("Search shortcuts and applications...", text: $searchText)
+                    .textFieldStyle(.plain)
+                
+                if !searchText.isEmpty {
+                    Button(action: {
+                        searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
                     }
-                    .padding(.vertical, 4)
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(8)
+            .background(Color(.textBackgroundColor))
+            .cornerRadius(8)
+            .padding(.horizontal)
+            .padding(.top, 8)
             
-            Section("Applications") {
-                if isLoading {
-                    ProgressView("Loading applications...")
-                        .frame(maxWidth: .infinity)
-                } else {
-                    ForEach(apps) { app in
-                        HStack {
-                            Image(nsImage: app.icon)
-                                .resizable()
-                                .frame(width: 32, height: 32)
-                                .cornerRadius(6)
-
-                            VStack(alignment: .leading) {
-                                Text(app.name).font(.headline)
-                                Text(app.bundleIdentifier).font(.caption).foregroundColor(.gray)
-                            }
-                            
-                            Spacer()
-                            
-                            ShortcutRecorder(shortcut: Binding(
-                                get: { app.shortcut },
-                                set: { newShortcut in
-                                    if let newShortcut = newShortcut {
-                                        // Add or update shortcut
-                                        if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
-                                            config.appShortcuts[index].shortcut = newShortcut
-                                        } else {
-                                            config.appShortcuts.append(AppShortcutConfig(
-                                                bundleIdentifier: app.bundleIdentifier,
-                                                shortcut: newShortcut
-                                            ))
+            // Main content
+            List {
+                Section("General") {
+                    if generalShortcuts.isEmpty && !searchText.isEmpty {
+                        Text("No general shortcuts match your search")
+                            .foregroundColor(.gray)
+                            .italic()
+                            .padding(.vertical, 8)
+                    } else {
+                        ForEach(generalShortcuts) { shortcut in
+                            HStack {
+                                Text(shortcut.name)
+                                Spacer()
+                                ShortcutRecorder(shortcut: Binding(
+                                    get: { shortcut.shortcut },
+                                    set: { newShortcut in
+                                        if let index = config.generalShortcuts.firstIndex(where: { $0.name == shortcut.name }) {
+                                            if let newShortcut = newShortcut {
+                                                config.generalShortcuts[index].shortcut = newShortcut
+                                            } else {
+                                                config.generalShortcuts.remove(at: index)
+                                            }
+                                            saveConfig()
                                         }
-                                    } else {
-                                        // Remove shortcut
-                                        config.appShortcuts.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
                                     }
-                                    saveConfig()
-                                }
-                            ))
+                                ))
+                            }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
+                    }
+                }
+                
+                Section("Applications") {
+                    if isLoading {
+                        ProgressView("Loading applications...")
+                            .frame(maxWidth: .infinity)
+                    } else if filteredApps.isEmpty && !searchText.isEmpty {
+                        Text("No applications match your search")
+                            .foregroundColor(.gray)
+                            .italic()
+                            .padding(.vertical, 8)
+                    } else {
+                        ForEach(filteredApps) { app in
+                            HStack {
+                                Image(nsImage: app.icon)
+                                    .resizable()
+                                    .frame(width: 32, height: 32)
+                                    .cornerRadius(6)
+
+                                VStack(alignment: .leading) {
+                                    Text(app.name).font(.headline)
+                                    Text(app.bundleIdentifier).font(.caption).foregroundColor(.gray)
+                                }
+                                
+                                Spacer()
+                                
+                                ShortcutRecorder(shortcut: Binding(
+                                    get: { app.shortcut },
+                                    set: { newShortcut in
+                                        if let newShortcut = newShortcut {
+                                            // Add or update shortcut
+                                            if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
+                                                config.appShortcuts[index].shortcut = newShortcut
+                                            } else {
+                                                config.appShortcuts.append(AppShortcutConfig(
+                                                    bundleIdentifier: app.bundleIdentifier,
+                                                    shortcut: newShortcut
+                                                ))
+                                            }
+                                        } else {
+                                            // Remove shortcut
+                                            config.appShortcuts.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
+                                        }
+                                        saveConfig()
+                                    }
+                                ))
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
             }
