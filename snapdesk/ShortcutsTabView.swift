@@ -11,13 +11,15 @@ import AppKit
 struct AppInfo: Identifiable {
     let id = UUID()
     let name: String
-    let path: String
+    let bundleIdentifier: String
     let icon: NSImage
+    var shortcut: String? = nil  // Added to track if shortcut is defined
 }
 
 struct ShortcutItem: Identifiable {
     let id = UUID()
     let name: String
+    var shortcut: String? = nil  // Added to track if shortcut is defined
     let action: () -> Void
 }
 
@@ -44,10 +46,22 @@ struct ShortcutsTabView: View {
                     HStack {
                         Text(shortcut.name)
                         Spacer()
-                        Button("Configure") {
-                            shortcut.action()
+                        if let definedShortcut = shortcut.shortcut {
+                            HStack(spacing: 8) {
+                                Text(definedShortcut)
+                                    .foregroundColor(.gray)
+                                Button(action: {}) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.gray)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        } else {
+                            Button("Configure") {
+                                shortcut.action()
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless)
                     }
                     .padding(.vertical, 4)
                 }
@@ -67,7 +81,26 @@ struct ShortcutsTabView: View {
 
                             VStack(alignment: .leading) {
                                 Text(app.name).font(.headline)
-                                Text(app.path).font(.caption).foregroundColor(.gray)
+                                Text(app.bundleIdentifier).font(.caption).foregroundColor(.gray)
+                            }
+                            
+                            Spacer()
+                            
+                            if let definedShortcut = app.shortcut {
+                                HStack(spacing: 8) {
+                                    Text(definedShortcut)
+                                        .foregroundColor(.gray)
+                                    Button(action: {}) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.gray)
+                                    }
+                                    .buttonStyle(.borderless)
+                                }
+                            } else {
+                                Button("Configure") {
+                                    // Action to configure shortcut
+                                }
+                                .buttonStyle(.borderless)
                             }
                         }
                         .padding(.vertical, 4)
@@ -101,7 +134,16 @@ struct ShortcutsTabView: View {
                 if fileURL.pathExtension == "app" {
                     let name = fileURL.deletingPathExtension().lastPathComponent
                     let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
-                    results.append(AppInfo(name: name, path: fileURL.path, icon: icon))
+                    
+                    // Get bundle identifier
+                    let bundle = Bundle(url: fileURL)
+                    let bundleIdentifier = bundle?.bundleIdentifier ?? "Unknown Bundle ID"
+                    
+                    results.append(AppInfo(
+                        name: name,
+                        bundleIdentifier: bundleIdentifier,
+                        icon: icon
+                    ))
                 }
             }
         }
