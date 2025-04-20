@@ -56,6 +56,14 @@ struct ShortcutRecorder: View {
             }
         }
         .onAppear {
+            NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+                if isRecording {
+                    handleModifierChange(event)
+                    return nil
+                }
+                return event
+            }
+            
             NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 if isRecording {
                     handleKeyDown(event)
@@ -90,6 +98,16 @@ struct ShortcutRecorder: View {
         
         // Resume all hotkeys after recording
         HotkeyManager.resumeAllHotkeys()
+    }
+    
+    private func handleModifierChange(_ event: NSEvent) {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        currentModifiers = modifiers
+        
+        // If all modifiers are released, also clear the current key
+        if modifiers.isEmpty {
+            currentKey = nil
+        }
     }
     
     private func handleKeyDown(_ event: NSEvent) {
