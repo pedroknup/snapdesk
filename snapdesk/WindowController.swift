@@ -26,15 +26,144 @@ class WindowController {
     // Track full screen state per screen
     private var screenFullScreenState: [NSScreen: Bool] = [:] // screen → isFullScreen
     
+    // Add new property to store window identifiers
+    private var windowIdentifiers: [SIWindow: String] = [:] // Window → unique ID
+    
+    // Add new property to store screen information
+    private struct ScreenInfo {
+        let screen: NSScreen
+        let frame: CGRect
+        let visibleFrame: CGRect
+        let scaleFactor: CGFloat
+        let displayID: CGDirectDisplayID
+    }
+    
+    private var screenInfoMap: [NSScreen: ScreenInfo] = [:]
+    
+    private func updateScreenMap() {
+        screenInfoMap.removeAll()
+        
+        for screen in NSScreen.screens {
+            let frame = screen.frame
+            let visibleFrame = screen.visibleFrame
+            let scaleFactor = screen.backingScaleFactor
+            let displayID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID ?? 0
+            
+            let info = ScreenInfo(
+                screen: screen,
+                frame: frame,
+                visibleFrame: visibleFrame,
+                scaleFactor: scaleFactor,
+                displayID: displayID
+            )
+            
+            screenInfoMap[screen] = info
+            log("📺 Screen mapped - ID: \(displayID), Frame: \(frame), Visible: \(visibleFrame), Scale: \(scaleFactor)")
+        }
+    }
+    
+    private func findBestScreenForWindow(_ window: SIWindow) -> NSScreen? {
+        let windowFrame = window.frame()
+        
+        // First try to find a screen that contains the window's center point
+        let windowCenter = CGPoint(
+            x: windowFrame.midX,
+            y: windowFrame.midY
+        )
+        
+        for (screen, info) in screenInfoMap {
+            if info.frame.contains(windowCenter) {
+                log("🎯 Found screen for window center: \(window.title() ?? "<no title>") → Screen \(info.displayID)")
+                return screen
+            }
+        }
+        
+        // If no screen contains the center, find the screen with the most overlap
+        var bestScreen: NSScreen?
+        var maxOverlap: CGFloat = 0
+        
+        for (screen, info) in screenInfoMap {
+            let intersection = windowFrame.intersection(info.frame)
+            let overlap = intersection.width * intersection.height
+            
+            if overlap > maxOverlap {
+                maxOverlap = overlap
+                bestScreen = screen
+            }
+        }
+        
+        if let screen = bestScreen {
+            log("📐 Found best overlapping screen for window: \(window.title() ?? "<no title>") → Screen \(screenInfoMap[screen]?.displayID ?? 0)")
+        }
+        
+        return bestScreen
+    }
+    
+    func screenForWindow(_ window: SIWindow) -> NSScreen? {
+        // Update screen map if empty
+        if screenInfoMap.isEmpty {
+            updateScreenMap()
+        }
+        
+        let element = window.axElement().takeUnretainedValue()
+        
+        // If we already have a mapping, use it
+        if let existingScreen = windowScreenMap[element] {
+            return existingScreen
+        }
+        
+        // Find the best screen for this window
+        if let screen = findBestScreenForWindow(window) {
+            windowScreenMap[element] = screen
+            return screen
+        }
+        
+        // Fallback to main screen if no better option found
+        let mainScreen = NSScreen.main ?? NSScreen.screens.first!
+        windowScreenMap[element] = mainScreen
+        return mainScreen
+    }
+    
     init() {
+        // Initialize screen map
+        updateScreenMap()
+        
+        // Set up screen change notification observer
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(screenParametersDidChange),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.scanAndTrackWindows()
         }
     }
     
-    func screenForWindow(_ window: SIWindow) -> NSScreen? {
-        let element = window.axElement().takeUnretainedValue()
-        return windowScreenMap[element]
+    @objc private func screenParametersDidChange() {
+        log("🔄 Screen parameters changed, updating screen map")
+        updateScreenMap()
+        
+        // Reassign windows to screens
+        for (element, _) in windowScreenMap {
+            if let window = findWindowByElement(element) {
+                if let screen = findBestScreenForWindow(window) {
+                    windowScreenMap[element] = screen
+                }
+            }
+        }
+    }
+    
+    private func findWindowByElement(_ element: AXUIElement) -> SIWindow? {
+        for (_, windows) in appWindows {
+            for window in windows {
+                if window.axElement().takeUnretainedValue() == element {
+                    return window
+                }
+            }
+        }
+        return nil
     }
     
     func prettyPrintWindows(_ appWindows: [String: [SIWindow]]) -> String {
@@ -157,41 +286,43 @@ class WindowController {
             log("🎯 Attempting to focus app: \(bundleID)")
             log("Current windows for app: \(appWindows[bundleID] ?? [])")
             
-            if let groupID = appToGroup[bundleID] {
+            // Get all windows for this app
+            guard let windows = appWindows[bundleID], !windows.isEmpty else {
+                log("⚠️ No windows found for app in layout")
+                return
+            }
+            
+            // Get current index and cycle to next window
+            let currentIndex = currentWindowPerApp[bundleID] ?? 0
+            let nextIndex = (currentIndex + 1) % windows.count
+            currentWindowPerApp[bundleID] = nextIndex
+            let window = windows[nextIndex]
+            
+            // Get the window ID for the current window
+            let windowId = getWindowIdentifier(window)
+            
+            // Check if this window is part of a layout group
+            if let groupID = appToGroup[windowId] {
                 log("🔄 Found existing layout group: \(groupID)")
                 log("Layout group details:")
                 log("  - Windows in group: \(layoutGroups[groupID] ?? [])")
                 log("  - Window positions: \(layoutWindowPositions[groupID] ?? [:])")
-                
-                // Get all windows for this app
-                guard let windows = appWindows[bundleID], !windows.isEmpty else {
-                    log("⚠️ No windows found for app in layout")
-                    return
-                }
-                
-                // Get current index and cycle to next window
-                let currentIndex = currentWindowPerApp[bundleID] ?? 0
-                let nextIndex = (currentIndex + 1) % windows.count
-                currentWindowPerApp[bundleID] = nextIndex
-                let window = windows[nextIndex]
-                
-                log("📋 Cycling to window index: \(nextIndex) of \(windows.count)")
                 
                 if let screen = screenForWindow(window) {
                     log("✅ Found screen for window: \(screen.frame)")
                     
                     // Hide all windows that aren't in this layout group
                     let layoutPositions = layoutWindowPositions[groupID] ?? [:]
-                    for (otherBundleID, otherWindows) in appWindows {
-                        if !layoutPositions.keys.contains(otherBundleID) {
-                            for otherWindow in otherWindows {
-                                log("🔒 Hiding window not in layout: \(otherWindow.title() ?? "<no title>")")
-                                let axElement = otherWindow.axElement().takeUnretainedValue()
-                                let hidden: CFTypeRef = kCFBooleanTrue
-                                AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
-                            }
-                        }
-                    }
+//                    for (otherBundleID, otherWindows) in appWindows {
+//                        if !layoutPositions.keys.contains(otherBundleID) {
+//                            for otherWindow in otherWindows {
+//                                // log("🔒 Hiding window not in layout: \(otherWindow.title() ?? "<no title>")")
+//                                let axElement = otherWindow.axElement().takeUnretainedValue()
+//                                let hidden: CFTypeRef = kCFBooleanTrue
+//                                AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
+//                            }
+//                        }
+//                    }
                     
                     // Show all windows in the layout
                     for (layoutBundleID, _) in layoutPositions {
@@ -217,19 +348,6 @@ class WindowController {
             
             log("ℹ️ No existing layout found for app")
             
-            guard let windows = appWindows[bundleID], !windows.isEmpty else {
-                log("🚀 No windows found, launching app")
-                launchAppIfNeeded(bundleID)
-                return
-            }
-
-            let currentIndex = currentWindowPerApp[bundleID] ?? 0
-            let window = windows[currentIndex]
-            log("📋 Cycling to window index: \(currentIndex) of \(windows.count)")
-
-            // Cycle to next on repeated key press
-            currentWindowPerApp[bundleID] = (currentIndex + 1) % windows.count
-
             // Hide all others *before* we focus/maximize the target window
             hideAllWindows(except: window)
 
@@ -250,22 +368,22 @@ class WindowController {
         
         
         func hideAllWindows(except visibleWindow: SIWindow?) {
-            log("🔒 Hiding all windows except: \(visibleWindow?.title() ?? "<none>")")
-            
-            for (_, windows) in appWindows {
-                for window in windows {
-                    guard window != visibleWindow else { continue }
-                    
-                    // Hide using AXHidden attribute
-                    let axElement = window.axElement().takeUnretainedValue()
-                    let hidden: CFTypeRef = kCFBooleanTrue
-                    let result = AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
-                    
-                    if result != .success {
-                        log("⚠️ Failed to hide window: \(window.title() ?? "<no title>")")
-                    }
-                }
-            }
+//            log("🔒 Hiding all windows except: \(visibleWindow?.title() ?? "<none>")")
+//            
+//            for (_, windows) in appWindows {
+//                for window in windows {
+//                    guard window != visibleWindow else { continue }
+//                    
+//                    // Hide using AXHidden attribute
+//                    let axElement = window.axElement().takeUnretainedValue()
+//                    let hidden: CFTypeRef = kCFBooleanTrue
+//                    let result = AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
+//                    
+//                    if result != .success {
+//                        log("⚠️ Failed to hide window: \(window.title() ?? "<no title>")")
+//                    }
+//                }
+//            }
         }
         
         
@@ -358,31 +476,43 @@ class WindowController {
             }
             log("✅ Current window is on screen: \(currentScreen.frame)")
             
+            // Get unique identifiers for both windows
+            let currentWindowId = getWindowIdentifier(currentWindow)
+            guard let newWindow = appWindows[newAppBundleID]?.first else {
+                log("❌ Could not find window for new bundle ID")
+                return
+            }
+            let newWindowId = getWindowIdentifier(newWindow)
+            
             // Determine group ID - either use existing or create new
-            let groupID = appToGroup[currentBundleID] ?? UUID().uuidString
-            log("📦 Using groupID: \(groupID) (existing: \(appToGroup[currentBundleID] != nil))")
+            let groupID = appToGroup[currentWindowId] ?? UUID().uuidString
+            log("📦 Using groupID: \(groupID) (existing: \(appToGroup[currentWindowId] != nil))")
             
             // If this is a new layout (single window), initialize positions
             if layoutWindowPositions[groupID] == nil {
-                layoutWindowPositions[groupID] = [currentBundleID: 0]
+                layoutWindowPositions[groupID] = [currentWindowId: 0]
+                layoutGroups[groupID] = [currentWindowId]
                 log("🆕 Initialized new layout positions for group \(groupID)")
             }
             
             // Add new window to layout if not already present
-            if !layoutGroups[groupID, default: []].contains(newAppBundleID) {
-                layoutGroups[groupID, default: []].append(newAppBundleID)
-                // Assign position to new window
-                let newPosition = layoutGroups[groupID]?.count ?? 1 - 1
-                layoutWindowPositions[groupID]?[newAppBundleID] = newPosition
-                log("➕ Added new window to layout - Position: \(newPosition), Total windows: \(layoutGroups[groupID]?.count ?? 0)")
+            if !layoutGroups[groupID, default: []].contains(newWindowId) {
+                // Add the new window ID to the group
+                layoutGroups[groupID, default: []].append(newWindowId)
+                
+                // Get the next available position (should be 1 for the second window)
+                let nextPosition = (layoutGroups[groupID]?.count ?? 1) - 1
+                layoutWindowPositions[groupID]?[newWindowId] = nextPosition
+                
+                log("➕ Added new window to layout - Position: \(nextPosition), Total windows: \(layoutGroups[groupID]?.count ?? 0)")
             } else {
                 log("ℹ️ Window already in layout")
             }
             
             // Update app to group mapping
-            appToGroup[currentBundleID] = groupID
-            appToGroup[newAppBundleID] = groupID
-            log("📝 Updated app to group mapping - Current: \(currentBundleID), New: \(newAppBundleID) → \(groupID)")
+            appToGroup[currentWindowId] = groupID
+            appToGroup[newWindowId] = groupID
+            log("📝 Updated app to group mapping - Current: \(currentWindowId), New: \(newWindowId) → \(groupID)")
 
             log("📐 Current layout state:")
             log("   - Group ID: \(groupID)")
@@ -394,9 +524,10 @@ class WindowController {
         }
         
         func applyLayout(groupID: String, screen: NSScreen? = nil, targetWindow: SIWindow? = nil) {
-            guard let bundleIDs = layoutGroups[groupID], !bundleIDs.isEmpty else { return }
+            guard let windowIds = layoutGroups[groupID], !windowIds.isEmpty else { return }
+            log("Layout groups: \(layoutGroups)")
             log("📐 Applying layout for group \(groupID)")
-            log("   - Windows: \(bundleIDs)")
+            log("   - Windows: \(windowIds)")
             log("   - Positions: \(layoutWindowPositions[groupID] ?? [:])")
             
             // Use provided screen or find the screen of the first window in the layout
@@ -404,8 +535,8 @@ class WindowController {
             if let screen = screen {
                 targetScreen = screen
                 log("🎯 Using provided screen: \(screen.frame)")
-            } else if let firstBundleID = bundleIDs.first,
-                      let firstWindow = appWindows[firstBundleID]?.first,
+            } else if let firstWindowId = windowIds.first,
+                      let firstWindow = findWindowByIdentifier(firstWindowId),
                       let firstScreen = screenForWindow(firstWindow) {
                 targetScreen = firstScreen
                 log("🎯 Using screen of first window: \(firstScreen.frame)")
@@ -419,32 +550,51 @@ class WindowController {
             let widthPerApp = screenFrame.width / totalWindows
             log("📏 Screen dimensions - Width: \(screenFrame.width), Total windows in layout: \(totalWindows), Width per window: \(widthPerApp)")
 
-            // First, resize all windows in the layout
-            for (bundleID, position) in layoutWindowPositions[groupID] ?? [:] {
-                guard let windows = appWindows[bundleID], !windows.isEmpty else { continue }
-                let window = windows.first!
+            // First, hide all windows that aren't in this layout
+            for (_, windows) in appWindows {
+                for window in windows {
+                    let windowId = getWindowIdentifier(window)
+                    if !windowIds.contains(windowId) {
+                        let axElement = window.axElement().takeUnretainedValue()
+                        let hidden: CFTypeRef = kCFBooleanTrue
+                        AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
+                    }
+                }
+            }
+
+            // Then, show and position all windows in the layout
+            let sortedPositions = layoutWindowPositions[groupID]?.sorted(by: { $0.value < $1.value }) ?? []
+            for (windowId, position) in sortedPositions {
+                guard let window = findWindowByIdentifier(windowId) else { continue }
                 
-                let frame = CGRect(x: screenFrame.origin.x + (widthPerApp * CGFloat(position)),
-                                 y: screenFrame.origin.y,
-                                 width: widthPerApp,
-                                 height: screenFrame.height)
+                // Show the window
+                let axElement = window.axElement().takeUnretainedValue()
+                let visible: CFTypeRef = kCFBooleanFalse
+                AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
+                
+                // Calculate position based on the window's index in the layout
+                let xPosition = screenFrame.origin.x + (widthPerApp * CGFloat(position))
+                
+                let frame = CGRect(
+                    x: xPosition,
+                    y: screenFrame.origin.y,
+                    width: widthPerApp,
+                    height: screenFrame.height
+                )
                 
                 log("🪟 Positioning window: \(window.title() ?? "<no title>")")
-                log("   - Bundle ID: \(bundleID)")
+                log("   - Window ID: \(windowId)")
                 log("   - Position: \(position)")
+                log("   - X Position: \(xPosition)")
                 log("   - Frame: \(frame)")
+                log("   - Target Screen: \(targetScreen.frame)")
 
+                // Update the window's screen mapping to the target screen
+                windowScreenMap[axElement] = targetScreen
+
+                // Set the frame and bring to front
                 try? window.setFrame(frame)
-            }
-            
-            // Bring all windows to front in order of position (0 first, then 1, etc.)
-            log("🔄 Bringing windows to front")
-            let sortedPositions = layoutWindowPositions[groupID]?.sorted(by: { $0.value < $1.value }) ?? []
-            for (bundleID, _) in sortedPositions {
-                if let windows = appWindows[bundleID], let window = windows.first {
-                    log("   - Bringing to front: \(window.title() ?? "<no title>")")
-                    window.focus()
-                }
+                window.focus()
             }
             
             // Focus the target window if provided, otherwise use the first window
@@ -453,13 +603,39 @@ class WindowController {
                 targetWindow.focus()
                 centerCursorInWindow(targetWindow)
                 currentlyFocusedWindow = targetWindow
-            } else if let targetBundleID = bundleIDs.first,
-                      let targetWindow = appWindows[targetBundleID]?.first {
-                log("✨ Focusing first window in layout: \(targetWindow.title() ?? "<no title>")")
-                targetWindow.focus()
-                centerCursorInWindow(targetWindow)
-                currentlyFocusedWindow = targetWindow
+            } else if let firstWindowId = windowIds.first,
+                      let firstWindow = findWindowByIdentifier(firstWindowId) {
+                log("✨ Focusing first window in layout: \(firstWindow.title() ?? "<no title>")")
+                firstWindow.focus()
+                centerCursorInWindow(firstWindow)
+                currentlyFocusedWindow = firstWindow
             }
+        }
+        
+        private func findWindowByIdentifier(_ identifier: String) -> SIWindow? {
+            for (window, id) in windowIdentifiers {
+                if id == identifier {
+                    return window
+                }
+            }
+            return nil
+        }
+        
+        private func getWindowIdentifier(_ window: SIWindow) -> String {
+            if let existingId = windowIdentifiers[window] {
+                return existingId
+            }
+            
+            // Create a unique identifier using bundle ID and window properties
+            let bundleID = findBundleID(for: window) ?? "unknown"
+            let title = window.title() ?? "untitled"
+            let pid = window.processIdentifier()
+            let frame = window.frame()
+            
+            // Create a unique string combining window properties
+            let uniqueId = "\(bundleID)_\(title)_\(pid)_\(frame.origin.x)_\(frame.origin.y)"
+            windowIdentifiers[window] = uniqueId
+            return uniqueId
         }
         
         func removeCurrentWindowFromLayout() {
