@@ -33,6 +33,14 @@
 		130647452DB38DFA00A63735 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647442DB38DFA00A63735 /* Foundation.framework */; };
 		130647472DB38E0200A63735 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647462DB38E0200A63735 /* IOKit.framework */; };
 		1345B2C32DB3C13E00B675E6 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 1345B2C22DB3C13E00B675E6 /* HotKey */; };
+		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
+		13A4B8AC2DB52B7400390915 /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A4B8AB2DB52B7400390915 /* ConfigurationManager.swift */; };
+		13E45B632DB5156A006FA7CB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B622DB5156A006FA7CB /* SettingsView.swift */; };
+		13E45B652DB51597006FA7CB /* ShortcutsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B642DB51597006FA7CB /* ShortcutsTabView.swift */; };
+		13E45B672DB515E4006FA7CB /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B662DB515E4006FA7CB /* SettingsTabView.swift */; };
+		13E45B692DB515FB006FA7CB /* AboutTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B682DB515FB006FA7CB /* AboutTabView.swift */; };
+		13E45B6B2DB516C9006FA7CB /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */; };
+		13E45B6D2DB517BB006FA7CB /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -121,6 +129,13 @@
 		130647422DB38DF100A63735 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		130647442DB38DFA00A63735 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		130647462DB38E0200A63735 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		13A4B8AB2DB52B7400390915 /* ConfigurationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
+		13E45B622DB5156A006FA7CB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		13E45B642DB51597006FA7CB /* ShortcutsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsTabView.swift; sourceTree = "<group>"; };
+		13E45B662DB515E4006FA7CB /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		13E45B682DB515FB006FA7CB /* AboutTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutTabView.swift; sourceTree = "<group>"; };
+		13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +147,7 @@
 				1306473F2DB38DE600A63735 /* ApplicationServices.framework in Frameworks */,
 				130647412DB38DEC00A63735 /* Carbon.framework in Frameworks */,
 				130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */,
+				13A4B8A72DB527FA00390915 /* Yams in Frameworks */,
 				130647472DB38E0200A63735 /* IOKit.framework in Frameworks */,
 				130647452DB38DFA00A63735 /* Foundation.framework in Frameworks */,
 			);
@@ -160,21 +176,16 @@
 		130646CB2DB38D4D00A63735 /* snapdesk */ = {
 			isa = PBXGroup;
 			children = (
+				13A4B8A82DB5293200390915 /* Sources */,
 				130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */,
 				130647252DB38D6E00A63735 /* snapdesk.entitlements */,
 				130647212DB38D6E00A63735 /* Assets.xcassets */,
-				130647292DB38D6E00A63735 /* HotkeyManager.swift */,
 				130647202DB38D6E00A63735 /* Info.plist */,
-				1306471E2DB38D6E00A63735 /* main.swift */,
-				130647282DB38D6E00A63735 /* SIApplication.swift */,
 				130647222DB38D6E00A63735 /* Silica-Prefix.pch */,
+				1306471E2DB38D6E00A63735 /* main.swift */,
 				130647232DB38D6E00A63735 /* Silica.h */,
-				1306471D2DB38D6E00A63735 /* SIWindow.swift */,
 				1306473B2DB38DB000A63735 /* snapdeskApp.swift */,
-				1306471C2DB38D6E00A63735 /* Sources */,
-				130647272DB38D6E00A63735 /* WindowController.swift */,
-				130647262DB38D6E00A63735 /* WindowDebugTest.swift */,
-				130646CE2DB38D4D00A63735 /* ContentView.swift */,
+				1306471C2DB38D6E00A63735 /* SourcesSilica */,
 				130646D02DB38D4D00A63735 /* Item.swift */,
 				130646D22DB38D4E00A63735 /* Assets.xcassets */,
 				130646D42DB38D4E00A63735 /* snapdesk.entitlements */,
@@ -252,7 +263,7 @@
 			path = include;
 			sourceTree = "<group>";
 		};
-		1306471C2DB38D6E00A63735 /* Sources */ = {
+		1306471C2DB38D6E00A63735 /* SourcesSilica */ = {
 			isa = PBXGroup;
 			children = (
 				130646F12DB38D6E00A63735 /* CGSInternal */,
@@ -272,7 +283,7 @@
 				1306471A2DB38D6E00A63735 /* SIWindow.h */,
 				1306471B2DB38D6E00A63735 /* SIWindow.m */,
 			);
-			path = Sources;
+			path = SourcesSilica;
 			sourceTree = "<group>";
 		};
 		1306473D2DB38DE600A63735 /* Frameworks */ = {
@@ -285,6 +296,26 @@
 				1306473E2DB38DE600A63735 /* ApplicationServices.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		13A4B8A82DB5293200390915 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				130647292DB38D6E00A63735 /* HotkeyManager.swift */,
+				13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */,
+				130647282DB38D6E00A63735 /* SIApplication.swift */,
+				1306471D2DB38D6E00A63735 /* SIWindow.swift */,
+				130647272DB38D6E00A63735 /* WindowController.swift */,
+				130647262DB38D6E00A63735 /* WindowDebugTest.swift */,
+				130646CE2DB38D4D00A63735 /* ContentView.swift */,
+				13E45B622DB5156A006FA7CB /* SettingsView.swift */,
+				13E45B682DB515FB006FA7CB /* AboutTabView.swift */,
+				13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */,
+				13E45B642DB51597006FA7CB /* ShortcutsTabView.swift */,
+				13E45B662DB515E4006FA7CB /* SettingsTabView.swift */,
+				13A4B8AB2DB52B7400390915 /* ConfigurationManager.swift */,
+			);
+			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -305,6 +336,7 @@
 			name = snapdesk;
 			packageProductDependencies = (
 				1345B2C22DB3C13E00B675E6 /* HotKey */,
+				13A4B8A62DB527FA00390915 /* Yams */,
 			);
 			productName = snapdesk;
 			productReference = 130646C92DB38D4D00A63735 /* snapdesk.app */;
@@ -336,6 +368,7 @@
 			mainGroup = 130646C02DB38D4D00A63735;
 			packageReferences = (
 				130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */,
+				13A4B8A52DB527FA00390915 /* XCRemoteSwiftPackageReference "Yams" */,
 			);
 			productRefGroup = 130646CA2DB38D4D00A63735 /* Products */;
 			projectDirPath = "";
@@ -366,21 +399,28 @@
 			buildActionMask = 2147483647;
 			files = (
 				1306473A2DB38D6F00A63735 /* HotkeyManager.swift in Sources */,
+				13E45B6B2DB516C9006FA7CB /* SettingsWindowController.swift in Sources */,
 				130646CF2DB38D4D00A63735 /* ContentView.swift in Sources */,
 				130647382DB38D6F00A63735 /* WindowController.swift in Sources */,
+				13E45B652DB51597006FA7CB /* ShortcutsTabView.swift in Sources */,
 				130647302DB38D6F00A63735 /* SIUniversalAccessHelper.m in Sources */,
 				130647332DB38D6F00A63735 /* main.swift in Sources */,
+				13E45B632DB5156A006FA7CB /* SettingsView.swift in Sources */,
 				1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */,
 				1306473C2DB38DB000A63735 /* snapdeskApp.swift in Sources */,
 				130647322DB38D6F00A63735 /* SIWindow.swift in Sources */,
 				1306472C2DB38D6F00A63735 /* NSScreen+Silica.m in Sources */,
+				13A4B8AC2DB52B7400390915 /* ConfigurationManager.swift in Sources */,
 				130646D12DB38D4D00A63735 /* Item.swift in Sources */,
 				1306472F2DB38D6F00A63735 /* SISystemWideElement.m in Sources */,
 				1306472B2DB38D6F00A63735 /* NSRunningApplication+Silica.m in Sources */,
+				13E45B692DB515FB006FA7CB /* AboutTabView.swift in Sources */,
 				130647312DB38D6F00A63735 /* SIWindow.m in Sources */,
 				1306472E2DB38D6F00A63735 /* SIApplication.m in Sources */,
 				130647392DB38D6F00A63735 /* SIApplication.swift in Sources */,
+				13E45B6D2DB517BB006FA7CB /* SettingsViewModel.swift in Sources */,
 				130647372DB38D6F00A63735 /* WindowDebugTest.swift in Sources */,
+				13E45B672DB515E4006FA7CB /* SettingsTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -617,6 +657,14 @@
 				kind = branch;
 			};
 		};
+		13A4B8A52DB527FA00390915 /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.3.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -624,6 +672,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */;
 			productName = HotKey;
+		};
+		13A4B8A62DB527FA00390915 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13A4B8A52DB527FA00390915 /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

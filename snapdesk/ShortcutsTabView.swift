@@ -7,37 +7,45 @@
 
 import SwiftUI
 import AppKit
+import HotKey
+
+// Import ConfigurationManager directly
+import Swift
 
 struct AppInfo: Identifiable {
     let id = UUID()
     let name: String
     let bundleIdentifier: String
     let icon: NSImage
-    var shortcut: String? = nil  // Added to track if shortcut is defined
+    var shortcut: ShortcutConfig? = nil
 }
 
 struct ShortcutItem: Identifiable {
     let id = UUID()
     let name: String
-    var shortcut: String? = nil  // Added to track if shortcut is defined
+    var shortcut: ShortcutConfig? = nil
     let action: () -> Void
 }
 
 struct ShortcutsTabView: View {
     @State private var apps: [AppInfo] = []
     @State private var isLoading = true
+    @State private var config: Config
+    private let configManager = ConfigurationManager.shared
     
-    private let generalShortcuts: [ShortcutItem] = [
-        ShortcutItem(name: "Toggle Full Screen layout for the current screen", action: {}),
-        ShortcutItem(name: "Throw focused window to Screen 1", action: {}),
-        ShortcutItem(name: "Throw focused window to Screen 2", action: {}),
-        ShortcutItem(name: "Throw focused window to Screen 3", action: {}),
-        ShortcutItem(name: "Throw focused window to Screen 4", action: {}),
-        ShortcutItem(name: "Throw focused window to Screen 5", action: {}),
-        ShortcutItem(name: "Throw focused window to Screen 6", action: {}),
-        ShortcutItem(name: "Add focused app to layout group", action: {}),
-        ShortcutItem(name: "Remove focused app from layout group", action: {})
-    ]
+    init() {
+        _config = State(initialValue: ConfigurationManager.shared.loadConfig() ?? ConfigurationManager.shared.getDefaultConfig())
+    }
+    
+    private var generalShortcuts: [ShortcutItem] {
+        config.generalShortcuts.map { shortcut in
+            ShortcutItem(
+                name: shortcut.name,
+                shortcut: shortcut.shortcut,
+                action: {}
+            )
+        }
+    }
 
     var body: some View {
         List {
@@ -48,9 +56,11 @@ struct ShortcutsTabView: View {
                         Spacer()
                         if let definedShortcut = shortcut.shortcut {
                             HStack(spacing: 8) {
-                                Text(definedShortcut)
+                                Text(formatShortcut(definedShortcut))
                                     .foregroundColor(.gray)
-                                Button(action: {}) {
+                                Button(action: {
+                                    removeShortcut(for: shortcut.name)
+                                }) {
                                     Image(systemName: "xmark.circle.fill")
                                         .foregroundColor(.gray)
                                 }
@@ -58,7 +68,7 @@ struct ShortcutsTabView: View {
                             }
                         } else {
                             Button("Configure") {
-                                shortcut.action()
+                                // TODO: Implement shortcut configuration
                             }
                             .buttonStyle(.borderless)
                         }
@@ -88,9 +98,11 @@ struct ShortcutsTabView: View {
                             
                             if let definedShortcut = app.shortcut {
                                 HStack(spacing: 8) {
-                                    Text(definedShortcut)
+                                    Text(formatShortcut(definedShortcut))
                                         .foregroundColor(.gray)
-                                    Button(action: {}) {
+                                    Button(action: {
+                                        removeAppShortcut(for: app.bundleIdentifier)
+                                    }) {
                                         Image(systemName: "xmark.circle.fill")
                                             .foregroundColor(.gray)
                                     }
@@ -98,7 +110,7 @@ struct ShortcutsTabView: View {
                                 }
                             } else {
                                 Button("Configure") {
-                                    // Action to configure shortcut
+                                    // TODO: Implement shortcut configuration
                                 }
                                 .buttonStyle(.borderless)
                             }
@@ -121,10 +133,18 @@ struct ShortcutsTabView: View {
         apps = await Task.detached(priority: .userInitiated) {
             fetchInstalledApps()
         }.value
+        
+        // Update apps with their shortcuts from config
+        for (index, app) in apps.enumerated() {
+            if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
+                apps[index].shortcut = shortcut
+            }
+        }
+        
         isLoading = false
     }
 
-    func fetchInstalledApps() -> [AppInfo] {
+    private func fetchInstalledApps() -> [AppInfo] {
         let appPaths = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask)
         var results: [AppInfo] = []
 
@@ -135,7 +155,6 @@ struct ShortcutsTabView: View {
                     let name = fileURL.deletingPathExtension().lastPathComponent
                     let icon = NSWorkspace.shared.icon(forFile: fileURL.path)
                     
-                    // Get bundle identifier
                     let bundle = Bundle(url: fileURL)
                     let bundleIdentifier = bundle?.bundleIdentifier ?? "Unknown Bundle ID"
                     
@@ -150,8 +169,27 @@ struct ShortcutsTabView: View {
 
         return results.sorted { $0.name.lowercased() < $1.name.lowercased() }
     }
+    
+    private func formatShortcut(_ shortcut: ShortcutConfig) -> String {
+        let modifiers = shortcut.modifiers.map { $0.capitalized }.joined(separator: " + ")
+        return "\(modifiers) + \(shortcut.key.uppercased())"
+    }
+    
+    private func removeShortcut(for name: String) {
+        config.generalShortcuts.removeAll { $0.name == name }
+        saveConfig()
+    }
+    
+    private func removeAppShortcut(for bundleIdentifier: String) {
+        config.appShortcuts.removeAll { $0.bundleIdentifier == bundleIdentifier }
+        saveConfig()
+    }
+    
+    private func saveConfig() {
+        try? configManager.saveConfig(config)
+    }
 }
 
 #Preview {
     ShortcutsTabView()
-}
+} 

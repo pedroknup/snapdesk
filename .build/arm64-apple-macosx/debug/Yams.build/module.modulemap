@@ -1,0 +1,4 @@
+module Yams {
+    header "/Users/pedroknup/dev/snapdesk/snapdesk/.build/arm64-apple-macosx/debug/Yams.build/Yams-Swift.h"
+    requires objc
+}
