@@ -15,28 +15,46 @@ struct AppInfo: Identifiable {
     let icon: NSImage
 }
 
-struct ShortcutsView: View {
+struct ShortcutsTabView: View {
     @State private var apps: [AppInfo] = []
+    @State private var isLoading = true
 
     var body: some View {
-        List(apps) { app in
-            HStack {
-                Image(nsImage: app.icon)
-                    .resizable()
-                    .frame(width: 32, height: 32)
-                    .cornerRadius(6)
+        Group {
+            if isLoading {
+                ProgressView("Loading applications...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List(apps) { app in
+                    HStack {
+                        Image(nsImage: app.icon)
+                            .resizable()
+                            .frame(width: 32, height: 32)
+                            .cornerRadius(6)
 
-                VStack(alignment: .leading) {
-                    Text(app.name).font(.headline)
-                    Text(app.path).font(.caption).foregroundColor(.gray)
+                        VStack(alignment: .leading) {
+                            Text(app.name).font(.headline)
+                            Text(app.path).font(.caption).foregroundColor(.gray)
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
             }
-            .padding(.vertical, 4)
         }
         .onAppear {
-            apps = fetchInstalledApps()
+            Task {
+                await loadApps()
+            }
         }
         .navigationTitle("Installed Applications")
+    }
+
+    private func loadApps() async {
+        isLoading = true
+        apps = await Task.detached(priority: .userInitiated) {
+            fetchInstalledApps()
+        }.value
+        isLoading = false
     }
 
     func fetchInstalledApps() -> [AppInfo] {
@@ -59,5 +77,5 @@ struct ShortcutsView: View {
 }
 
 #Preview {
-    ShortcutsView()
+    ShortcutsTabView()
 }

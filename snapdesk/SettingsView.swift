@@ -8,11 +8,28 @@
 import SwiftUI
 
 struct SettingsView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+    @ObservedObject var viewModel: SettingsViewModel
 
-#Preview {
-    SettingsView()
+    var body: some View {
+        TabView(selection: $viewModel.selectedTab) {
+            SettingsTabView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
+                .tag(SettingsTab.settings)
+
+            ShortcutsTabView()
+                .tabItem {
+                    Label("Shortcuts", systemImage: "command")
+                }
+                .tag(SettingsTab.shortcuts)
+
+            AboutTabView()
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
+                .tag(SettingsTab.about)
+        }
+        .frame(minWidth: 700, minHeight: 500)
+    }
 }
