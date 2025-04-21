@@ -9,11 +9,11 @@ import Cocoa
 import SwiftUI
 
 class SettingsWindowController: NSWindowController {
-    private var hostingController: NSHostingController<SettingsView>!
-    private var viewModel = SettingsViewModel()
+    private var hostingController: NSHostingController<PreferencesView>!
+    private var viewModel = PreferencesViewModel()
 
     init() {
-        let view = SettingsView(viewModel: viewModel)
+        let view = PreferencesView(viewModel: viewModel)
         hostingController = NSHostingController(rootView: view)
 
         let window = NSWindow(contentViewController: hostingController)

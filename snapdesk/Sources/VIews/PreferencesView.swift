@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct SettingsView: View {
-    @ObservedObject var viewModel: SettingsViewModel
+struct PreferencesView: View {
+    @ObservedObject var viewModel: PreferencesViewModel
     @State private var hoveredTab: SettingsTab? = nil
     
     var body: some View {

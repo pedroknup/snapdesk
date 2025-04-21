@@ -27,7 +27,7 @@ enum SettingsTab: String, CaseIterable {
     }
 }
 
-class SettingsViewModel: ObservableObject {
+class PreferencesViewModel: ObservableObject {
     @Published var selectedTab: SettingsTab = .settings
 }
 
