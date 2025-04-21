@@ -30,9 +30,9 @@ public struct AppShortcutConfig: Codable {
 
 public struct GeneralShortcutConfig: Codable {
     public var name: String
-    public var shortcut: ShortcutConfig
+    public var shortcut: ShortcutConfig?
     
-    public init(name: String, shortcut: ShortcutConfig) {
+    public init(name: String, shortcut: ShortcutConfig?) {
         self.name = name
         self.shortcut = shortcut
     }
@@ -64,14 +64,89 @@ public class ConfigurationManager {
     
     public func loadConfig() -> Config? {
         guard let data = try? Data(contentsOf: configPath),
-              let config = try? YAMLDecoder().decode(Config.self, from: data) else {
+              let yamlString = String(data: data, encoding: .utf8) else {
             return nil
         }
+        print("Loading config from YAML:\n\(yamlString)")
+        guard var config = try? YAMLDecoder().decode(Config.self, from: data) else {
+            return nil
+        }
+        
+        // Ensure all general shortcuts from the default list are included
+        let defaultGeneralShortcuts = [
+            "Toggle Full Screen layout for the current screen",
+            "Remove current window from layout",
+            "Focus Screen 1",
+            "Focus Screen 2",
+            "Focus Screen 3",
+            "Focus Screen 4",
+            "Focus Screen 5",
+            "Focus Screen 6",
+            "Throw to Screen 1",
+            "Throw to Screen 2",
+            "Throw to Screen 3",
+            "Throw to Screen 4",
+            "Throw to Screen 5",
+            "Throw to Screen 6",
+            "Throw app to current layout modifier",
+            "Increase main panel count",
+            "Decrease main panel count",
+            "Cycle current layout windows clockwise",
+            "Cycle current layout windows counterclockwise"
+        ]
+        
+        // Create a set of existing shortcut names
+        let existingNames = Set(config.generalShortcuts.map { $0.name })
+        
+        // Add any missing shortcuts with nil values
+        for name in defaultGeneralShortcuts {
+            if !existingNames.contains(name) {
+                config.generalShortcuts.append(GeneralShortcutConfig(name: name, shortcut: nil))
+            }
+        }
+        
         return config
     }
     
     public func saveConfig(_ config: Config) throws {
-        let string = try YAMLEncoder().encode(config)
+        // Create a new config that includes all general shortcuts, even those with nil values
+        var configToSave = config
+        
+        // Ensure all general shortcuts from the default list are included
+        let defaultGeneralShortcuts = [
+            "Toggle Full Screen layout for the current screen",
+            "Remove current window from layout",
+            "Focus Screen 1",
+            "Focus Screen 2",
+            "Focus Screen 3",
+            "Focus Screen 4",
+            "Focus Screen 5",
+            "Focus Screen 6",
+            "Throw to Screen 1",
+            "Throw to Screen 2",
+            "Throw to Screen 3",
+            "Throw to Screen 4",
+            "Throw to Screen 5",
+            "Throw to Screen 6",
+            "Throw app to current layout modifier",
+            "Increase main panel count",
+            "Decrease main panel count",
+            "Cycle current layout windows clockwise",
+            "Cycle current layout windows counterclockwise"
+        ]
+        
+        // Create a set of existing shortcut names
+        let existingNames = Set(config.generalShortcuts.map { $0.name })
+        
+        // Add any missing shortcuts with nil values
+        for name in defaultGeneralShortcuts {
+            if !existingNames.contains(name) {
+                configToSave.generalShortcuts.append(GeneralShortcutConfig(name: name, shortcut: nil))
+            }
+        }
+        
+        let string = try YAMLEncoder().encode(configToSave)
+        print("Saving config to YAML:\n\(string)")
         let data = Data(string.utf8)
         try data.write(to: configPath, options: [.atomic])
     }
@@ -82,7 +157,7 @@ public class ConfigurationManager {
             appShortcuts: [
                 AppShortcutConfig(
                     bundleIdentifier: "company.thebrowser.Browser",
-                    shortcut: ShortcutConfig(key: "1", modifiers: ["command", "option"])
+                    shortcut: nil
                 ),
                 AppShortcutConfig(
                     bundleIdentifier: "com.googlecode.iterm2",

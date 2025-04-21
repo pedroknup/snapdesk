@@ -33,15 +33,48 @@ struct ShortcutsTabView: View {
     @State private var config: Config
     private let configManager = ConfigurationManager.shared
     
+    // Define the fixed list of general shortcuts
+    private let defaultGeneralShortcuts: [String] = [
+        "Toggle Full Screen layout for the current screen",
+        "Remove current window from layout",
+        "Focus Screen 1",
+        "Focus Screen 2",
+        "Focus Screen 3",
+        "Focus Screen 4",
+        "Focus Screen 5",
+        "Focus Screen 6",
+        "Throw to Screen 1",
+        "Throw to Screen 2",
+        "Throw to Screen 3",
+        "Throw to Screen 4",
+        "Throw to Screen 5",
+        "Throw to Screen 6",
+        "Throw app to current layout modifier",
+        "Increase main panel count",
+        "Decrease main panel count",
+        "Cycle current layout windows clockwise",
+        "Cycle current layout windows counterclockwise"
+    ]
+    
     init() {
         _config = State(initialValue: ConfigurationManager.shared.loadConfig() ?? ConfigurationManager.shared.getDefaultConfig())
     }
     
     private var generalShortcuts: [ShortcutItem] {
-        config.generalShortcuts.map { shortcut in
-            ShortcutItem(
-                name: shortcut.name,
-                shortcut: shortcut.shortcut,
+        // Create a dictionary of configured shortcuts by name
+        let configuredShortcuts = Dictionary(uniqueKeysWithValues: 
+            config.generalShortcuts.map { ($0.name, $0.shortcut) }
+        )
+        
+        // Create the fixed list of shortcuts, using configured values if available
+        return defaultGeneralShortcuts.map { name in
+            let shortcut = configuredShortcuts[name]
+            // Check if the shortcut is empty (cleared)
+            let isCleared = shortcut?.key.isEmpty == true && shortcut?.modifiers.isEmpty == true
+            
+            return ShortcutItem(
+                name: name,
+                shortcut: isCleared ? nil : shortcut,
                 action: {}
             )
         }
@@ -184,6 +217,11 @@ struct ShortcutsTabView: View {
     }
     
     private func formatShortcut(_ shortcut: ShortcutConfig) -> String {
+        // Check if the shortcut is empty (cleared)
+        if shortcut.key.isEmpty && shortcut.modifiers.isEmpty {
+            return "No shortcut"
+        }
+        
         let modifiers = shortcut.modifiers.map { $0.capitalized }.joined(separator: " + ")
         return "\(modifiers) + \(shortcut.key.uppercased())"
     }
@@ -205,19 +243,43 @@ struct ShortcutsTabView: View {
     }
     
     private func clearShortcut(for name: String) {
+        // Find if the shortcut already exists in the config
         if let index = config.generalShortcuts.firstIndex(where: { $0.name == name }) {
-            config.generalShortcuts[index].shortcut = nil
-            saveConfig()
-            refreshConfig()
+            // Update the existing entry with an empty shortcut
+            config.generalShortcuts[index] = GeneralShortcutConfig(
+                name: name, 
+                shortcut: ShortcutConfig(key: "", modifiers: [])
+            )
+        } else {
+            // Add a new entry with an empty shortcut
+            config.generalShortcuts.append(GeneralShortcutConfig(
+                name: name, 
+                shortcut: ShortcutConfig(key: "", modifiers: [])
+            ))
         }
+        
+        saveConfig()
+        refreshConfig()
     }
     
     private func clearAppShortcut(for bundleIdentifier: String) {
+        // Find if the shortcut already exists in the config
         if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
-            config.appShortcuts[index].shortcut = nil
-            saveConfig()
-            refreshConfig()
+            // Update the existing entry with an empty shortcut
+            config.appShortcuts[index] = AppShortcutConfig(
+                bundleIdentifier: bundleIdentifier, 
+                shortcut: ShortcutConfig(key: "", modifiers: [])
+            )
+        } else {
+            // Add a new entry with an empty shortcut
+            config.appShortcuts.append(AppShortcutConfig(
+                bundleIdentifier: bundleIdentifier, 
+                shortcut: ShortcutConfig(key: "", modifiers: [])
+            ))
         }
+        
+        saveConfig()
+        refreshConfig()
     }
     
     private func saveConfig() {
@@ -228,8 +290,8 @@ struct ShortcutsTabView: View {
         // Check general shortcuts
         for generalShortcut in config.generalShortcuts {
             if generalShortcut.name != currentName &&
-               generalShortcut.shortcut.key == shortcut.key &&
-               generalShortcut.shortcut.modifiers == shortcut.modifiers {
+               generalShortcut.shortcut?.key == shortcut.key &&
+               generalShortcut.shortcut?.modifiers == shortcut.modifiers {
                 return generalShortcut.name
             }
         }
@@ -237,8 +299,8 @@ struct ShortcutsTabView: View {
         // Check app shortcuts
         for appShortcut in config.appShortcuts {
             if appShortcut.bundleIdentifier != currentName &&
-               appShortcut.shortcut.key == shortcut.key &&
-               appShortcut.shortcut.modifiers == shortcut.modifiers {
+               appShortcut.shortcut?.key == shortcut.key &&
+               appShortcut.shortcut?.modifiers == shortcut.modifiers {
                 if let app = apps.first(where: { $0.bundleIdentifier == appShortcut.bundleIdentifier }) {
                     return app.name
                 }
@@ -247,6 +309,10 @@ struct ShortcutsTabView: View {
         }
         
         return nil
+    }
+    
+    private func isClearedShortcut(_ shortcut: ShortcutConfig) -> Bool {
+        return shortcut.key.isEmpty && shortcut.modifiers.isEmpty
     }
 }
 

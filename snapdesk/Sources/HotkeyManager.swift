@@ -41,8 +41,11 @@ class HotkeyManager {
         
         // Setup general shortcuts
         for generalShortcut in config.generalShortcuts {
-            let key = Key(string: generalShortcut.shortcut.key) ?? .zero
-            let modifiers = parseModifiers(generalShortcut.shortcut.modifiers)
+            // Skip if shortcut is nil
+            guard let shortcut = generalShortcut.shortcut else { continue }
+            
+            let key = Key(string: shortcut.key) ?? .zero
+            let modifiers = parseModifiers(shortcut.modifiers)
             
             let hotKey = HotKey(key: key, modifiers: modifiers)
             

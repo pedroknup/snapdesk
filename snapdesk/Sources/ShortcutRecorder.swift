@@ -23,7 +23,7 @@ struct ShortcutRecorder: View {
                 Text(formatCurrentKeys())
                     .foregroundColor(.blue)
                     .font(.system(.body, design: .monospaced))
-            } else if let shortcut = shortcut {
+            } else if let shortcut = shortcut, !isClearedShortcut(shortcut) {
                 Text(formatShortcut(shortcut))
                     .foregroundColor(.gray)
             } else {
@@ -34,7 +34,8 @@ struct ShortcutRecorder: View {
             HStack(spacing: 8) {
                 if isRecording {
                     Button(action: {
-                        shortcut = nil
+                        // Instead of setting to nil, create a new ShortcutConfig with empty values
+                        shortcut = ShortcutConfig(key: "", modifiers: [])
                         stopRecording()
                     }) {
                         Text("Clear")
@@ -150,6 +151,10 @@ struct ShortcutRecorder: View {
     }
     
     private func formatShortcut(_ shortcut: ShortcutConfig) -> String {
+        if isClearedShortcut(shortcut) {
+            return "No shortcut"
+        }
+        
         let modifiers = shortcut.modifiers.map { $0.capitalized }.joined(separator: " + ")
         return "\(modifiers) + \(shortcut.key.uppercased())"
     }
@@ -159,16 +164,16 @@ struct ShortcutRecorder: View {
         
         // Add modifiers
         if currentModifiers.contains(.command) {
-            result += "⌘"
+            result += "⌘ "
         }
         if currentModifiers.contains(.option) {
-            result += "⌥"
+            result += "⌥ "
         }
         if currentModifiers.contains(.shift) {
-            result += "⇧"
+            result += "⇧ "
         }
         if currentModifiers.contains(.control) {
-            result += "⌃"
+            result += "⌃ "
         }
         
         // Add separator if we have modifiers and a key
@@ -186,5 +191,9 @@ struct ShortcutRecorder: View {
         }
         
         return result
+    }
+    
+    private func isClearedShortcut(_ shortcut: ShortcutConfig) -> Bool {
+        return shortcut.key.isEmpty && shortcut.modifiers.isEmpty
     }
 }
