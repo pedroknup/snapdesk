@@ -41,6 +41,7 @@
 		13E45B6B2DB516C9006FA7CB /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */; };
 		13E45B6D2DB517BB006FA7CB /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */; };
 		13EEDACD2DB52F6D001133DA /* ShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EEDACC2DB52F6D001133DA /* ShortcutRecorder.swift */; };
+		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -136,6 +137,7 @@
 		13E45B6A2DB516C9006FA7CB /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		13E45B6C2DB517BB006FA7CB /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		13EEDACC2DB52F6D001133DA /* ShortcutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
+		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +180,7 @@
 			children = (
 				13A4B8A82DB5293200390915 /* Sources */,
 				130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */,
+				13EEDACF2DB6274F001133DA /* AppIcon.icns */,
 				130647252DB38D6E00A63735 /* snapdesk.entitlements */,
 				130647202DB38D6E00A63735 /* Info.plist */,
 				130647222DB38D6E00A63735 /* Silica-Prefix.pch */,
@@ -385,6 +388,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1306472A2DB38D6F00A63735 /* README.md in Resources */,
+				13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */,
 				130646D72DB38D4E00A63735 /* Preview Assets.xcassets in Resources */,
 				130646D32DB38D4E00A63735 /* Assets.xcassets in Resources */,
 			);

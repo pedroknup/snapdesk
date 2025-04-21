@@ -249,8 +249,10 @@ struct ShortcutsTabView: View {
     }
     
     private func removeAppShortcut(for bundleIdentifier: String) {
-        config.appShortcuts.removeAll { $0.bundleIdentifier == bundleIdentifier }
-        saveConfig()
+        if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+            config.appShortcuts[index].shortcut = nil
+            saveConfig()
+        }
     }
     
     private func saveConfig() {

@@ -133,7 +133,8 @@ struct ShortcutRecorder: View {
             }
             
             // Create new shortcut
-            shortcut = ShortcutConfig(key: key, modifiers: modifierStrings)
+            let newShortcut = ShortcutConfig(key: key, modifiers: modifierStrings)
+            shortcut = newShortcut
             stopRecording()
         }
     }

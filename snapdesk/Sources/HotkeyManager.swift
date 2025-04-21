@@ -110,14 +110,18 @@ class HotkeyManager {
         
         // Setup app shortcuts
         for appShortcut in config.appShortcuts {
-            let key = Key(string: appShortcut.shortcut.key) ?? .zero
-            let modifiers = parseModifiers(appShortcut.shortcut.modifiers)
+            // Skip if shortcut is nil
+            guard let shortcut = appShortcut.shortcut else { continue }
+            
+            let key = Key(string: shortcut.key) ?? .zero
+            let modifiers = parseModifiers(shortcut.modifiers)
             
             let hotKey = HotKey(key: key, modifiers: modifiers)
             hotKey.keyDownHandler = { [weak self] in
                 // Check if we're recording a shortcut before executing
                 guard !HotkeyManager.isRecordingShortcut else { return }
                 self?.windowController.focusApp(appShortcut.bundleIdentifier)
+                self?.windowController.addWindowToLayout(appShortcut.bundleIdentifier)
             }
             hotKeys.append(hotKey)
         }

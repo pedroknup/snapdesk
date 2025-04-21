@@ -12,13 +12,9 @@ struct AboutTabView: View {
             Spacer()
             
             // App Icon
-            Image(systemName: "app.fill")
+            Image("snapdesk-logo")
                 .resizable()
-                .foregroundStyle(.linearGradient(
-                    colors: [.blue, .blue.opacity(0.8)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
+                .aspectRatio(contentMode: .fit)
                 .frame(width: 120, height: 120)
                 .cornerRadius(24)
                 .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)

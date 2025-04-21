@@ -77,7 +77,7 @@ class WindowController {
         
         for (screen, info) in screenInfoMap {
             if info.frame.contains(windowCenter) {
-                log("🎯 Found screen for window center: \(window.title() ?? "<no title>") → Screen \(info.displayID)")
+                //log("🎯 Found screen for window center: \(window.title() ?? "<no title>") → Screen \(info.displayID)")
                 return screen
             }
         }
@@ -353,7 +353,7 @@ class WindowController {
             log("ℹ️ No existing layout found for app")
             
             // Hide all others *before* we focus/maximize the target window
-            hideAllWindows(except: window)
+            //hideAllWindows(except: window)
 
             // Focus & maximize
             window.focus()
@@ -449,7 +449,7 @@ class WindowController {
             log("📜 Window focus history updated:")
             for (index, id) in windowFocusHistory.enumerated() {
                 if let window = findWindowByIdentifier(id) {
-                    log("   \(index + 1). \(window.title() ?? "<No Title>")")
+                    log("   \(index + 1). \(window.title() ?? "<No Title>") \(windowId)")
                 }
             }
         }
@@ -461,6 +461,7 @@ class WindowController {
                         // Update the currently focused window when found
                         if currentlyFocusedWindow != window {
                             currentlyFocusedWindow = window
+                            addWindowToFocusHistory(window)
                             log("🔄 Window focus changed to: \(window.title() ?? "<No Title>")")
                         }
                         return window

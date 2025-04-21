@@ -20,9 +20,9 @@ public struct ShortcutConfig: Codable {
 
 public struct AppShortcutConfig: Codable {
     public var bundleIdentifier: String
-    public var shortcut: ShortcutConfig
+    public var shortcut: ShortcutConfig?
     
-    public init(bundleIdentifier: String, shortcut: ShortcutConfig) {
+    public init(bundleIdentifier: String, shortcut: ShortcutConfig?) {
         self.bundleIdentifier = bundleIdentifier
         self.shortcut = shortcut
     }
@@ -87,6 +87,10 @@ public class ConfigurationManager {
                 AppShortcutConfig(
                     bundleIdentifier: "com.googlecode.iterm2",
                     shortcut: ShortcutConfig(key: "6", modifiers: ["command", "option"])
+                ),
+                AppShortcutConfig(
+                    bundleIdentifier: "com.googlecode.iterm2",
+                    shortcut: ShortcutConfig(key: "5", modifiers: ["command", "option"])
                 ),
                 AppShortcutConfig(
                     bundleIdentifier: "notion.id",
