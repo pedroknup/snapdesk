@@ -1,10 +1,3 @@
-//
-//  SettingsTabView.swift
-//  snapdesk
-//
-//  Created by Pedro Knup on 20/04/2025.
-//
-
 import SwiftUI
 
 struct SettingsTabView: View {
@@ -13,37 +6,43 @@ struct SettingsTabView: View {
     @AppStorage("windowGap") private var windowGap: Double = 4
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            GroupBox(label: Text("Appearance").bold()) {
+        VStack(alignment: .leading, spacing: 32) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Appearance")
+                    .font(.headline)
+
                 Toggle("Show Layout Indicator", isOn: $showLayoutIndicator)
                     .help("Display the current layout indicator in the menu bar")
             }
 
-            GroupBox(label: Text("Startup").bold()) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Startup")
+                    .font(.headline)
+
                 Toggle("Launch at Login", isOn: $launchAtLogin)
                     .help("Start SnapDesk automatically when you log in to your Mac")
             }
 
-            GroupBox(label: Text("Layout").bold()) {
-                HStack {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Layout")
+                    .font(.headline)
+
+                HStack(spacing: 8) {
                     Text("Window Gap")
                     Spacer()
                     TextField("Gap", value: $windowGap, format: .number)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 60)
                     Text("px")
+                        .foregroundColor(.secondary)
                 }
                 .help("Space between windows when using a multi-window layout")
             }
 
             Spacer()
         }
-        .padding(24)
-        .frame(width: 360)
+        .padding(.horizontal, 32)
+        .padding(.top, 32)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
-}
-
-
-#Preview {
-    SettingsTabView()
 }
