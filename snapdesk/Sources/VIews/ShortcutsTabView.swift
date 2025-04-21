@@ -68,13 +68,32 @@ struct ShortcutsTabView: View {
     }
 
     var body: some View {
-        VStack {
-            // Add padding around the search bar
-            TextField("Search shortcuts and applications...", text: .constant(""))
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-                .padding(.top)
+        VStack(spacing: 0) {
+            // Search bar at the top
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                
+                TextField("Search shortcuts and applications...", text: $searchText)
+                    .textFieldStyle(.plain)
+                
+                if !searchText.isEmpty {
+                    Button(action: {
+                        searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(8)
+            .background(Color(.textBackgroundColor))
+            .cornerRadius(8)
+            .padding(.horizontal)
+            .padding(.top, 8)
             
+            // Main content
             List {
                 Section("General") {
                     if generalShortcuts.isEmpty && !searchText.isEmpty {
@@ -107,23 +126,23 @@ struct ShortcutsTabView: View {
                     }
                 }
                 
-                
                 Section("Applications") {
                     if isLoading {
-                        // We'll fix this part below
-                        VStack {
-                            ProgressView("Loading applications...")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical)
+                        ProgressView("Loading applications...")
+                            .frame(maxWidth: .infinity)
+                    } else if filteredApps.isEmpty && !searchText.isEmpty {
+                        Text("No applications match your search")
+                            .foregroundColor(.gray)
+                            .italic()
+                            .padding(.vertical, 8)
                     } else {
-                        ForEach(apps) { app in
+                        ForEach(filteredApps) { app in
                             HStack {
                                 Image(nsImage: app.icon)
                                     .resizable()
                                     .frame(width: 32, height: 32)
                                     .cornerRadius(6)
-                                
+
                                 VStack(alignment: .leading) {
                                     Text(app.name).font(.headline)
                                     Text(app.bundleIdentifier).font(.caption).foregroundColor(.gray)
@@ -131,39 +150,41 @@ struct ShortcutsTabView: View {
                                 
                                 Spacer()
                                 
-                                if let definedShortcut = app.shortcut {
-                                    HStack(spacing: 8) {
-                                        Text(formatShortcut(definedShortcut))
-                                            .foregroundColor(.gray)
-                                        if let conflict = findShortcutConflict(shortcut: definedShortcut, currentName: app.bundleIdentifier) {
-                                            Image(systemName: "exclamationmark.triangle.fill")
-                                                .foregroundColor(.yellow)
-                                                .help("This shortcut is already used by: \(conflict)")
+                                ShortcutRecorder(shortcut: Binding(
+                                    get: { app.shortcut },
+                                    set: { newShortcut in
+                                        if let newShortcut = newShortcut {
+                                            // Add or update shortcut
+                                            if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
+                                                config.appShortcuts[index].shortcut = newShortcut
+                                            } else {
+                                                config.appShortcuts.append(AppShortcutConfig(
+                                                    bundleIdentifier: app.bundleIdentifier,
+                                                    shortcut: newShortcut
+                                                ))
+                                            }
+                                        } else {
+                                            // Remove shortcut
+                                            config.appShortcuts.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
                                         }
-                                        Button(action: {
-                                            clearAppShortcut(for: app.bundleIdentifier)
-                                        }) {
-                                            Image(systemName: "trash")
-                                                .foregroundColor(.gray)
+                                        saveConfig()
+                                        
+                                        // Update the app's shortcut in the apps array
+                                        if let appIndex = apps.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
+                                            apps[appIndex].shortcut = newShortcut
                                         }
-                                        .buttonStyle(.borderless)
-                                        .help("Clear shortcut")
+                                        
+                                        // Trigger UI refresh
+                                        refreshTrigger.toggle()
                                     }
-                                } else {
-                                    Button("Configure") {
-                                        // TODO: Implement shortcut configuration
-                                    }
-                                    .buttonStyle(.borderless)
-                                }
+                                ))
                             }
                             .padding(.vertical, 4)
                         }
                     }
                 }
-                
             }
         }
-    
         .onAppear {
             Task {
                 await loadApps()
@@ -237,71 +258,6 @@ struct ShortcutsTabView: View {
     private func saveConfig() {
         try? configManager.saveConfig(config)
     }
-    
-    private func findShortcutConflict(shortcut: ShortcutConfig, currentName: String) -> String? {
-           // Check general shortcuts
-           for generalShortcut in config.generalShortcuts {
-               if generalShortcut.name != currentName &&
-                  generalShortcut.shortcut?.key == shortcut.key &&
-                  generalShortcut.shortcut?.modifiers == shortcut.modifiers {
-                   return generalShortcut.name
-               }
-           }
-           
-           // Check app shortcuts
-           for appShortcut in config.appShortcuts {
-               if appShortcut.bundleIdentifier != currentName &&
-                  appShortcut.shortcut?.key == shortcut.key &&
-                  appShortcut.shortcut?.modifiers == shortcut.modifiers {
-                   if let app = apps.first(where: { $0.bundleIdentifier == appShortcut.bundleIdentifier }) {
-                       return app.name
-                   }
-                   return appShortcut.bundleIdentifier
-               }
-           }
-           
-           return nil
-       }
-       
-       private func isClearedShortcut(_ shortcut: ShortcutConfig) -> Bool {
-           return shortcut.key.isEmpty && shortcut.modifiers.isEmpty
-       }
-    
-    private func clearAppShortcut(for bundleIdentifier: String) {
-           // Find if the shortcut already exists in the config
-           if let index = config.appShortcuts.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
-               // Update the existing entry with an empty shortcut
-               config.appShortcuts[index] = AppShortcutConfig(
-                   bundleIdentifier: bundleIdentifier,
-                   shortcut: ShortcutConfig(key: "", modifiers: [])
-               )
-           } else {
-               // Add a new entry with an empty shortcut
-               config.appShortcuts.append(AppShortcutConfig(
-                   bundleIdentifier: bundleIdentifier,
-                   shortcut: ShortcutConfig(key: "", modifiers: [])
-               ))
-           }
-           
-           saveConfig()
-           refreshConfig()
-       }
-    private func refreshConfig() {
-        if let loadedConfig = configManager.loadConfig() {
-            config = loadedConfig
-            // Update apps with their shortcuts from the refreshed config
-            for (index, app) in apps.enumerated() {
-                if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
-                    apps[index].shortcut = shortcut
-                } else {
-                    apps[index].shortcut = nil
-                }
-            }
-        } else {
-            config = configManager.getDefaultConfig()
-        }
-    }
-    
 }
 
 #Preview {
