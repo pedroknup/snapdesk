@@ -20,6 +20,25 @@ struct AppInfo: Identifiable {
     var shortcut: ShortcutConfig? = nil
 }
 
+// Add Codable conformance to AppInfo for serialization
+struct AppInfoCodable: Codable {
+    let name: String
+    let bundleIdentifier: String
+    let iconData: Data?
+    
+    init(from appInfo: AppInfo) {
+        self.name = appInfo.name
+        self.bundleIdentifier = appInfo.bundleIdentifier
+        self.iconData = appInfo.icon.tiffRepresentation
+    }
+}
+
+// Add a structure to hold the cached data with timestamp
+struct CachedAppsData: Codable {
+    let timestamp: Date
+    let apps: [AppInfoCodable]
+}
+
 struct ShortcutItem: Identifiable {
     let id = UUID()
     let name: String
@@ -32,6 +51,9 @@ struct ShortcutsTabView: View {
     @State private var isLoading = true
     @State private var config: Config
     private let configManager = ConfigurationManager.shared
+    private let tempAppsFilePath = "/tmp/snapdesk_apps.json"
+    // Cache expiration time (24 hours)
+    private let cacheExpirationInterval: TimeInterval = 24 * 60 * 60
     
     // Define the fixed list of general shortcuts
     private let defaultGeneralShortcuts: [String] = [
@@ -175,10 +197,53 @@ struct ShortcutsTabView: View {
     }
 
     private func loadApps() async {
-        isLoading = true
-        apps = await Task.detached(priority: .userInitiated) {
+        // First, try to load from cache
+        if let cachedApps = loadAppsFromCache() {
+            apps = cachedApps
+            isLoading = false
+            
+            // Update apps with their shortcuts from config
+            for (index, app) in apps.enumerated() {
+                if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
+                    apps[index].shortcut = shortcut
+                }
+            }
+            
+            // Check if cache is expired
+            if let cacheTimestamp = getCacheTimestamp(), 
+               Date().timeIntervalSince(cacheTimestamp) > cacheExpirationInterval {
+                // Cache is expired, fetch fresh data in the background
+                Task {
+                    await refreshAppsInBackground()
+                }
+            }
+        } else {
+            // If no cache exists, fetch apps normally
+            isLoading = true
+            apps = await Task.detached(priority: .userInitiated) {
+                fetchInstalledApps()
+            }.value
+            
+            // Update apps with their shortcuts from config
+            for (index, app) in apps.enumerated() {
+                if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
+                    apps[index].shortcut = shortcut
+                }
+            }
+            
+            // Save the fetched apps to cache
+            saveAppsToCache(apps)
+            isLoading = false
+        }
+    }
+    
+    private func refreshAppsInBackground() async {
+        let freshApps = await Task.detached(priority: .userInitiated) {
             fetchInstalledApps()
         }.value
+        
+        // Update apps with fresh data
+        apps = freshApps
         
         // Update apps with their shortcuts from config
         for (index, app) in apps.enumerated() {
@@ -187,7 +252,51 @@ struct ShortcutsTabView: View {
             }
         }
         
-        isLoading = false
+        // Save the fresh data to cache
+        saveAppsToCache(apps)
+    }
+    
+    private func saveAppsToCache(_ apps: [AppInfo]) {
+        do {
+            let appInfoCodables = apps.map { AppInfoCodable(from: $0) }
+            let cachedData = CachedAppsData(timestamp: Date(), apps: appInfoCodables)
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(cachedData)
+            try data.write(to: URL(fileURLWithPath: tempAppsFilePath))
+        } catch {
+            print("Failed to save apps to cache: \(error)")
+        }
+    }
+    
+    private func loadAppsFromCache() -> [AppInfo]? {
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: tempAppsFilePath))
+            let decoder = JSONDecoder()
+            let cachedData = try decoder.decode(CachedAppsData.self, from: data)
+            
+            return cachedData.apps.map { codable in
+                let icon = codable.iconData.flatMap { NSImage(data: $0) } ?? NSImage()
+                return AppInfo(
+                    name: codable.name,
+                    bundleIdentifier: codable.bundleIdentifier,
+                    icon: icon
+                )
+            }
+        } catch {
+            print("Failed to load apps from cache: \(error)")
+            return nil
+        }
+    }
+    
+    private func getCacheTimestamp() -> Date? {
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: tempAppsFilePath))
+            let decoder = JSONDecoder()
+            let cachedData = try decoder.decode(CachedAppsData.self, from: data)
+            return cachedData.timestamp
+        } catch {
+            return nil
+        }
     }
 
     private func fetchInstalledApps() -> [AppInfo] {
