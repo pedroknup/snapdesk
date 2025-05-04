@@ -34,7 +34,6 @@
 		135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */; };
 		135B55202DB6596D00EC05FF /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550F2DB6596D00EC05FF /* WindowController.swift */; };
 		135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55112DB6596D00EC05FF /* AboutTabView.swift */; };
-		135B55222DB6596D00EC05FF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55122DB6596D00EC05FF /* ContentView.swift */; };
 		135B55232DB6596D00EC05FF /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55132DB6596D00EC05FF /* PreferencesView.swift */; };
 		135B55242DB6596D00EC05FF /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55142DB6596D00EC05FF /* SettingsTabView.swift */; };
 		135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */; };
@@ -131,7 +130,6 @@
 		135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		135B550F2DB6596D00EC05FF /* WindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		135B55112DB6596D00EC05FF /* AboutTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutTabView.swift; sourceTree = "<group>"; };
-		135B55122DB6596D00EC05FF /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		135B55132DB6596D00EC05FF /* PreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		135B55142DB6596D00EC05FF /* SettingsTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
 		135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
@@ -325,7 +323,6 @@
 			isa = PBXGroup;
 			children = (
 				135B55112DB6596D00EC05FF /* AboutTabView.swift */,
-				135B55122DB6596D00EC05FF /* ContentView.swift */,
 				135B55132DB6596D00EC05FF /* PreferencesView.swift */,
 				135B55142DB6596D00EC05FF /* SettingsTabView.swift */,
 				135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */,
@@ -442,7 +439,6 @@
 				130647312DB38D6F00A63735 /* SIWindow.m in Sources */,
 				1306472E2DB38D6F00A63735 /* SIApplication.m in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
-				135B55222DB6596D00EC05FF /* ContentView.swift in Sources */,
 				135B551B2DB6596D00EC05FF /* SIApplication.swift in Sources */,
 				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
 				135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */,

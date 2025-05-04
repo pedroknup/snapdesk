@@ -5,7 +5,7 @@
 //  Created by Pedro Knup on 18/04/2025.
 //
 
-class WindowController {
+class WindowController: ObservableObject {
     private var appWindows: [String: [SIWindow]] = [:] // BundleID → windows
     private var currentWindowPerApp: [String: Int] = [:] // BundleID → index
     // Maps AXUIElement to NSScreen
