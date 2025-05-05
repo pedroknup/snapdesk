@@ -296,15 +296,8 @@ class WindowController: ObservableObject {
                 return
             }
             
-            // Get current index and cycle to next window
-            let currentIndex = currentWindowPerApp[bundleID] ?? 0
-            let nextIndex = (currentIndex + 1) % windows.count
-            currentWindowPerApp[bundleID] = nextIndex
-            let window = windows[nextIndex]
-            
-            // Get the window ID for the current window
-            // Get the window ID for the current window
-            let windowId = getWindowIdentifier(window)
+            // Get the window ID for the first window
+            let windowId = getWindowIdentifier(windows[0])
             
             // Check if this window is part of a layout group
             if let groupID = appToGroup[windowId] {
@@ -313,24 +306,29 @@ class WindowController: ObservableObject {
                 log("  - Windows in group: \(layoutGroups[groupID] ?? [])")
                 log("  - Window positions: \(layoutWindowPositions[groupID] ?? [:])")
                 
-                if let screen = screenForWindow(window) {
+                // Get current index and cycle to next window only if this is the same app as last focused
+                let currentIndex = currentWindowPerApp[bundleID] ?? 0
+                let nextIndex: Int
+                
+                if let lastFocusedWindow = currentlyFocusedWindow,
+                   let lastBundleID = findBundleID(for: lastFocusedWindow),
+                   lastBundleID == bundleID {
+                    // Same app - cycle to next window
+                    nextIndex = (currentIndex + 1) % windows.count
+                    currentWindowPerApp[bundleID] = nextIndex
+                } else {
+                    // Different app - focus first window
+                    nextIndex = 0
+                    currentWindowPerApp[bundleID] = 0
+                }
+                
+                let targetWindow = windows[nextIndex]
+                
+                if let screen = screenForWindow(targetWindow) {
                     log("✅ Found screen for window: \(screen.frame)")
                     
-                    // Hide all windows that aren't in this layout group
-                    let layoutPositions = layoutWindowPositions[groupID] ?? [:]
-//                    for (otherBundleID, otherWindows) in appWindows {
-//                        if !layoutPositions.keys.contains(otherBundleID) {
-//                            for otherWindow in otherWindows {
-//                                // log("🔒 Hiding window not in layout: \(otherWindow.title() ?? "<no title>")")
-//                                let axElement = otherWindow.axElement().takeUnretainedValue()
-//                                let hidden: CFTypeRef = kCFBooleanTrue
-//                                AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, hidden)
-//                            }
-//                        }
-//                    }
-                    
                     // Show all windows in the layout
-                    for (layoutBundleID, _) in layoutPositions {
+                    for (layoutBundleID, _) in layoutWindowPositions[groupID] ?? [:] {
                         if let windows = appWindows[layoutBundleID], let window = windows.first {
                             log("👁 Showing window in layout: \(window.title() ?? "<no title>")")
                             let axElement = window.axElement().takeUnretainedValue()
@@ -339,10 +337,27 @@ class WindowController: ObservableObject {
                         }
                     }
                     
+                    // Only maximize to full screen if the screen is in full screen state
                     if screenFullScreenState[screen] ?? false {
-                        maximizeToFullScreen(window: window, screen: screen)
+                        maximizeToFullScreen(window: targetWindow, screen: screen)
                     } else {
-                        applyLayout(groupID: groupID, screen: screen, targetWindow: window)
+                        // When cycling windows, just focus the target window without moving it
+                        if let lastFocusedWindow = currentlyFocusedWindow,
+                           let lastBundleID = findBundleID(for: lastFocusedWindow),
+                           lastBundleID == bundleID {
+                            // Just focus the window without moving it
+                            targetWindow.focus()
+                            centerCursorInWindow(targetWindow)
+                            currentlyFocusedWindow = targetWindow
+                            addWindowToFocusHistory(targetWindow)
+                        } else {
+                            // Different app - apply layout and focus
+                            applyLayout(groupID: groupID, screen: screen, targetWindow: targetWindow)
+                            targetWindow.focus()
+                            centerCursorInWindow(targetWindow)
+                            currentlyFocusedWindow = targetWindow
+                            addWindowToFocusHistory(targetWindow)
+                        }
                     }
                 } else {
                     log("⚠️ Could not find screen for window, using default screen")
@@ -353,9 +368,24 @@ class WindowController: ObservableObject {
             
             log("ℹ️ No existing layout found for app")
             
-            // Hide all others *before* we focus/maximize the target window
-            //hideAllWindows(except: window)
-
+            // Get current index and cycle to next window only if this is the same app as last focused
+            let currentIndex = currentWindowPerApp[bundleID] ?? 0
+            let nextIndex: Int
+            
+            if let lastFocusedWindow = currentlyFocusedWindow,
+               let lastBundleID = findBundleID(for: lastFocusedWindow),
+               lastBundleID == bundleID {
+                // Same app - cycle to next window
+                nextIndex = (currentIndex + 1) % windows.count
+                currentWindowPerApp[bundleID] = nextIndex
+            } else {
+                // Different app - focus first window
+                nextIndex = 0
+                currentWindowPerApp[bundleID] = 0
+            }
+            
+            let window = windows[nextIndex]
+            
             // Focus & maximize
             window.focus()
             centerCursorInWindow(window)
