@@ -670,7 +670,7 @@ class WindowController: ObservableObject {
             for (windowId, position) in sortedPositions {
                 guard let window = findWindowByIdentifier(windowId) else { continue }
                 
-                // Show the window
+                // Show the window and bring it to front
                 let axElement = window.axElement().takeUnretainedValue()
                 let visible: CFTypeRef = kCFBooleanFalse
                 AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
@@ -697,7 +697,7 @@ class WindowController: ObservableObject {
 
                 // Set the frame and bring to front
                 try? window.setFrame(frame)
-                // window.focus()
+                window.focus()
             }
             
             // Focus the target window if provided, otherwise use the first window
@@ -747,29 +747,35 @@ class WindowController: ObservableObject {
                 return
             }
             
-            // Find the bundle ID and group ID for the current window
-            var currentBundleID: String?
-            var currentGroupID: String?
+            // Get the window ID and find its group ID
+            let windowId = getWindowIdentifier(currentWindow)
+            guard let groupID = appToGroup[windowId] else {
+                log("ℹ️ Window is not part of any layout")
+                return
+            }
             
+            // Find the bundle ID for the current window
+            var currentBundleID: String?
             for (bundleID, windows) in appWindows {
                 if windows.contains(where: { $0 == currentWindow }) {
                     currentBundleID = bundleID
-                    currentGroupID = appToGroup[bundleID]
                     break
                 }
             }
             
-            guard let bundleID = currentBundleID,
-                  let groupID = currentGroupID else {
-                log("ℹ️ Window is not part of any layout")
+            guard let bundleID = currentBundleID else {
+                log("❌ Could not find bundle ID for window")
                 return
             }
             
             log("🔄 Removing window from layout - Bundle: \(bundleID), Group: \(groupID)")
             
+            // Get the screen of the current window before removing it from the layout
+            let currentScreen = screenForWindow(currentWindow)
+            
             // Remove the window from the layout groups
             if var groupWindows = layoutGroups[groupID] {
-                groupWindows.removeAll { $0 == bundleID }
+                groupWindows.removeAll { $0 == windowId }
                 layoutGroups[groupID] = groupWindows
                 
                 // If this was the last window in the layout, clean up the layout
@@ -777,31 +783,56 @@ class WindowController: ObservableObject {
                     log("🗑 Removing empty layout group: \(groupID)")
                     layoutGroups.removeValue(forKey: groupID)
                     layoutWindowPositions.removeValue(forKey: groupID)
-                    appToGroup.removeValue(forKey: bundleID)
+                    appToGroup.removeValue(forKey: windowId)
+                    
+                    // Make the window full width/height in its current screen
+                    if let screen = currentScreen {
+                        let screenFrame = screen.visibleFrame
+                        let frame = CGRect(
+                            x: screenFrame.origin.x,
+                            y: screenFrame.origin.y,
+                            width: screenFrame.width,
+                            height: screenFrame.height
+                        )
+                        try? currentWindow.setFrame(frame)
+                        currentWindow.focus()
+                        centerCursorInWindow(currentWindow)
+                    }
                     return
                 }
                 
                 // Remove the window's position from the layout
-                layoutWindowPositions[groupID]?.removeValue(forKey: bundleID)
+                layoutWindowPositions[groupID]?.removeValue(forKey: windowId)
                 
                 // Reassign positions to remaining windows
                 var newPositions: [String: Int] = [:]
-                for (index, remainingBundleID) in groupWindows.enumerated() {
-                    newPositions[remainingBundleID] = index
+                for (index, remainingWindowId) in groupWindows.enumerated() {
+                    newPositions[remainingWindowId] = index
                 }
                 layoutWindowPositions[groupID] = newPositions
                 
                 // Remove the window from app-to-group mapping
-                appToGroup.removeValue(forKey: bundleID)
+                appToGroup.removeValue(forKey: windowId)
                 
-                // Get the screen of the current window for reapplying the layout
-                if let screen = screenForWindow(currentWindow) {
-                    // Find the next window to focus (first window in the remaining layout)
-                    if let nextBundleID = groupWindows.first,
-                       let nextWindow = appWindows[nextBundleID]?.first {
-                        log("✨ Focusing next window in layout: \(nextWindow.title() ?? "<no title>")")
-                        applyLayout(groupID: groupID, screen: screen, targetWindow: nextWindow)
-                    }
+                // Make the window full width/height in its current screen
+                if let screen = currentScreen {
+                    let screenFrame = screen.visibleFrame
+                    let frame = CGRect(
+                        x: screenFrame.origin.x,
+                        y: screenFrame.origin.y,
+                        width: screenFrame.width,
+                        height: screenFrame.height
+                    )
+                    try? currentWindow.setFrame(frame)
+                    currentWindow.focus()
+                    centerCursorInWindow(currentWindow)
+                }
+                
+                // Find the next window to focus (first window in the remaining layout)
+                if let nextWindowId = groupWindows.first,
+                   let nextWindow = findWindowByIdentifier(nextWindowId) {
+                    log("✨ Focusing next window in layout: \(nextWindow.title() ?? "<no title>")")
+                    applyLayout(groupID: groupID, screen: currentScreen, targetWindow: nextWindow)
                 }
             }
         }
