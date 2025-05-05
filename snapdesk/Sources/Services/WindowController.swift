@@ -324,46 +324,90 @@ class WindowController: ObservableObject {
                 
                 let targetWindow = windows[nextIndex]
                 
-                if let screen = screenForWindow(targetWindow) {
-                    log("✅ Found screen for window: \(screen.frame)")
+                // Use the screen of the first window in the layout to maintain consistency
+                let targetScreen: NSScreen
+                if let firstWindowId = layoutGroups[groupID]?.first,
+                   let firstWindow = findWindowByIdentifier(firstWindowId),
+                   let firstScreen = screenForWindow(firstWindow) {
+                    targetScreen = firstScreen
+                    log("🎯 Using screen of first window in layout: \(firstScreen.frame)")
+                } else if let screen = screenForWindow(targetWindow) {
+                    targetScreen = screen
+                    log("🎯 Using screen of target window: \(screen.frame)")
+                } else {
+                    targetScreen = NSScreen.main ?? NSScreen.screens.first!
+                    log("⚠️ Falling back to main screen: \(targetScreen.frame)")
+                }
+                
+                // Only maximize to full screen if the screen is in full screen state
+                if screenFullScreenState[targetScreen] ?? false {
+                    maximizeToFullScreen(window: targetWindow, screen: targetScreen)
+                } else {
+                    // Apply layout and focus the target window
+                    applyLayout(groupID: groupID, screen: targetScreen, targetWindow: targetWindow)
+                    targetWindow.focus()
+                    centerCursorInWindow(targetWindow)
+                    currentlyFocusedWindow = targetWindow
+                    addWindowToFocusHistory(targetWindow)
+                }
+                return
+            }
+            
+            // If no layout found, check if any of the app's windows are part of a layout
+            for window in windows {
+                let windowId = getWindowIdentifier(window)
+                if let groupID = appToGroup[windowId] {
+                    log("🔄 Found window in layout group: \(groupID)")
+                    log("Layout group details:")
+                    log("  - Windows in group: \(layoutGroups[groupID] ?? [])")
+                    log("  - Window positions: \(layoutWindowPositions[groupID] ?? [:])")
                     
-                    // Show all windows in the layout
-                    for (layoutBundleID, _) in layoutWindowPositions[groupID] ?? [:] {
-                        if let windows = appWindows[layoutBundleID], let window = windows.first {
-                            log("👁 Showing window in layout: \(window.title() ?? "<no title>")")
-                            let axElement = window.axElement().takeUnretainedValue()
-                            let visible: CFTypeRef = kCFBooleanFalse
-                            AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
-                        }
+                    // Get current index and cycle to next window only if this is the same app as last focused
+                    let currentIndex = currentWindowPerApp[bundleID] ?? 0
+                    let nextIndex: Int
+                    
+                    if let lastFocusedWindow = currentlyFocusedWindow,
+                       let lastBundleID = findBundleID(for: lastFocusedWindow),
+                       lastBundleID == bundleID {
+                        // Same app - cycle to next window
+                        nextIndex = (currentIndex + 1) % windows.count
+                        currentWindowPerApp[bundleID] = nextIndex
+                    } else {
+                        // Different app - focus first window
+                        nextIndex = 0
+                        currentWindowPerApp[bundleID] = 0
+                    }
+                    
+                    let targetWindow = windows[nextIndex]
+                    
+                    // Use the screen of the first window in the layout to maintain consistency
+                    let targetScreen: NSScreen
+                    if let firstWindowId = layoutGroups[groupID]?.first,
+                       let firstWindow = findWindowByIdentifier(firstWindowId),
+                       let firstScreen = screenForWindow(firstWindow) {
+                        targetScreen = firstScreen
+                        log("🎯 Using screen of first window in layout: \(firstScreen.frame)")
+                    } else if let screen = screenForWindow(targetWindow) {
+                        targetScreen = screen
+                        log("🎯 Using screen of target window: \(screen.frame)")
+                    } else {
+                        targetScreen = NSScreen.main ?? NSScreen.screens.first!
+                        log("⚠️ Falling back to main screen: \(targetScreen.frame)")
                     }
                     
                     // Only maximize to full screen if the screen is in full screen state
-                    if screenFullScreenState[screen] ?? false {
-                        maximizeToFullScreen(window: targetWindow, screen: screen)
+                    if screenFullScreenState[targetScreen] ?? false {
+                        maximizeToFullScreen(window: targetWindow, screen: targetScreen)
                     } else {
-                        // When cycling windows, just focus the target window without moving it
-                        if let lastFocusedWindow = currentlyFocusedWindow,
-                           let lastBundleID = findBundleID(for: lastFocusedWindow),
-                           lastBundleID == bundleID {
-                            // Just focus the window without moving it
-                            targetWindow.focus()
-                            centerCursorInWindow(targetWindow)
-                            currentlyFocusedWindow = targetWindow
-                            addWindowToFocusHistory(targetWindow)
-                        } else {
-                            // Different app - apply layout and focus
-                            applyLayout(groupID: groupID, screen: screen, targetWindow: targetWindow)
-                            targetWindow.focus()
-                            centerCursorInWindow(targetWindow)
-                            currentlyFocusedWindow = targetWindow
-                            addWindowToFocusHistory(targetWindow)
-                        }
+                        // Apply layout and focus the target window
+                        applyLayout(groupID: groupID, screen: targetScreen, targetWindow: targetWindow)
+                        targetWindow.focus()
+                        centerCursorInWindow(targetWindow)
+                        currentlyFocusedWindow = targetWindow
+                        addWindowToFocusHistory(targetWindow)
                     }
-                } else {
-                    log("⚠️ Could not find screen for window, using default screen")
-                    applyLayout(groupID: groupID)
+                    return
                 }
-                return
             }
             
             log("ℹ️ No existing layout found for app")
@@ -653,7 +697,7 @@ class WindowController: ObservableObject {
 
                 // Set the frame and bring to front
                 try? window.setFrame(frame)
-                window.focus()
+                // window.focus()
             }
             
             // Focus the target window if provided, otherwise use the first window
