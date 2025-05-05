@@ -286,6 +286,69 @@ class WindowController: ObservableObject {
             return nil
         }
         
+        private func bringLayoutWindowsToFront(_ window: SIWindow) {
+            // Get the window's ID and check if it's part of a layout
+            let windowId = getWindowIdentifier(window)
+            log("🔄 Attempting to bring layout windows to front for window: \(window.title() ?? "<no title>") (ID: \(windowId))")
+            
+            if let groupID = appToGroup[windowId] {
+                log("📦 Found layout group: \(groupID)")
+                // If window is in a layout, bring all windows in that layout to front
+                if let windowIds = layoutGroups[groupID] {
+                    log("🪟 Windows in layout: \(windowIds)")
+                    
+                    // First, activate all applications in the layout
+                    var appsToActivate = Set<NSRunningApplication>()
+                    for id in windowIds {
+                        if let layoutWindow = findWindowByIdentifier(id) {
+                            if let app = NSRunningApplication(processIdentifier: layoutWindow.processIdentifier()) {
+                                appsToActivate.insert(app)
+                            }
+                        }
+                    }
+                    
+                    // Activate each application
+                    for app in appsToActivate {
+                        log("   - Activating app: \(app.bundleIdentifier ?? "<unknown>")")
+                        app.activate(options: .activateIgnoringOtherApps)
+                    }
+                    
+                    // Then show and position each window
+                    for id in windowIds {
+                        if let layoutWindow = findWindowByIdentifier(id) {
+                            log("   - Processing window: \(layoutWindow.title() ?? "<no title>") (ID: \(id))")
+                            
+                            // Show the window
+                            let axElement = layoutWindow.axElement().takeUnretainedValue()
+                            let visible: CFTypeRef = kCFBooleanFalse
+                            let result = AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
+                            log("     - Set visible: \(result == .success ? "✅" : "❌")")
+                            
+                            // Focus the window
+                            //layoutWindow.focus()
+                        } else {
+                            log("   - ❌ Could not find window with ID: \(id)")
+                        }
+                    }
+                } else {
+                    log("❌ No windows found in layout group")
+                }
+            } else {
+                log("ℹ️ Window is not part of any layout")
+            }
+        }
+        
+        private func focusWindow(_ window: SIWindow) {
+            // Bring all windows in the layout to front if the window is part of a layout
+            bringLayoutWindowsToFront(window)
+            
+            // Focus the target window
+            window.focus()
+            centerCursorInWindow(window)
+            currentlyFocusedWindow = window
+            addWindowToFocusHistory(window)
+        }
+        
         func focusApp(_ bundleID: String) {
             log("🎯 Attempting to focus app: \(bundleID)")
             log("Current windows for app: \(appWindows[bundleID] ?? [])")
@@ -345,10 +408,7 @@ class WindowController: ObservableObject {
                 } else {
                     // Apply layout and focus the target window
                     applyLayout(groupID: groupID, screen: targetScreen, targetWindow: targetWindow)
-                    targetWindow.focus()
-                    centerCursorInWindow(targetWindow)
-                    currentlyFocusedWindow = targetWindow
-                    addWindowToFocusHistory(targetWindow)
+                    focusWindow(targetWindow)
                 }
                 return
             }
@@ -401,10 +461,7 @@ class WindowController: ObservableObject {
                     } else {
                         // Apply layout and focus the target window
                         applyLayout(groupID: groupID, screen: targetScreen, targetWindow: targetWindow)
-                        targetWindow.focus()
-                        centerCursorInWindow(targetWindow)
-                        currentlyFocusedWindow = targetWindow
-                        addWindowToFocusHistory(targetWindow)
+                        focusWindow(targetWindow)
                     }
                     return
                 }
@@ -670,7 +727,7 @@ class WindowController: ObservableObject {
             for (windowId, position) in sortedPositions {
                 guard let window = findWindowByIdentifier(windowId) else { continue }
                 
-                // Show the window and bring it to front
+                // Show the window
                 let axElement = window.axElement().takeUnretainedValue()
                 let visible: CFTypeRef = kCFBooleanFalse
                 AXUIElementSetAttributeValue(axElement, kAXHiddenAttribute as CFString, visible)
@@ -695,23 +752,18 @@ class WindowController: ObservableObject {
                 // Update the window's screen mapping to the target screen
                 windowScreenMap[axElement] = targetScreen
 
-                // Set the frame and bring to front
+                // Set the frame
                 try? window.setFrame(frame)
-                window.focus()
             }
             
             // Focus the target window if provided, otherwise use the first window
             if let targetWindow = targetWindow {
                 log("✨ Focusing provided target window: \(targetWindow.title() ?? "<no title>")")
-                targetWindow.focus()
-                centerCursorInWindow(targetWindow)
-                currentlyFocusedWindow = targetWindow
+                focusWindow(targetWindow)
             } else if let firstWindowId = windowIds.first,
                       let firstWindow = findWindowByIdentifier(firstWindowId) {
                 log("✨ Focusing first window in layout: \(firstWindow.title() ?? "<no title>")")
-                firstWindow.focus()
-                centerCursorInWindow(firstWindow)
-                currentlyFocusedWindow = firstWindow
+                focusWindow(firstWindow)
             }
         }
         
@@ -795,8 +847,7 @@ class WindowController: ObservableObject {
                             height: screenFrame.height
                         )
                         try? currentWindow.setFrame(frame)
-                        currentWindow.focus()
-                        centerCursorInWindow(currentWindow)
+                        focusWindow(currentWindow)
                     }
                     return
                 }
@@ -824,8 +875,7 @@ class WindowController: ObservableObject {
                         height: screenFrame.height
                     )
                     try? currentWindow.setFrame(frame)
-                    currentWindow.focus()
-                    centerCursorInWindow(currentWindow)
+                    focusWindow(currentWindow)
                 }
                 
                 // Find the next window to focus (first window in the remaining layout)
