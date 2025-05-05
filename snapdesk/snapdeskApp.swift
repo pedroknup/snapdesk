@@ -16,6 +16,20 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     var settingsWindowController: SettingsWindowController?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Check if another instance is running
+        let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.pedroknup.snapdesk"
+        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier)
+        
+        if runningApps.count > 1 {
+            let alert = NSAlert()
+            alert.messageText = "SnapDesk is already running"
+            alert.informativeText = "Another instance of SnapDesk is already running. Please close it before starting a new instance."
+            alert.alertStyle = .warning
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+            NSApp.terminate(nil)
+            return
+        }
         
         NSApplication.shared.setActivationPolicy(.accessory)
         let trusted = AXIsProcessTrusted()
@@ -23,7 +37,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         if !trusted {
             let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
             _ = AXIsProcessTrustedWithOptions(options)
-            log("⚠️ Not trusted. Exiting...")
+            log("⚠️ Not trusted. Exiting...")≈
             exit(1)
         }
 

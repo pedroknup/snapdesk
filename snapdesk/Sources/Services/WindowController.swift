@@ -899,19 +899,39 @@ class WindowController: ObservableObject {
                 return
             }
             
-            // Find the first window on this screen
+            // Collect all windows on this screen
+            var windowsOnScreen: [SIWindow] = []
             for (_, windows) in appWindows {
                 for window in windows {
                     if screenForWindow(window) == screen {
-                        window.focus()
-                        centerCursorInWindow(window)
-                        currentlyFocusedWindow = window
-                        return
+                        windowsOnScreen.append(window)
                     }
                 }
             }
             
-            log("ℹ️ No windows found on screen \(screenNumber)")
+            // Sort windows by z-order (front to back)
+            windowsOnScreen.sort { window1, window2 in
+                // Get the z-order by checking which window is in front
+                let element1 = window1.axElement().takeUnretainedValue()
+                let element2 = window2.axElement().takeUnretainedValue()
+                
+                // Check if window1 is in front of window2
+                var value: CFTypeRef?
+                let result = AXUIElementCopyAttributeValue(element1, kAXWindowAttribute as CFString, &value)
+                if result == .success, let window1Ref = value {
+                    // If window1 is in front, it should be first in our sorted array
+                    return true
+                }
+                return false
+            }
+            
+            // Focus the most upfront window
+            if let frontWindow = windowsOnScreen.first {
+                focusWindow(frontWindow)
+                log("✨ Focused most upfront window on screen \(screenNumber): \(frontWindow.title() ?? "<no title>")")
+            } else {
+                log("ℹ️ No windows found on screen \(screenNumber)")
+            }
         }
         
         func throwToScreen(_ screenNumber: Int) {
@@ -927,6 +947,9 @@ class WindowController: ObservableObject {
             // Update the window's screen mapping
             let element = currentWindow.axElement().takeUnretainedValue()
             windowScreenMap[element] = targetScreen
+            
+            // Make the window full screen on the target screen
+            maximizeToFullScreen(window: currentWindow, screen: targetScreen)
             
             // Focus the window
             currentWindow.focus()
@@ -1068,5 +1091,6 @@ private extension Array {
         indices.contains(index) ? self[index] : nil
     }
 }
+
 
 
