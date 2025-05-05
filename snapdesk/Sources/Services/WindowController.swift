@@ -303,6 +303,7 @@ class WindowController: ObservableObject {
             let window = windows[nextIndex]
             
             // Get the window ID for the current window
+            // Get the window ID for the current window
             let windowId = getWindowIdentifier(window)
             
             // Check if this window is part of a layout group

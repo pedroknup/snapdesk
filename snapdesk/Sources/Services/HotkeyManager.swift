@@ -119,14 +119,24 @@ class HotkeyManager {
             let key = Key(string: shortcut.key) ?? .zero
             let modifiers = parseModifiers(shortcut.modifiers)
             
-            let hotKey = HotKey(key: key, modifiers: modifiers)
-            hotKey.keyDownHandler = { [weak self] in
-                // Check if we're recording a shortcut before executing
+            // Create regular focus shortcut
+            let focusHotKey = HotKey(key: key, modifiers: modifiers)
+            focusHotKey.keyDownHandler = { [weak self] in
                 guard !HotkeyManager.isRecordingShortcut else { return }
                 self?.windowController.focusApp(appShortcut.bundleIdentifier)
+            }
+            hotKeys.append(focusHotKey)
+            
+            // Create throw shortcut with shift modifier
+            var throwModifiers = modifiers
+            throwModifiers.insert(.shift)
+            let throwHotKey = HotKey(key: key, modifiers: throwModifiers)
+            throwHotKey.keyDownHandler = { [weak self] in
+                guard !HotkeyManager.isRecordingShortcut else { return }
+                log("Throw shortcut triggered for \(appShortcut.bundleIdentifier)")
                 self?.windowController.addWindowToLayout(appShortcut.bundleIdentifier)
             }
-            hotKeys.append(hotKey)
+            hotKeys.append(throwHotKey)
         }
     }
     
