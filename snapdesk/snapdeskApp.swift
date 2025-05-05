@@ -91,7 +91,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     @objc func appDidLaunch(_ notification: Notification) {
         if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
             log("🚀 App launched: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
-            windowController?.scanAndTrackWindows()
+            windowController?.trackWindowsForApp(app)
         }
     }
 

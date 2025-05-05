@@ -170,6 +170,31 @@ class WindowController: ObservableObject {
         return nil
     }
     
+    func trackWindowsForApp(_ app: NSRunningApplication) {
+        guard let bundleID = app.bundleIdentifier else { return }
+        
+        if let runningApps = SIApplication.runningApplications() as? [SIApplication],
+           let siApp = runningApps.first(where: { $0.processIdentifier() == app.processIdentifier }) {
+            let windows = siApp.windows()
+                .filter {
+                    $0.isStandard() &&
+                    $0.frame().width > 0 &&
+                    $0.frame().height > 0
+                }
+            
+            if !windows.isEmpty {
+                appWindows[bundleID] = windows
+                log("➕ Added \(windows.count) windows for app: \(bundleID)")
+                
+                // Maximize each window
+                for window in windows {
+                    window.maximize()
+                    log("🖥 Maximized window: \(window.title() ?? "<no title>")")
+                }
+            }
+        }
+    }
+    
     func prettyPrintWindows(_ appWindows: [String: [SIWindow]]) -> String {
         var output = "\n🪟 Window Summary:\n"
         
@@ -221,6 +246,9 @@ class WindowController: ObservableObject {
                                 let element = window.axElement().takeUnretainedValue()
                                 windowScreenMap[element] = screen
                             }
+                        
+                            window.maximize()
+                             
                         }
                     }
                 }
