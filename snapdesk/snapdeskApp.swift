@@ -37,7 +37,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         if !trusted {
             let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
             _ = AXIsProcessTrustedWithOptions(options)
-            log("⚠️ Not trusted. Exiting...")
+            log("⚠️ Not trusted. Exiting...")≈
             exit(1)
         }
 
