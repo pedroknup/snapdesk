@@ -383,7 +383,8 @@ class WindowController: ObservableObject {
             
             // Get all windows for this app
             guard let windows = appWindows[bundleID], !windows.isEmpty else {
-                log("⚠️ No windows found for app in layout")
+                log("⚠️ No windows found for app, launching it")
+                launchAppIfNeeded(bundleID)
                 return
             }
             
