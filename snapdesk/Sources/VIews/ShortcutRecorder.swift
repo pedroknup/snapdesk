@@ -81,12 +81,6 @@ struct ShortcutRecorder: View {
                 return event
             }
         }
-        .onDisappear {
-            // Remove event monitors when the view disappears
-//            NSEvent.removeMonitor(.flagsChanged)
-//            NSEvent.removeMonitor(for: .keyDown)
-//            NSEvent.removeMonitor(for: .keyUp)
-        }
     }
     
     private func startRecording() {
