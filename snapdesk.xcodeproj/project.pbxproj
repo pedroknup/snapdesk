@@ -19,7 +19,6 @@
 		130647302DB38D6F00A63735 /* SIUniversalAccessHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 130647192DB38D6E00A63735 /* SIUniversalAccessHelper.m */; };
 		130647312DB38D6F00A63735 /* SIWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1306471B2DB38D6E00A63735 /* SIWindow.m */; };
 		130647332DB38D6F00A63735 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306471E2DB38D6E00A63735 /* main.swift */; };
-		1306473C2DB38DB000A63735 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1306473B2DB38DB000A63735 /* snapdeskApp.swift */; };
 		1306473F2DB38DE600A63735 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1306473E2DB38DE600A63735 /* ApplicationServices.framework */; };
 		130647412DB38DEC00A63735 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647402DB38DEC00A63735 /* Carbon.framework */; };
 		130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647422DB38DF100A63735 /* Cocoa.framework */; };
@@ -40,6 +39,7 @@
 		135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */; };
 		135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55172DB6596D00EC05FF /* WindowDebugTest.swift */; };
 		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
+		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
 /* End PBXBuildFile section */
 
@@ -47,7 +47,6 @@
 		130646C92DB38D4D00A63735 /* snapdesk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = snapdesk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		130646D02DB38D4D00A63735 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		130646D22DB38D4E00A63735 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		130646D42DB38D4E00A63735 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		130646D62DB38D4E00A63735 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		130646DD2DB38D6E00A63735 /* CGSAccessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSAccessibility.h; sourceTree = "<group>"; };
 		130646DE2DB38D6E00A63735 /* CGSCIFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGSCIFilter.h; sourceTree = "<group>"; };
@@ -115,8 +114,6 @@
 		130647222DB38D6E00A63735 /* Silica-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Silica-Prefix.pch"; sourceTree = "<group>"; };
 		130647232DB38D6E00A63735 /* Silica.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Silica.h; sourceTree = "<group>"; };
 		130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SnapDesk-Bridging-Header.h"; sourceTree = "<group>"; };
-		130647252DB38D6E00A63735 /* snapdesk.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = snapdesk.entitlements; path = ../../../snapdeskold/snapdesk/snapdesk.entitlements; sourceTree = "<group>"; };
-		1306473B2DB38DB000A63735 /* snapdeskApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = snapdeskApp.swift; path = ../../../snapdeskold/snapdesk/snapdeskApp.swift; sourceTree = "<group>"; };
 		1306473E2DB38DE600A63735 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		130647402DB38DEC00A63735 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		130647422DB38DF100A63735 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -135,6 +132,8 @@
 		135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
 		135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutsTabView.swift; sourceTree = "<group>"; };
 		135B55172DB6596D00EC05FF /* WindowDebugTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowDebugTest.swift; sourceTree = "<group>"; };
+		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
+		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -179,16 +178,15 @@
 				135B55192DB6596D00EC05FF /* Sources */,
 				130647242DB38D6E00A63735 /* SnapDesk-Bridging-Header.h */,
 				13EEDACF2DB6274F001133DA /* AppIcon.icns */,
-				130647252DB38D6E00A63735 /* snapdesk.entitlements */,
 				130647202DB38D6E00A63735 /* Info.plist */,
 				130647222DB38D6E00A63735 /* Silica-Prefix.pch */,
 				1306471E2DB38D6E00A63735 /* main.swift */,
 				130647232DB38D6E00A63735 /* Silica.h */,
-				1306473B2DB38DB000A63735 /* snapdeskApp.swift */,
+				13B773962DEA2753005DF3A6 /* snapdesk.entitlements */,
+				13B773972DEA2753005DF3A6 /* snapdeskApp.swift */,
 				1306471C2DB38D6E00A63735 /* SourcesSilica */,
 				130646D02DB38D4D00A63735 /* Item.swift */,
 				130646D22DB38D4E00A63735 /* Assets.xcassets */,
-				130646D42DB38D4E00A63735 /* snapdesk.entitlements */,
 				130646D52DB38D4E00A63735 /* Preview Content */,
 			);
 			path = snapdesk;
@@ -426,7 +424,6 @@
 				130647332DB38D6F00A63735 /* main.swift in Sources */,
 				135B55242DB6596D00EC05FF /* SettingsTabView.swift in Sources */,
 				1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */,
-				1306473C2DB38DB000A63735 /* snapdeskApp.swift in Sources */,
 				135B551A2DB6596D00EC05FF /* PreferencesViewModel.swift in Sources */,
 				1306472C2DB38D6F00A63735 /* NSScreen+Silica.m in Sources */,
 				130646D12DB38D4D00A63735 /* Item.swift in Sources */,
@@ -440,6 +437,7 @@
 				1306472E2DB38D6F00A63735 /* SIApplication.m in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
 				135B551B2DB6596D00EC05FF /* SIApplication.swift in Sources */,
+				13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */,
 				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
 				135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */,
 				135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */,
