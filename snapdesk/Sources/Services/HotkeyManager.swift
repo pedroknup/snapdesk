@@ -114,9 +114,9 @@ class HotkeyManager {
         // Setup app shortcuts
         for appShortcut in config.appShortcuts {
             // Skip if shortcut is nil
-            guard let shortcut = appShortcut.shortcut else { continue }
+            guard let shortcut = appShortcut.shortcut, !shortcut.key.isEmpty else { continue }
             
-            let key = Key(string: shortcut.key) ?? .zero
+            let key = Key(string: shortcut.key)!
             let modifiers = parseModifiers(shortcut.modifiers)
             
             // Create regular focus shortcut
