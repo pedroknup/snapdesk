@@ -143,6 +143,34 @@ class WindowController: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.scanAndTrackWindows()
         }
+        
+        let nc = NSWorkspace.shared.notificationCenter
+
+        nc.addObserver(forName: NSWorkspace.didLaunchApplicationNotification, object: nil, queue: .main) { notification in
+            if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
+                print("App launched: \(app.localizedName ?? "Unknown") (PID: \(app.processIdentifier))")
+                self.trackWindowsForApp(app)
+            } else {
+                print("App launched (unknown)")
+            }
+        }
+
+        nc.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main) { notification in
+            if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
+                print("App terminated: \(app.localizedName ?? "Unknown") (PID: \(app.processIdentifier))")
+            } else {
+                print("App terminated (unknown)")
+            }
+        }
+
+        nc.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { notification in
+            if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
+                print("App activated (focused): \(app.localizedName ?? "Unknown") (PID: \(app.processIdentifier))")
+            } else {
+                print("App activated (unknown)")
+            }
+        }
+
     }
     
     @objc private func screenParametersDidChange() {
@@ -384,6 +412,7 @@ class WindowController: ObservableObject {
             // Get all windows for this app
             guard let windows = appWindows[bundleID], !windows.isEmpty else {
                 log("⚠️ No windows found for app in layout")
+                self.launchAppIfNeeded(bundleID)
                 return
             }
             
@@ -494,8 +523,6 @@ class WindowController: ObservableObject {
                     return
                 }
             }
-            
-            log("ℹ️ No existing layout found for app")
             
             // Get current index and cycle to next window only if this is the same app as last focused
             let currentIndex = currentWindowPerApp[bundleID] ?? 0
@@ -1223,6 +1250,99 @@ class WindowController: ObservableObject {
                 return NSScreen.main ?? NSScreen.screens.first!
             }
         }
+    
+    fileprivate func add(application: AnyApplication<Application>) {
+           guard applications[application.pid()] == nil else {
+               for window in application.windows() {
+                   add(window: window)
+               }
+               return
+           }
+
+           ApplicationObservation(application: application, delegate: self)
+               .addObservers()
+               .subscribe(
+                   onCompleted: { [weak self] in
+                       self?.applications[application.pid()] = application
+
+                       for window in application.windows() {
+                           self?.add(window: window)
+                       }
+                   }
+               )
+               .disposed(by: disposeBag)
+       }
+
+       fileprivate func remove(application: AnyApplication<Application>) {
+           for window in application.windows() {
+               remove(window: window)
+           }
+           applications.removeValue(forKey: application.pid())
+       }
+
+       fileprivate func activate(application: AnyApplication<Application>) {
+           windows.activateApplication(withPID: application.pid())
+           windows.regenerateActiveIDCache()
+           markAllScreensForReflow(withChange: .applicationActivate)
+       }
+
+       fileprivate func deactivate(application: AnyApplication<Application>) {
+           windows.deactivateApplication(withPID: application.pid())
+           markAllScreensForReflow(withChange: .applicationDeactivate)
+       }
+
+       fileprivate func remove(window: Window) {
+           markAllScreensForReflow(withChange: .remove(window: window))
+           windows.regenerateActiveIDCache()
+           windows.remove(window: window)
+       }
+
+       func toggleFloatForFocusedWindow() {
+           guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
+               return
+           }
+
+           guard windows.windows(onScreen: screen).contains(focusedWindow) else {
+               let windowChange: Change<Window> = .add(window: focusedWindow)
+               add(window: focusedWindow)
+               guard windows.window(withID: focusedWindow.id()) != nil else {
+                   return
+               }
+               windows.setFloating(false, forWindow: focusedWindow)
+               markScreen(screen, forReflowWithChange: windowChange)
+               return
+           }
+
+           let windowChange: Change = windows.isWindowFloating(focusedWindow) ? .add(window: focusedWindow) : .remove(window: focusedWindow)
+           windows.setFloating(!windows.isWindowFloating(focusedWindow), forWindow: focusedWindow)
+           markScreen(screen, forReflowWithChange: windowChange)
+       }
+
+       func markScreen(_ screen: Screen, forReflowWithChange change: Change<Window>) {
+           screens.markScreen(screen, forReflowWithChange: change)
+       }
+
+       func markAllScreensForReflow(withChange windowChange: Change<Window>) {
+           screens.markAllScreensForReflow(withChange: windowChange)
+       }
+
+       func displayCurrentLayout() {
+           for screenManager in screens.screenManagers {
+               screenManager.displayLayoutHUD()
+           }
+       }
+
+       func add(runningApplication: NSRunningApplication) {
+           switch runningApplication.isManageable {
+           case .manageable:
+               let application = AnyApplication(Application(runningApplication: runningApplication))
+               add(application: application)
+           case .undetermined:
+               monitorUndeterminedApplication(runningApplication)
+           case .unmanageable:
+               break
+           }
+       }
     }
 
 

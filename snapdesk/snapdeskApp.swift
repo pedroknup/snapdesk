@@ -75,6 +75,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         versionItem.isEnabled = false
         menu.addItem(versionItem)
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Revaluate Windows", action: #selector(revaluateWindows), keyEquivalent: "r"))
         
         menu.addItem(NSMenuItem(title: "Preferences", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "About SnapDesk", action: #selector(showAbout), keyEquivalent: ""))
@@ -89,17 +90,17 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     
     
     @objc func appDidLaunch(_ notification: Notification) {
-        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
-            log("🚀 App launched: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
-            windowController?.trackWindowsForApp(app)
-        }
+//        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
+//            log("🚀 App launched: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
+//            windowController?.trackWindowsForApp(app)
+//        }
     }
 
     @objc func appDidTerminate(_ notification: Notification) {
-        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
-            log("❌ App terminated: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
-            windowController?.scanAndTrackWindows()
-        }
+//        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
+//            log("❌ App terminated: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
+//            windowController?.scanAndTrackWindows()
+//        }
     }
     
     @objc func quitApp() {
@@ -121,6 +122,11 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
             settingsWindowController = SettingsWindowController()
         }
         settingsWindowController?.showTab(.about)
+    }
+    
+    @objc func revaluateWindows() {
+        log("🔄 Revaluate windows clicked")
+        windowController?.scanAndTrackWindows()
     }
 
 
