@@ -206,6 +206,7 @@ final class WindowSet: Identifiable {
         let windowCount = windows.count
         let windowWidth = frame.width / CGFloat(windowCount)
         
+        // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
             let windowFrame = CGRect(
                 x: frame.origin.x + (CGFloat(index) * windowWidth),
@@ -215,10 +216,15 @@ final class WindowSet: Identifiable {
             )
             
             log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
-            
-            // Move and bring window to front
             move(window: window.axElementRef, to: windowFrame)
-            window.raise()
+        }
+        
+        // Then, bring all windows to front with small delays to ensure they all come up
+        for (index, window) in windows.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
+                window.raise()
+                log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
+            }
         }
     }
     
@@ -226,6 +232,7 @@ final class WindowSet: Identifiable {
         let windowCount = windows.count
         let windowHeight = frame.height / CGFloat(windowCount)
         
+        // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
             let windowFrame = CGRect(
                 x: frame.origin.x,
@@ -235,22 +242,34 @@ final class WindowSet: Identifiable {
             )
             
             log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
-            
-            // Move and bring window to front
             move(window: window.axElementRef, to: windowFrame)
-            window.raise()
+        }
+        
+        // Then, bring all windows to front with small delays to ensure they all come up
+        for (index, window) in windows.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
+                window.raise()
+                log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
+            }
         }
     }
     
     private func expandWindowsFullscreen(in frame: CGRect) {
         // In fullscreen mode, all windows take up the entire screen
         // Only the focused window should be visible
+        
+        // First, move all windows to fullscreen
         for window in windows {
             log("🖥️ Expanding window to fullscreen: \(window.title() ?? "untitled")")
-            
-            // Move and bring window to front
             move(window: window.axElementRef, to: frame)
-            window.raise()
+        }
+        
+        // Then, bring all windows to front with small delays
+        for (index, window) in windows.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
+                window.raise()
+                log("🔝 Raised fullscreen window \(index): \(window.title() ?? "untitled")")
+            }
         }
     }
 }
