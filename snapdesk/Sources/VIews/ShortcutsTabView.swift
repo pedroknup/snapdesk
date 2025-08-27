@@ -257,6 +257,10 @@ struct ShortcutsTabView: View {
     
     private func saveConfig() {
         try? configManager.saveConfig(config)
+        // Notify the main app to reload hotkey configuration
+        if let appDelegate = NSApplication.shared.delegate as? SnapdeskApp {
+            appDelegate.reloadHotkeyConfiguration()
+        }
     }
 }
 

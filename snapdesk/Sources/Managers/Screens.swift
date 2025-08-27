@@ -10,10 +10,7 @@ import Foundation
 import Silica
 
 extension WindowManager {
-    class Screens: Codable {
-        enum CodingKeys: String, CodingKey {
-            case screenManagersCache
-        }
+    class Screens {
 
         private(set) var screenManagers: [ScreenManager<WindowManager<Application>>] = []
         private var screenManagersCache: [String: ScreenManager<WindowManager<Application>>] = [:]

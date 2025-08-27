@@ -31,4 +31,3 @@ class PreferencesViewModel: ObservableObject {
     @Published var selectedTab: SettingsTab = .settings
 }
 
-

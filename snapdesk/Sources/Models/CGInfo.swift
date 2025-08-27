@@ -10,6 +10,7 @@ import Foundation
 import Silica
 import SwiftyJSON
 
+
 /// Windows info as taken from the underlying system.
 struct CGWindowsInfo<Window: WindowType> {
     /// An array of dictionaries of window information
@@ -99,9 +100,9 @@ struct CGSpacesInfo<Window: WindowType> {
             return allSpaces(fromScreenDescription: screenDescription) ?? []
         }.reduce([], {acc, spaces in acc + spaces})
 
-        if includeOnlyUserSpaces {
-            return spaces.filter { $0.type == CGSSpaceTypeUser }
-        }
+//        if includeOnlyUserSpaces {
+//            return spaces.filter { $0.type == CGSSpaceTypeUser }
+//        }
 
         return spaces
     }
@@ -128,9 +129,9 @@ struct CGSpacesInfo<Window: WindowType> {
             spaces = allSpaces(fromScreenDescription: screenDescriptions[0])
         }
 
-        if includeOnlyUserSpaces {
-            return spaces?.filter { $0.type == CGSSpaceTypeUser }
-        }
+//        if includeOnlyUserSpaces {
+//            return spaces?.filter { $0.type == CGSSpaceTypeUser }
+//        }
 
         return spaces
     }

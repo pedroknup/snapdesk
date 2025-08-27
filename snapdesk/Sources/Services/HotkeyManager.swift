@@ -10,120 +10,156 @@ import Carbon
 import Foundation
 import AppKit
 
-class HotkeyManager {
-    var hotKeys: [HotKey] = []
-    let windowController: WindowController
-    private let configManager = ConfigurationManager.shared
+// Type for defining key code.
+typealias AMKeyCode = Int
+
+// Type for defining modifier flags.
+typealias AMModifierFlags = NSEvent.ModifierFlags
+
+// Specific key code defined to be invalid.
+private let AMKeyCodeInvalid: AMKeyCode = 0xFF
+
+typealias HotKeyHandler = () -> Void
+
+// Protocol that defines how hotkeys are registered
+protocol HotKeyRegistrar {
+    func registerHotKey(with key: String?, modifiers: AMModifierFlags?, handler: @escaping HotKeyHandler, defaultsKey: String, override: Bool)
+}
+
+// Protocol that defines the window management methods we need
+protocol WindowManaging: AnyObject {
+    func toggleFullScreen()
+    func removeCurrentWindowFromLayout()
+    func focusScreen(_ screenNumber: Int)
+    func throwToScreen(_ screenNumber: Int)
+    func throwToCurrentLayout()
+    func increaseMainPanelCount()
+    func decreaseMainPanelCount()
+    func cycleWindowsClockwise()
+    func cycleWindowsCounterclockwise()
+    func focusApp(_ bundleID: String)
+    func addWindowToLayout(_ bundleID: String)
+}
+
+// Static storage for the active HotkeyManager instance (outside generic class)
+private class HotkeyManagerStorage {
+    static weak var activeInstance: AnyObject?
+}
+
+class HotkeyManager: NSObject, HotKeyRegistrar {
+    private let userConfiguration: UserConfiguration
+    private var hotKeys: [HotKey] = []
+    private let windowManager: WindowManaging
     
-    // Static property to track if shortcuts are being recorded
-    static var isRecordingShortcut = false
+    // Instance property to track if shortcuts are being recorded
+    private var isRecordingShortcut = false
     
     // Static method to pause all hotkeys
     static func pauseAllHotkeys() {
-        isRecordingShortcut = true
+        if let activeInstance = HotkeyManagerStorage.activeInstance as? HotkeyManager {
+            activeInstance.isRecordingShortcut = true
+        }
         log("⏸ Pausing all hotkeys for shortcut recording")
     }
     
     // Static method to resume all hotkeys
     static func resumeAllHotkeys() {
-        isRecordingShortcut = false
+        if let activeInstance = HotkeyManagerStorage.activeInstance as? HotkeyManager {
+            activeInstance.isRecordingShortcut = false
+        }
         log("▶️ Resuming all hotkeys after shortcut recording")
     }
 
-    init(controller: WindowController) {
-        self.windowController = controller
-        setupBindings()
+    private(set) lazy var stringToKeyCodes: [String: [AMKeyCode]] = {
+        return self.constructKeyCodeMap()
+    }()
+
+    init(windowManager: WindowManaging, userConfiguration: UserConfiguration) {
+        self.windowManager = windowManager
+        self.userConfiguration = userConfiguration
+        super.init()
+        _ = constructKeyCodeMap()
+        
+        // Set this as the active instance for static method access
+        HotkeyManagerStorage.activeInstance = self
     }
 
-    func setupBindings() {
-        // Load configuration or use defaults
-        let config = configManager.loadConfig() ?? configManager.getDefaultConfig()
-        
-        // Setup general shortcuts
-        for generalShortcut in config.generalShortcuts {
-            // Skip if shortcut is nil
-            guard let shortcut = generalShortcut.shortcut, !shortcut.key.isEmpty else { continue }
-            
-            let key = Key(string: shortcut.key) ?? .zero
-            let modifiers = parseModifiers(shortcut.modifiers)
-            
-            let hotKey = HotKey(key: key, modifiers: modifiers)
-            
-            switch generalShortcut.name {
-            case "Toggle Full Screen layout for the current screen":
-                hotKey.keyDownHandler = { [weak self] in
-                    // Check if we're recording a shortcut before executing
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.toggleFullScreen()
-                }
-            case "Remove current window from layout":
-                hotKey.keyDownHandler = { [weak self] in
-                    // Check if we're recording a shortcut before executing
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.removeCurrentWindowFromLayout()
-                }
-            // Focus Screen shortcuts
-            case "Focus Screen 1", "Focus Screen 2", "Focus Screen 3", "Focus Screen 4", "Focus Screen 5", "Focus Screen 6":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    if let screenNumber = Int(generalShortcut.name.split(separator: " ").last ?? "0") {
-                        self?.windowController.focusScreen(screenNumber)
-                    }
-                }
-            // Throw to Screen shortcuts
-            case "Throw to Screen 1", "Throw to Screen 2", "Throw to Screen 3", "Throw to Screen 4", "Throw to Screen 5", "Throw to Screen 6":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    if let screenNumber = Int(generalShortcut.name.split(separator: " ").last ?? "0") {
-                        self?.windowController.throwToScreen(screenNumber)
-                    }
-                }
-            // Layout management shortcuts
-            case "Throw app to current layout modifier":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.throwToCurrentLayout()
-                }
-            case "Increase main panel count":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.increaseMainPanelCount()
-                }
-            case "Decrease main panel count":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.decreaseMainPanelCount()
-                }
-            case "Cycle current layout windows clockwise":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.cycleWindowsClockwise()
-                }
-            case "Cycle current layout windows counterclockwise":
-                hotKey.keyDownHandler = { [weak self] in
-                    guard !HotkeyManager.isRecordingShortcut else { return }
-                    self?.windowController.cycleWindowsCounterclockwise()
-                }
-            default:
-                continue
-            }
-            
-            hotKeys.append(hotKey)
+    func setUpWithWindowController(_ windowManager: WindowManaging, configuration: UserConfiguration) {
+        // Toggle full screen layout
+        constructCommandWithCommandKey("toggle-fullscreen-layout") { [weak self, weak windowManager] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+//            windowManager?.toggleFullScreen()
         }
+        
+        // Remove current window from layout
+        constructCommandWithCommandKey("remove-current-window-from-layout") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.removeCurrentWindowFromLayout()
+        }
+        
+        // Focus Screen shortcuts (1-6)
+        (1...6).forEach { screenNumber in
+            let commandKey = "focus-screen-\(screenNumber)"
+            self.constructCommandWithCommandKey(commandKey) { [weak self] in
+                guard !(self?.isRecordingShortcut ?? false) else { return }
+                self?.windowManager.focusScreen(screenNumber)
+            }
+        }
+        
+        // Throw to Screen shortcuts (1-6)
+        (1...6).forEach { screenNumber in
+            let commandKey = "throw-screen-\(screenNumber)"
+            self.constructCommandWithCommandKey(commandKey) { [weak self] in
+                guard !(self?.isRecordingShortcut ?? false) else { return }
+                self?.windowManager.throwToScreen(screenNumber)
+            }
+        }
+        
+        // Layout management shortcuts
+        constructCommandWithCommandKey("throw-to-current-layout") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.throwToCurrentLayout()
+        }
+        
+//        constructCommandWithCommandKey("increase-main-panel-count") { [weak self, weak windowManager] in
+//            guard !(self?.isRecordingShortcut ?? false) else { return }
+//            (windowManager as? WindowManager)?.increaseMainPanelCount()
+//        }
+//        
+//        constructCommandWithCommandKey("decrease-main-panel-count") { [weak self, weak windowManager] in
+//            guard !(self?.isRecordingShortcut ?? false) else { return }
+//            (windowManager as? WindowManager<SIApplication>)?.decreaseMainPanelCount()
+//        }
+//        
+//        constructCommandWithCommandKey("cycle-windows-clockwise") { [weak self, weak windowManager] in
+//            guard !(self?.isRecordingShortcut ?? false) else { return }
+//            (windowManager as? WindowManager)?.cycleWindowsClockwise()
+//        }
+//        
+//        constructCommandWithCommandKey("cycle-windows-counterclockwise") { [weak self, weak windowManager] in
+//            guard !(self?.isRecordingShortcut ?? false) else { return }
+//            (windowManager as? WindowManager<SIApplication>)?.cycleWindowsCounterclockwise()
+//        }
+        
+        // Setup app shortcuts - we'll need to handle these dynamically
+        setupAppShortcuts()
+    }
+    
+    private func setupAppShortcuts() {
+        let config = ConfigurationManager.shared.loadConfig() ?? ConfigurationManager.shared.getDefaultConfig()
         
         // Setup app shortcuts
         for appShortcut in config.appShortcuts {
-            // Skip if shortcut is nil
             guard let shortcut = appShortcut.shortcut, !shortcut.key.isEmpty else { continue }
             
-            let key = Key(string: shortcut.key)!
+            let key = Key(string: shortcut.key) ?? .zero
             let modifiers = parseModifiers(shortcut.modifiers)
             
             // Create regular focus shortcut
             let focusHotKey = HotKey(key: key, modifiers: modifiers)
             focusHotKey.keyDownHandler = { [weak self] in
-                guard !HotkeyManager.isRecordingShortcut else { return }
-                self?.windowController.focusApp(appShortcut.bundleIdentifier)
+                guard !(self?.isRecordingShortcut ?? false) else { return }
+                self?.windowManager.focusApp(appShortcut.bundleIdentifier)
             }
             hotKeys.append(focusHotKey)
             
@@ -132,12 +168,114 @@ class HotkeyManager {
             throwModifiers.insert(.shift)
             let throwHotKey = HotKey(key: key, modifiers: throwModifiers)
             throwHotKey.keyDownHandler = { [weak self] in
-                guard !HotkeyManager.isRecordingShortcut else { return }
+                guard !(self?.isRecordingShortcut ?? false) else { return }
                 log("Throw shortcut triggered for \(appShortcut.bundleIdentifier)")
-                self?.windowController.addWindowToLayout(appShortcut.bundleIdentifier)
+                self?.windowManager.addWindowToLayout(appShortcut.bundleIdentifier)
             }
             hotKeys.append(throwHotKey)
         }
+    }
+    
+    // MARK: - Amethyst-style methods
+    
+    private func constructKeyCodeMap() -> [String: [AMKeyCode]] {
+        var stringToKeyCodes: [String: [AMKeyCode]] = [:]
+
+        // Generate unicode character keymapping from keyboard layout data.
+        var currentKeyboard = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+        var rawLayoutData = TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData)
+
+        if rawLayoutData == nil {
+            currentKeyboard = TISCopyCurrentASCIICapableKeyboardLayoutInputSource().takeUnretainedValue()
+            rawLayoutData = TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData)
+        }
+
+        // Get the layout
+        let layoutData = unsafeBitCast(rawLayoutData, to: CFData.self)
+        let layout: UnsafePointer<UCKeyboardLayout> = unsafeBitCast(CFDataGetBytePtr(layoutData), to: UnsafePointer<UCKeyboardLayout>.self)
+
+        var keysDown: UInt32 = 0
+        var chars: [UniChar] = [0, 0, 0, 0]
+        var realLength: Int = 0
+
+        for keyCode in (0..<AMKeyCodeInvalid) {
+            switch keyCode {
+            case
+            kVK_ANSI_Keypad0,
+            kVK_ANSI_Keypad1,
+            kVK_ANSI_Keypad2,
+            kVK_ANSI_Keypad3,
+            kVK_ANSI_Keypad4,
+            kVK_ANSI_Keypad5,
+            kVK_ANSI_Keypad6,
+            kVK_ANSI_Keypad7,
+            kVK_ANSI_Keypad8,
+            kVK_ANSI_Keypad9:
+                continue
+            default:
+                break
+            }
+
+            UCKeyTranslate(layout,
+                           UInt16(keyCode),
+                           UInt16(kUCKeyActionDisplay),
+                           0,
+                           UInt32(LMGetKbdType()),
+                           UInt32(kUCKeyTranslateNoDeadKeysBit),
+                           &keysDown,
+                           chars.count,
+                           &realLength,
+                           &chars)
+
+            let string = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, realLength) as String
+
+            if let keyCodes = stringToKeyCodes[string] {
+                var mutableKeyCodes = keyCodes
+                mutableKeyCodes.append(keyCode)
+                stringToKeyCodes[string] = mutableKeyCodes
+            } else {
+                stringToKeyCodes[string] = [keyCode]
+            }
+        }
+
+        // Add codes for non-printable characters
+        stringToKeyCodes["space"] = [kVK_Space]
+        stringToKeyCodes["enter"] = [kVK_Return]
+        stringToKeyCodes["up"] = [kVK_UpArrow]
+        stringToKeyCodes["right"] = [kVK_RightArrow]
+        stringToKeyCodes["down"] = [kVK_DownArrow]
+        stringToKeyCodes["left"] = [kVK_LeftArrow]
+        stringToKeyCodes["delete"] = [kVK_Delete]
+
+        return stringToKeyCodes
+    }
+
+    private func constructCommandWithCommandKey(_ commandKey: String, handler: @escaping HotKeyHandler) {
+        userConfiguration.constructCommand(for: self, commandKey: commandKey, handler: handler)
+    }
+    
+    // MARK: - HotKeyRegistrar Protocol
+    
+    func registerHotKey(with key: String?, modifiers: AMModifierFlags?, handler: @escaping HotKeyHandler, defaultsKey: String, override: Bool) {
+        guard let keyString = key, let modifiers = modifiers, !keyString.isEmpty else {
+            return
+        }
+        
+        // Convert string to HotKey Key enum
+        guard let hotKeyKey = Key(string: keyString) else {
+            log("Could not convert key string '\(keyString)' to HotKey.Key")
+            return
+        }
+        
+        // Create and store the HotKey
+        let hotKey = HotKey(key: hotKeyKey, modifiers: modifiers)
+        hotKey.keyDownHandler = { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            handler()
+        }
+        
+        hotKeys.append(hotKey)
+        log("Registered hotkey: \(keyString) with modifiers: \(modifiers)")
     }
     
     private func parseModifiers(_ modifierStrings: [String]) -> NSEvent.ModifierFlags {
@@ -159,5 +297,41 @@ class HotkeyManager {
         }
         
         return modifiers
+    }
+    
+    // MARK: - Command Key Mapping
+    
+    static func commandKeyToDisplayName() -> [String: String] {
+        return [
+            "toggle-fullscreen-layout": "Toggle Full Screen layout for the current screen",
+            "remove-current-window-from-layout": "Remove current window from layout",
+            "focus-screen-1": "Focus Screen 1",
+            "focus-screen-2": "Focus Screen 2",
+            "focus-screen-3": "Focus Screen 3",
+            "focus-screen-4": "Focus Screen 4",
+            "focus-screen-5": "Focus Screen 5",
+            "focus-screen-6": "Focus Screen 6",
+            "throw-screen-1": "Throw to Screen 1",
+            "throw-screen-2": "Throw to Screen 2",
+            "throw-screen-3": "Throw to Screen 3",
+            "throw-screen-4": "Throw to Screen 4",
+            "throw-screen-5": "Throw to Screen 5",
+            "throw-screen-6": "Throw to Screen 6",
+            "throw-to-current-layout": "Throw app to current layout modifier",
+            "increase-main-panel-count": "Increase main panel count",
+            "decrease-main-panel-count": "Decrease main panel count",
+            "cycle-windows-clockwise": "Cycle current layout windows clockwise",
+            "cycle-windows-counterclockwise": "Cycle current layout windows counterclockwise"
+        ]
+    }
+    
+    // MARK: - Configuration Reload Support
+    
+    func reloadConfiguration() {
+        // Clear existing hotkeys
+        hotKeys.removeAll()
+        
+        // Reload general shortcuts with new Amethyst pattern
+        setUpWithWindowController(windowManager, configuration: userConfiguration)
     }
 }

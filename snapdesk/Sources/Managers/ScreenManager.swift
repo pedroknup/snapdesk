@@ -17,13 +17,10 @@ protocol ScreenManagerDelegate: AnyObject {
     func onReflowCompletion()
 }
 
-final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
+final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject {
     typealias Window = Delegate.Window
     typealias Screen = Window.Screen
 
-    enum CodingKeys: String, CodingKey {
-        case layoutsBySpaceUUID
-    }
 
     weak var delegate: Delegate?
 
@@ -49,12 +46,12 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 //    private var layoutsBySpaceUUID: [String: [Layout<Window>]] = [:]
     private var currentLayoutIndex: Int = 0
     var previousLayoutKey: String?
-    var currentLayout: Layout<Window>? {
-        guard !layouts.isEmpty else {
-            return nil
-        }
-        return layouts[currentLayoutIndex]
-    }
+//    var currentLayout: Layout<Window>? {
+//        guard !layouts.isEmpty else {
+//            return nil
+//        }
+//        return layouts[currentLayoutIndex]
+//    }
 
 //    private let layoutNameWindowController: LayoutNameWindowController
 
@@ -72,17 +69,6 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         reflowOperationQueue.underlyingQueue = reflowOperationDispatchQueue
     }
 
-    init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-//        let layoutsBySpaceUUID = try values.decode([String: [[String: Data]]].self, forKey: .layoutsBySpaceUUID)
-
-        self.userConfiguration = UserConfiguration.shared
-//        self.layoutsBySpaceUUID = try layoutsBySpaceUUID.mapValues { keyedLayouts -> [Layout<Window>] in
-//            return try ScreenManager<Delegate>.decodedLayouts(from: keyedLayouts, userConfiguration: UserConfiguration.shared)
-//        }
-
-//        layoutNameWindowController = LayoutNameWindowController(windowNibName: "LayoutNameWindow")
-    }
 
 
     func updateScreen(to screen: Screen) {
@@ -100,7 +86,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
 
         self.space = space
 
-        setCurrentLayoutIndex(currentLayoutIndexBySpaceUUID[space.uuid] ?? 0, changingSpace: true)
+//        setCurrentLayoutIndex(currentLayoutIndexBySpaceUUID[space.uuid] ?? 0, changingSpace: true)
     }
 
     func setNeedsReflow(withWindowChange windowChange: Change<Window>) {
@@ -113,7 +99,7 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
             if lastFocusedWindow == window {
                 lastFocusedWindow = nil
             }
-        case .windowSwap, .applicationActivate, .applicationDeactivate, .spaceChange, .layoutChange, .tabChange, .none, .unknown:
+        case .windowSwap, .applicationActivate, .applicationDeactivate, .spaceChange, .tabChange, .none, .unknown:
             break
         }
 
@@ -128,56 +114,56 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
     }
 
     private func minimizeWindows() {
-        let mainPaneCount = (currentLayout as? PanedLayout)?.mainPaneCount ?? 0
+//        let mainPaneCount = (currentLayout as? PanedLayout)?.mainPaneCount ?? 0
 
         guard UserConfiguration.shared.tilingEnabled, let windowLimit = UserConfiguration.shared.windowMaxCount() else {
             return
         }
-        let shouldInsertAtFront = UserConfiguration.shared.sendNewWindowsToMainPane()
-        delegate?.applyWindowLimit(forScreenManager: self, minimizingIn: { windowCount in
-
-            if windowLimit > windowCount {
-                // Not enough windows to minimize.
-                return 0 ..< 0
-            }
-//            if !(currentLayout is PanedLayout) {
-//                // Minimize from the back, for layouts like floating/fullscreen.
-//                if shouldInsertAtFront {
-//                    return windowLimit ..< windowCount
-//                } else {
-//                    return 0 ..< windowCount - windowLimit
-//                }
+//        let shouldInsertAtFront = UserConfiguration.shared.sendNewWindowsToMainPane()
+//        delegate?.applyWindowLimit(forScreenManager: self, minimizingIn: { windowCount in
+//
+//            if windowLimit > windowCount {
+//                // Not enough windows to minimize.
+//                return 0 ..< 0
 //            }
-            if windowLimit <= mainPaneCount {
-                // Don't minimize main panes. This allowing varying main pane count to pin windows.
-                guard windowCount >= mainPaneCount else {return 0 ..< 0}
-                return mainPaneCount ..< windowCount
-            }
-            // Minimize the oldest non-main panes.
-            if shouldInsertAtFront {
-                return windowLimit ..< windowCount
-            } else {
-                return mainPaneCount ..< windowCount + mainPaneCount - windowLimit
-            }
-        })
+////            if !(currentLayout is PanedLayout) {
+////                // Minimize from the back, for layouts like floating/fullscreen.
+////                if shouldInsertAtFront {
+////                    return windowLimit ..< windowCount
+////                } else {
+////                    return 0 ..< windowCount - windowLimit
+////                }
+////            }
+////            if windowLimit <= mainPaneCount {
+////                // Don't minimize main panes. This allowing varying main pane count to pin windows.
+////                guard windowCount >= mainPaneCount else {return 0 ..< 0}
+////                return mainPaneCount ..< windowCount
+////            }
+////            // Minimize the oldest non-main panes.
+////            if shouldInsertAtFront {
+////                return windowLimit ..< windowCount
+////            } else {
+////                return mainPaneCount ..< windowCount + mainPaneCount - windowLimit
+////            }
+//        )
     }
 
     private func reflow(_ event: Change<Window>) {
-        guard let screen = screen else {
-            return
-        }
+//        guard let screen = screen else {
+//            return
+//        }
 
-        guard userConfiguration.tilingEnabled, space?.type == CGSSpaceTypeUser else {
-            return
-        }
+//        guard userConfiguration.tilingEnabled, space?.type == CGSSpaceTypeUser else {
+//            return
+//        }
 
-        guard let windows = delegate?.activeWindowSet(forScreenManager: self) else {
-            return
-        }
+//        guard let windows = delegate?.activeWindowSet(forScreenManager: self) else {
+//            return
+//        }
 
-        guard let layout = currentLayout, let frameAssignments = layout.frameAssignments(windows, on: screen) else {
-            return
-        }
+//        guard let layout = currentLayout, let frameAssignments = layout.frameAssignments(windows, on: screen) else {
+//            return
+//        }
 
         let mouseFollowsFocus = userConfiguration.mouseFollowsFocus()
 
@@ -201,11 +187,11 @@ final class ScreenManager<Delegate: ScreenManagerDelegate>: NSObject, Codable {
         }
 
         // The completion should be dependent on all assignments finishing
-        frameAssignments.forEach { completeOperation.addDependency($0) }
+//        frameAssignments.forEach { completeOperation.addDependency($0) }
 
         // Start the operation
         delegate?.onReflowInitiation()
-        reflowOperationQueue.addOperations(frameAssignments, waitUntilFinished: false)
+//        reflowOperationQueue.addOperations(frameAssignments, waitUntilFinished: false)
         reflowOperationQueue.addOperation(completeOperation)
     }
 

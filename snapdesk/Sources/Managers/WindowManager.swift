@@ -24,7 +24,7 @@ import SwiftyJSON
  */
 private let mouseMoveClickSpeedTolerance: TimeInterval = 0.3
 
-final class WindowManager<Application: ApplicationType>: NSObject, Codable {
+final class WindowManager<Application: ApplicationType>: NSObject {
     typealias Window = Application.Window
     typealias Screen = Window.Screen
 
@@ -39,9 +39,6 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         }
     }
 
-    enum CodingKeys: String, CodingKey {
-        case screens
-    }
 
     let windowTransitionCoordinator: WindowTransitionCoordinator<WindowManager<Application>>
     let focusTransitionCoordinator: FocusTransitionCoordinator<WindowManager<Application>>
@@ -53,7 +50,7 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
     private var lastReflowTime = Date()
     private var lastFocusDate: Date?
 
-    private lazy var mouseStateKeeper = MouseStateKeeper(delegate: self)
+//    private lazy var mouseStateKeeper = MouseStateKeeper(delegate: self)
     private lazy var applicationEventHandler = ApplicationEventHandler(delegate: self)
     private let userConfiguration: UserConfiguration
     private let disposeBag = DisposeBag()
@@ -67,15 +64,6 @@ final class WindowManager<Application: ApplicationType>: NSObject, Codable {
         initialize()
     }
 
-    init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.screens = try values.decode(Screens.self, forKey: .screens)
-        self.userConfiguration = UserConfiguration.shared
-        self.windowTransitionCoordinator = WindowTransitionCoordinator<WindowManager<Application>>()
-        self.focusTransitionCoordinator = FocusTransitionCoordinator<WindowManager<Application>>(userConfiguration: userConfiguration)
-        super.init()
-        initialize()
-    }
 
     private func initialize() {
         windowTransitionCoordinator.target = self
@@ -318,7 +306,7 @@ extension WindowManager {
 
     func displayCurrentLayout() {
         for screenManager in screens.screenManagers {
-            screenManager.displayLayoutHUD()
+//            screenManager.displayLayoutHUD()
         }
     }
 
@@ -471,7 +459,7 @@ extension WindowManager {
     }
 
     func onReflowInitiation() {
-        mouseStateKeeper.handleReflowEvent()
+//        mouseStateKeeper.handleReflowEvent()
     }
 
     func onReflowCompletion() {
@@ -483,7 +471,7 @@ extension WindowManager {
         // (and although the docs say that it executes in a separate thread), I consider
         // this to be thread safe, at least safe enough, because we always want the
         // latest time that a reflow took place.
-        mouseStateKeeper.handleReflowEvent()
+//        mouseStateKeeper.handleReflowEvent()
         lastReflowTime = Date()
     }
 
@@ -497,10 +485,10 @@ extension WindowManager {
             return
         }
 
-        // See the description of mouseMoveClickSpeedTolerance for details.
-        if let interval = mouseStateKeeper.lastClick?.timeIntervalSinceNow, abs(interval) < mouseMoveClickSpeedTolerance {
-            return
-        }
+//        // See the description of mouseMoveClickSpeedTolerance for details.
+//        if let interval = mouseStateKeeper.lastClick?.timeIntervalSinceNow, abs(interval) < mouseMoveClickSpeedTolerance {
+//            return
+//        }
 
         if focusTransitionCoordinator.recentlyTriggeredFocusFollowsMouse() {
             // If we have recently triggered focus-follows-mouse, then disable mouse-follows-focus. Otherwise, the moment
@@ -521,11 +509,11 @@ extension WindowManager: MouseStateKeeperDelegate {
     func recommendMainPaneRatio(_ ratio: CGFloat) {
         guard let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager() else { return }
 
-        screenManager.updateCurrentLayout { layout in
-            if let panedLayout = layout as? PanedLayout {
-                panedLayout.recommendMainPaneRatio(ratio)
-            }
-        }
+//        screenManager.updateCurrentLayout { layout in
+//            if let panedLayout = layout as? PanedLayout {
+//                panedLayout.recommendMainPaneRatio(ratio)
+//            }
+//        }
     }
 
     func swapDraggedWindowWithDropzone(_ draggedWindow: Window) {
@@ -538,13 +526,13 @@ extension WindowManager: MouseStateKeeperDelegate {
         let unflippedY = Screen.globalHeight() - flippedPointerLocation.y + screen.frameIncludingDockAndMenu().origin.y
         let pointerLocation = NSPointToCGPoint(NSPoint(x: flippedPointerLocation.x, y: unflippedY))
 
-        if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(), let layout = screenManager.currentLayout {
-            let windowSet = self.windows.windowSet(forWindowsOnScreen: screen)
-            if let layoutWindow = layout.windowAtPoint(pointerLocation, of: windowSet, on: screen), let framedWindow = self.windows.window(withID: layoutWindow.id) {
-                executeTransition(.switchWindows(draggedWindow, framedWindow))
-                return
-            }
-        }
+//        if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(), let layout = screenManager.currentLayout {
+//            let windowSet = self.windows.windowSet(forWindowsOnScreen: screen)
+//            if let layoutWindow = layout.windowAtPoint(pointerLocation, of: windowSet, on: screen), let framedWindow = self.windows.window(withID: layoutWindow.id) {
+//                executeTransition(.switchWindows(draggedWindow, framedWindow))
+//                return
+//            }
+//        }
 
         // Ignore if there is no window at that point
         guard let secondWindow = WindowsInformation.alternateWindowForScreenAtPoint(pointerLocation, withWindows: windows, butNot: draggedWindow) else {
@@ -593,25 +581,25 @@ extension WindowManager: ApplicationObservationDelegate {
             return
         }
 
-        switch mouseStateKeeper.state {
-        case .dragging:
-            // be aware of last reflow time, again to prevent race condition
-            let reflowEndInterval = Date().timeIntervalSince(lastReflowTime)
-            guard reflowEndInterval > mouseStateKeeper.dragRaceThresholdSeconds else { break }
-
-            // record window and wait for mouse up
-            mouseStateKeeper.state = .moving(window: window)
-        case let .doneDragging(lmbUpMoment):
-            mouseStateKeeper.state = .pointing // flip state first to prevent race condition
-
-            // if mouse button recently came up, assume window move is related
-            let dragEndInterval = Date().timeIntervalSince(lmbUpMoment)
-            guard dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds else { break }
-
-            mouseStateKeeper.swapDraggedWindowWithDropzone(window)
-        default:
-            break
-        }
+//        switch mouseStateKeeper.state {
+//        case .dragging:
+//            // be aware of last reflow time, again to prevent race condition
+//            let reflowEndInterval = Date().timeIntervalSince(lastReflowTime)
+//            guard reflowEndInterval > mouseStateKeeper.dragRaceThresholdSeconds else { break }
+//
+//            // record window and wait for mouse up
+//            mouseStateKeeper.state = .moving(window: window)
+//        case let .doneDragging(lmbUpMoment):
+//            mouseStateKeeper.state = .pointing // flip state first to prevent race condition
+//
+//            // if mouse button recently came up, assume window move is related
+//            let dragEndInterval = Date().timeIntervalSince(lmbUpMoment)
+//            guard dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds else { break }
+//
+//            mouseStateKeeper.swapDraggedWindowWithDropzone(window)
+//        default:
+//            break
+//        }
     }
 
     func application(_ application: AnyApplication<Application>, didResizeWindow window: Window) {
@@ -623,41 +611,41 @@ extension WindowManager: ApplicationObservationDelegate {
             return
         }
 
-        guard
-            let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(),
-            let layout = screenManager.currentLayout,
-            layout is PanedLayout
-        else {
-            return
-        }
+//        guard
+////            let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager(),
+////            let layout = screenManager.currentLayout,
+////            layout is PanedLayout
+//        else {
+//            return
+//        }
 
-        guard let oldFrame = layout.assignedFrame(window, of: windows.windowSet(forActiveWindowsOnScreen: screen), on: screen) else {
-            return
-        }
+//        guard let oldFrame = layout.assignedFrame(window, of: windows.windowSet(forActiveWindowsOnScreen: screen), on: screen) else {
+//            return
+//        }
 
-        let ratio = oldFrame.impliedMainPaneRatio(windowFrame: window.frame())
-
-        switch mouseStateKeeper.state {
-        case .dragging, .resizing:
-            // record window and wait for mouse up
-            mouseStateKeeper.state = .resizing(screen: screen, ratio: ratio)
-        case let .doneDragging(lmbUpMoment):
-            // if mouse button recently came up, assume window resize is related
-            let dragEndInterval = Date().timeIntervalSince(lmbUpMoment)
-            if dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds {
-                mouseStateKeeper.state = .pointing // flip state first to prevent race condition
-
-                if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager() {
-                    screenManager.updateCurrentLayout { layout in
-                        if let panedLayout = layout as? PanedLayout {
-                            panedLayout.recommendMainPaneRatio(ratio)
-                        }
-                    }
-                }
-            }
-        default:
-            break
-        }
+//        let ratio = oldFrame.impliedMainPaneRatio(windowFrame: window.frame())
+//
+//        switch mouseStateKeeper.state {
+//        case .dragging, .resizing:
+//            // record window and wait for mouse up
+//            mouseStateKeeper.state = .resizing(screen: screen, ratio: ratio)
+//        case let .doneDragging(lmbUpMoment):
+//            // if mouse button recently came up, assume window resize is related
+//            let dragEndInterval = Date().timeIntervalSince(lmbUpMoment)
+//            if dragEndInterval < mouseStateKeeper.dragRaceThresholdSeconds {
+//                mouseStateKeeper.state = .pointing // flip state first to prevent race condition
+//
+//                if let screenManager: ScreenManager<WindowManager<Application>> = focusedScreenManager() {
+//                    screenManager.updateCurrentLayout { layout in
+//                        if let panedLayout = layout as? PanedLayout {
+//                            panedLayout.recommendMainPaneRatio(ratio)
+//                        }
+//                    }
+//                }
+//            }
+//        default:
+//            break
+//        }
     }
 
     func applicationDidActivate(_ application: AnyApplication<Application>) {
@@ -747,10 +735,6 @@ extension WindowManager: WindowTransitionTarget {
         return windows.isWindowFloating(window)
     }
 
-    func currentLayout() -> Layout<Application.Window>? {
-        return focusedScreenManager()?.currentLayout
-    }
-
     func activeWindows(on screen: Screen) -> [Window] {
         return windows.activeWindows(onScreen: screen).filter { window in
             return window.shouldBeManaged() && !self.windows.isWindowFloating(window)
@@ -801,14 +785,14 @@ extension WindowManager: FocusTransitionTarget {
     func lastFocusedWindow(on screen: Screen) -> Window? {
         return screens.screenManagers.first { $0.screen?.screenID() == screen.screenID() }?.lastFocusedWindow
     }
-
-    func nextWindowIDClockwise(on screen: Screen) -> Window.WindowID? {
-        return screenManager(for: screen)?.nextWindowIDClockwise()
-    }
-
-    func nextWindowIDCounterClockwise(on screen: Screen) -> Window.WindowID? {
-        return screenManager(for: screen)?.nextWindowIDCounterClockwise()
-    }
+//
+//    func nextWindowIDClockwise(on screen: Screen) -> Window.WindowID? {
+//        return screenManager(for: screen)?.nextWindowIDClockwise()
+//    }
+//
+//    func nextWindowIDCounterClockwise(on screen: Screen) -> Window.WindowID? {
+//        return screenManager(for: screen)?.nextWindowIDCounterClockwise()
+//    }
 }
 
 extension WindowManager: ScreenManagerDelegate {
@@ -817,15 +801,109 @@ extension WindowManager: ScreenManagerDelegate {
             return
         }
 
-        let windows = screenManager.currentLayout is FloatingLayout
-            ? self.windows(onScreen: screen).filter { $0.shouldBeManaged() }
-            : activeWindows(on: screen)
-        windows[range(windows.count)].forEach {
-            $0.minimize()
-        }
+//        let windows = screenManager.currentLayout is FloatingLayout
+//            ? self.windows(onScreen: screen).filter { $0.shouldBeManaged() }
+//            : activeWindows(on: screen)
+//        windows[range(windows.count)].forEach {
+//            $0.minimize()
+//        }
     }
 
     func activeWindowSet(forScreenManager screenManager: ScreenManager<WindowManager<Application>>) -> WindowSet<Window> {
         return windows.windowSet(forActiveWindowsOnScreen: screenManager.screen!)
+    }
+}
+
+// MARK: - SnapDesk Custom Extensions
+extension WindowManager {
+    
+    // MARK: - Screen Management
+    
+    public func toggleFullScreen() {
+        log("🖥 toggleFullScreen() called")
+        // TODO: Implement full screen toggle functionality
+    }
+    
+    public func focusScreen(_ screenNumber: Int) {
+        log("🎯 focusScreen(\(screenNumber)) called")
+        focusTransitionCoordinator.focusScreen(at: screenNumber - 1)
+    }
+    
+    public func throwToScreen(_ screenNumber: Int) {
+        log("📤 throwToScreen(\(screenNumber)) called")
+        guard let focusedWindow = Window.currentlyFocused(),
+              let targetScreen = screen(at: screenNumber - 1) else {
+            log("❌ No focused window or invalid screen number")
+            return
+        }
+//        executeTransition(.moveWindowToScreen(focusedWindow, targetScreen))
+    }
+    
+    // MARK: - Window Layout Management
+    
+    public func removeCurrentWindowFromLayout() {
+        log("🗑 removeCurrentWindowFromLayout() called")
+        // TODO: Implement remove window from layout functionality
+    }
+    
+    public func throwToCurrentLayout() {
+        log("📦 throwToCurrentLayout() called")
+        // TODO: Implement throw to current layout functionality
+    }
+    
+    public func addWindowToLayout(_ bundleID: String) {
+        log("➕ addWindowToLayout(\(bundleID)) called")
+        // TODO: Implement add window to layout functionality
+    }
+    
+    
+    // MARK: - Panel Management
+    
+    public func increaseMainPanelCount() {
+        log("⬆️ increaseMainPanelCount() called")
+//        guard let screenManager = focusedScreenManager() else { return }
+//        screenManager.updateCurrentLayout { layout in
+//            if let panedLayout = layout as? PanedLayout {
+//                panedLayout.increaseMainPaneCount()
+//            }
+//        }
+    }
+    
+    public func decreaseMainPanelCount() {
+        log("⬇️ decreaseMainPanelCount() called")
+//        guard let screenManager = focusedScreenManager() else { return }
+//        screenManager.updateCurrentLayout { layout in
+//            if let panedLayout = layout as? PanedLayout {
+//                panedLayout.decreaseMainPaneCount()
+//            }
+//        }
+    }
+    
+    // MARK: - Window Cycling
+    
+    public func cycleWindowsClockwise() {
+        log("🔄 cycleWindowsClockwise() called")
+        windowTransitionCoordinator.swapFocusedWindowClockwise()
+    }
+    
+    public func cycleWindowsCounterclockwise() {
+        log("🔄 cycleWindowsCounterclockwise() called") 
+        windowTransitionCoordinator.swapFocusedWindowCounterClockwise()
+    }
+    
+    // MARK: - App Management
+    
+    public func focusApp(_ bundleID: String) {
+        log("🎯 focusApp(\(bundleID)) called")
+        
+        // Find running application with bundle ID
+        guard let runningApp = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first else {
+            log("❌ No running app found with bundle ID: \(bundleID)")
+            return
+        }
+        
+        // Activate the application
+        runningApp.activate(options: .activateIgnoringOtherApps)
+        log("✅ Activated app: \(bundleID)")
     }
 }
