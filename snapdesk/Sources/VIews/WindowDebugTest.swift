@@ -16,6 +16,9 @@ func log(_ message: String) {
         }
     }
     print(message)
+    
+    // Also send to DebugLogViewer if it exists
+    DebugLogViewer.shared.addLogEntry(message)
 }
 
 class WindowDebugTest {

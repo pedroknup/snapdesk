@@ -22,6 +22,7 @@ struct SettingsTabView: View {
     
     // Advanced
     @AppStorage("enableDebugLogging") private var enableDebugLogging = false
+    @AppStorage("showLogsView") private var showLogsView = false
     @AppStorage("windowDetectionInterval") private var windowDetectionInterval: Double = 0.5
     @AppStorage("focusFollowsMouse") private var focusFollowsMouse = false
 
@@ -107,6 +108,9 @@ struct SettingsTabView: View {
                     
                     Toggle("Enable Debug Logging", isOn: $enableDebugLogging)
                         .help("Show detailed logging information in Console.app (for troubleshooting)")
+                    
+                    Toggle("Show Logs View", isOn: $showLogsView)
+                        .help("Display a persistent debug log viewer on screen (bottom right corner)")
                     
                     HStack(spacing: 8) {
                         Text("Window Detection Interval")
