@@ -33,6 +33,7 @@
 		13858B1C2E5F467600FD0DB8 /* ScreenWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */; };
 		13858B1E2E5F46C500FD0DB8 /* WorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */; };
 		13858B212E5F4AF600FD0DB8 /* ScanWindows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */; };
+		13858B232E5F680900FD0DB8 /* FloatingWindowHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */; };
 		13972B132E5EEF2F00588D1B /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B122E5EEF2C00588D1B /* Application.swift */; };
 		13972B162E5EF2BA00588D1B /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B152E5EF2BA00588D1B /* Silica */; };
 		13972B182E5EF2EC00588D1B /* Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B172E5EF2EA00588D1B /* Window.swift */; };
@@ -93,6 +94,7 @@
 		13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenWorkspace.swift; sourceTree = "<group>"; };
 		13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceModel.swift; sourceTree = "<group>"; };
 		13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanWindows.swift; sourceTree = "<group>"; };
+		13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingWindowHelper.swift; sourceTree = "<group>"; };
 		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
 		13972B192E5EF30100588D1B /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 		13858B1F2E5F4AEB00FD0DB8 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */,
 				13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */,
 			);
 			path = Utils;
@@ -416,6 +419,7 @@
 				13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */,
 				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
+				13858B232E5F680900FD0DB8 /* FloatingWindowHelper.swift in Sources */,
 				13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */,
 				13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
