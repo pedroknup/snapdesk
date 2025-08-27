@@ -56,10 +56,10 @@ class SimpleWindowManager: WindowManaging {
                 let newSet = WindowSet(layout: defaultLayout, windows: [win], screenID: screen.screenID())
                 workspace.screens[idx].windowSets.append(newSet)
                 
-                // Auto-expand the window if the setting is enabled
+                // Auto-expand the window if the setting is enabled (without bringing to front during startup)
                 if shouldAutoExpandNewWindows() {
                     log("🔧 Auto-expanding new window: \(win.title() ?? "<untitled>") with layout: \(defaultLayout)")
-                    newSet.expandWindows()
+                    newSet.expandWindows(on: screen, bringToFront: false)
                 }
             }
         }
@@ -76,7 +76,8 @@ class SimpleWindowManager: WindowManaging {
                 var totalWindowsExpanded = 0
                 for screenWS in self.workspace.screens {
                     for windowSet in screenWS.windowSets {
-                        windowSet.expandWindows()
+                        // Expand windows without bringing to front during startup
+                        windowSet.expandWindows(on: screenWS.screen, bringToFront: false)
                         totalWindowsExpanded += windowSet.windows.count
                         log("🔧 Final expand: WindowSet with \(windowSet.windows.count) window(s) in layout: \(windowSet.layout)")
                     }
@@ -907,10 +908,10 @@ class SimpleWindowManager: WindowManaging {
         let newSet = WindowSet(layout: defaultLayout, windows: [window], screenID: screenWS.screen.screenID())
         screenWS.windowSets.append(newSet)
         
-        // Auto-expand the window if the setting is enabled
+        // Auto-expand the window if the setting is enabled (without bringing to front during initialization)
         if shouldAutoExpandNewWindows() {
             log("🔧 Auto-expanding newly added window: \(window.title() ?? "<untitled>") with layout: \(defaultLayout)")
-            newSet.expandWindows()
+            newSet.expandWindows(on: screenWS.screen, bringToFront: false)
         }
     }
     

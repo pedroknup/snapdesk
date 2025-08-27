@@ -183,7 +183,8 @@ final class WindowSet: Identifiable {
     
     /// Expands all windows in the WindowSet according to its layout
     /// - Parameter screen: The screen to expand windows on
-    func expandWindows(on screen: AMScreen) {
+    /// - Parameter bringToFront: Whether to bring windows to front after expansion (default: true)
+    func expandWindows(on screen: AMScreen, bringToFront: Bool = true) {
         guard !windows.isEmpty else { return }
         
         let availableFrame = screen.adjustedFrame()
@@ -192,18 +193,18 @@ final class WindowSet: Identifiable {
         
         switch layout {
         case .wide:
-            expandWindowsWide(in: availableFrame)
+            expandWindowsWide(in: availableFrame, bringToFront: bringToFront)
         case .tall:
-            expandWindowsTall(in: availableFrame)
+            expandWindowsTall(in: availableFrame, bringToFront: bringToFront)
         case .fullscreen:
-            expandWindowsFullscreen(in: availableFrame)
+            expandWindowsFullscreen(in: availableFrame, bringToFront: bringToFront)
         case .floating:
             // Floating windows maintain their current positions/sizes
             log("💭 Skipping expansion for floating layout")
         }
     }
     
-    private func expandWindowsWide(in frame: CGRect) {
+    private func expandWindowsWide(in frame: CGRect, bringToFront: Bool = true) {
         let windowCount = windows.count
         
         // Get window gap and margin from settings
@@ -233,16 +234,18 @@ final class WindowSet: Identifiable {
             move(window: window.axElementRef, to: windowFrame)
         }
         
-        // Then, bring all windows to front with small delays to ensure they all come up
-        for (index, window) in windows.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
-                window.raise()
-                log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
+        // Optionally bring all windows to front with small delays to ensure they all come up
+        if bringToFront {
+            for (index, window) in windows.enumerated() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
+                    window.raise()
+                    log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
+                }
             }
         }
     }
     
-    private func expandWindowsTall(in frame: CGRect) {
+    private func expandWindowsTall(in frame: CGRect, bringToFront: Bool = true) {
         let windowCount = windows.count
         
         // Get window gap and margin from settings
@@ -272,16 +275,18 @@ final class WindowSet: Identifiable {
             move(window: window.axElementRef, to: windowFrame)
         }
         
-        // Then, bring all windows to front with small delays to ensure they all come up
-        for (index, window) in windows.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
-                window.raise()
-                log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
+        // Optionally bring all windows to front with small delays to ensure they all come up
+        if bringToFront {
+            for (index, window) in windows.enumerated() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
+                    window.raise()
+                    log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
+                }
             }
         }
     }
     
-    private func expandWindowsFullscreen(in frame: CGRect) {
+    private func expandWindowsFullscreen(in frame: CGRect, bringToFront: Bool = true) {
         // In fullscreen mode, all windows take up the entire screen (minus margin)
         // Only the focused window should be visible
         
@@ -304,11 +309,13 @@ final class WindowSet: Identifiable {
             move(window: window.axElementRef, to: fullscreenFrame)
         }
         
-        // Then, bring all windows to front with small delays
-        for (index, window) in windows.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
-                window.raise()
-                log("🔝 Raised fullscreen window \(index): \(window.title() ?? "untitled")")
+        // Optionally bring all windows to front with small delays
+        if bringToFront {
+            for (index, window) in windows.enumerated() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
+                    window.raise()
+                    log("🔝 Raised fullscreen window \(index): \(window.title() ?? "untitled")")
+                }
             }
         }
     }
