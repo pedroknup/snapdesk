@@ -29,6 +29,7 @@
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
 		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
 		13858B182E5F294200FD0DB8 /* SkyLight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13858B172E5F294200FD0DB8 /* SkyLight.framework */; };
+		13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */; };
 		13972B132E5EEF2F00588D1B /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B122E5EEF2C00588D1B /* Application.swift */; };
 		13972B162E5EF2BA00588D1B /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B152E5EF2BA00588D1B /* Silica */; };
 		13972B182E5EF2EC00588D1B /* Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B172E5EF2EA00588D1B /* Window.swift */; };
@@ -85,6 +86,7 @@
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
 		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
 		13858B172E5F294200FD0DB8 /* SkyLight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SkyLight.framework; path = ../../../../../System/Library/PrivateFrameworks/SkyLight.framework; sourceTree = "<group>"; };
+		13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AX+Windows.swift"; sourceTree = "<group>"; };
 		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
 		13972B192E5EF30100588D1B /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */,
 				13972B272E5EF70100588D1B /* WindowManager.swift */,
 				13F42D642E5F0B80001F7A25 /* Windows.swift */,
+				13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -405,6 +408,7 @@
 				13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */,
 				135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */,
 				13F42D5D2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift in Sources */,
+				13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */,
 				13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */,
 				13F42D6F2E5F1CAF001F7A25 /* Screen.swift in Sources */,
 				135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */,
