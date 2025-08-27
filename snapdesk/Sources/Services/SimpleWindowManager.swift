@@ -411,6 +411,37 @@ class SimpleWindowManager: WindowManaging {
            log("✅ Successfully removed window from layout. Original WindowSet now has \(windowSet.windows.count) windows, focused: \(windowToFocus.title() ?? "<untitled>")")
        }
        
+       func toggleLayoutForCurrentWindowSet() {
+           log("🔄 toggleLayoutForCurrentWindowSet() called")
+           
+           // Use the current WindowSet if available, otherwise find it from the focused window
+           var targetWindowSet: WindowSet?
+           
+           if let currentWindowSet = currentWindowSet {
+               targetWindowSet = currentWindowSet
+           } else {
+               // Try to find the WindowSet containing the current focused window
+               guard let focusedWindow = frontmostWindow() else {
+                   log("❌ No focused window found and no current WindowSet")
+                   return
+               }
+               
+               let axWindow = AXWindow(axElement: focusedWindow)
+               if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+                   targetWindowSet = windowSet
+                   currentWindowSet = windowSet
+               }
+           }
+           
+           guard let windowSet = targetWindowSet else {
+               log("❌ No WindowSet found to toggle layout")
+               return
+           }
+           
+           log("🎯 Toggling layout for WindowSet with \(windowSet.windows.count) windows")
+           windowSet.toggleLayout()
+       }
+       
        /// Finds the WindowSet containing the given window and returns the WindowSet, window index, and screen index
        private func findWindowSetContaining(_ window: AXWindow) -> (WindowSet, Int, Int)? {
            for (screenIndex, screenWS) in workspace.screens.enumerated() {
