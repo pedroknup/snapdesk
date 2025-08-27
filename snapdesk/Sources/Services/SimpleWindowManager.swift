@@ -221,19 +221,43 @@ class SimpleWindowManager: WindowManaging {
         }
         
         // Create a new WindowSet on the target screen
-        let newWindowSet = WindowSet(layout: .wide, windows: [axWindow], screenID: targetScreen.screenID())
+        let targetScreenID = targetScreen.screenID()
+        let newWindowSet = WindowSet(layout: .wide, windows: [axWindow], screenID: targetScreenID)
+        
+        log("📐 Created new WindowSet with screen ID: \(targetScreenID ?? "nil")")
+        log("📐 Target screen frame: \(NSStringFromRect(targetScreen.adjustedFrame()))")
         
         // Add the new WindowSet to the target screen's workspace
         if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == targetScreen }) {
             workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+            log("📦 Added WindowSet to existing screen workspace")
         } else {
             // Create new screen workspace if it doesn't exist
             let newScreenWS = ScreenWorkspace(screen: targetScreen, sets: [newWindowSet])
             workspace.screens.append(newScreenWS)
+            log("📦 Created new screen workspace")
         }
         
-        // Expand the window on the new screen
+        // Expand the window on the new screen - ensure it fits the target screen boundaries
+        log("📐 Expanding window to fit target screen boundaries...")
         newWindowSet.expandWindows()
+        
+        // Double-check: if expandWindows() didn't work, expand manually
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            let currentFrame = axWindow.frame()
+            let targetFrame = targetScreen.adjustedFrame()
+            
+            if !targetFrame.contains(currentFrame) || currentFrame.size != targetFrame.size {
+                log("⚠️ Window not properly expanded, forcing manual expansion")
+                log("📐 Current frame: \(NSStringFromRect(currentFrame))")
+                log("📐 Target frame: \(NSStringFromRect(targetFrame))")
+                
+                // Force expand to full target screen
+                move(window: axWindow.axElementRef, to: targetFrame)
+            } else {
+                log("✅ Window properly expanded to target screen")
+            }
+        }
         
         // Focus the moved window
         axWindow.focus()
