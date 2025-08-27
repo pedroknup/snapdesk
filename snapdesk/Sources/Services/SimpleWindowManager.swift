@@ -9,6 +9,9 @@ import Foundation
 import AppKit
 
 class SimpleWindowManager: WindowManaging {
+    
+    private var currentBundleIDCycling: String?
+    private var bundleIDCycleIndex: Int = 0
     private var workspace: WorkspaceModel
 
     init() {
@@ -24,6 +27,9 @@ class SimpleWindowManager: WindowManaging {
         }
 
         self.workspace = ws
+        
+        // Setup window observers
+        setupWindowObservers()
 
         print("Workspace initialized with \(ws.screens.count) screens and \(discovered.count) windows")
 
@@ -85,18 +91,32 @@ class SimpleWindowManager: WindowManaging {
     func focusApp(_ bundleID: String) {
         log("🎯 NEW focusApp(\(bundleID)) called")
         
-//        // Find running application with bundle ID
-//        guard let runningApp = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first else {
-//            log("❌ No running app found with bundle ID: \(bundleID)")
-//            return
-//        }
-//        
-//        // Activate the application
-//        runningApp.activate(options: .activateIgnoringOtherApps)
-//        log("✅ Activated app: \(bundleID)")
         let windowSets = windowSets(for: bundleID)
-        log("Found WindowSets: \(windowSets)")
+        log("Found \(windowSets.count) WindowSets for \(bundleID)")
         
+        guard !windowSets.isEmpty else {
+            log("❌ No windows found for bundle ID: \(bundleID)")
+            return
+        }
+        
+        // Check if we're cycling through the same app
+        if currentBundleIDCycling != bundleID {
+            // Reset cycling for new app
+            currentBundleIDCycling = bundleID
+            bundleIDCycleIndex = 0
+            log("🔄 Starting new cycle for \(bundleID)")
+        } else {
+            // Continue cycling through the same app
+            bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+            log("🔄 Cycling to index \(bundleIDCycleIndex) for \(bundleID)")
+        }
+        
+        // Focus the window from the current WindowSet
+        let currentSet = windowSets[bundleIDCycleIndex]
+        if let firstWindow = currentSet.windows.first {
+            log("🎯 Focusing window: \(firstWindow.title() ?? "<untitled>")")
+            firstWindow.focus()
+        }
     }
     
     // MARK: - WindowManaging methods
@@ -173,7 +193,7 @@ class SimpleWindowManager: WindowManaging {
            return nil
        }
     
-    /// Returns all WindowSets that contain at least one window belonging to the given bundle ID.
+    /// Returns all WindowSets that contain at least one window belonging to the given bundle ID, sorted consistently.
     private func windowSets(for bundleID: String) -> [WindowSet] {
         var matchingSets: [WindowSet] = []
 
@@ -193,5 +213,129 @@ class SimpleWindowManager: WindowManaging {
         }
 
         return matchingSets
+    }
+    
+    // MARK: - Window Observers
+    
+    private func setupWindowObservers() {
+        // Add workspace notification observers for window lifecycle
+        let workspaceNotificationCenter = NSWorkspace.shared.notificationCenter
+        
+        workspaceNotificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidLaunch(_:)),
+            name: NSWorkspace.didLaunchApplicationNotification,
+            object: nil
+        )
+        
+        workspaceNotificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidTerminate(_:)),
+            name: NSWorkspace.didTerminateApplicationNotification,
+            object: nil
+        )
+        
+        workspaceNotificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidActivate(_:)),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func applicationDidLaunch(_ notification: Notification) {
+        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
+            return
+        }
+        
+        log("🚀 Application launched: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        
+        // Give the app a moment to create windows
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.refreshWindows()
+        }
+    }
+    
+    @objc private func applicationDidTerminate(_ notification: Notification) {
+        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
+            return
+        }
+        
+        log("❌ Application terminated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        
+        // Reset cycling if the terminated app was being cycled
+        if let bundleID = app.bundleIdentifier, bundleID == currentBundleIDCycling {
+            currentBundleIDCycling = nil
+            bundleIDCycleIndex = 0
+        }
+        
+        refreshWindows()
+    }
+    
+    @objc private func applicationDidActivate(_ notification: Notification) {
+        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
+            return
+        }
+        
+        log("🎯 Application activated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        
+        // Reset cycling if a different app was activated manually
+        if let bundleID = app.bundleIdentifier, bundleID != currentBundleIDCycling {
+            currentBundleIDCycling = nil
+            bundleIDCycleIndex = 0
+        }
+    }
+    
+    private func refreshWindows() {
+        log("🔄 Refreshing windows...")
+        
+        // Clear existing window sets
+        for i in workspace.screens.indices {
+            workspace.screens[i].windowSets.removeAll()
+        }
+        
+        // Rescan windows and rebuild window sets
+        let discovered = scanWindows()
+        for (win, screen) in discovered {
+            if let idx = workspace.screens.firstIndex(where: { $0.screen == screen }) {
+                addWindow(win, to: &workspace.screens[idx])
+            }
+        }
+        
+        log("✅ Window refresh complete. Total windows: \(discovered.count)")
+    }
+    
+    private func addWindow(_ window: AXWindow, to screenWS: inout ScreenWorkspace) {
+        // Try to find a WindowSet for the same app
+        guard let app = NSRunningApplication(processIdentifier: window.pid()),
+              let bundleID = app.bundleIdentifier else {
+            // Create a new set for windows without bundle ID
+            let newSet = WindowSet(layout: .wide, windows: [window])
+            screenWS.windowSets.append(newSet)
+            return
+        }
+        
+        // Check if there's already a WindowSet with windows from the same app
+        for i in screenWS.windowSets.indices {
+            let hasAppWindow = screenWS.windowSets[i].windows.contains { existingWindow in
+                guard let existingApp = NSRunningApplication(processIdentifier: existingWindow.pid()) else {
+                    return false
+                }
+                return existingApp.bundleIdentifier == bundleID
+            }
+            
+            if hasAppWindow {
+                screenWS.windowSets[i].windows.append(window)
+                return
+            }
+        }
+        
+        // Create a new WindowSet for this app
+        let newSet = WindowSet(layout: .wide, windows: [window])
+        screenWS.windowSets.append(newSet)
+    }
+    
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 }
