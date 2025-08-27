@@ -162,9 +162,86 @@ final class WindowSet: Identifiable {
     let id: UUID = UUID()
     var layout: LayoutKind
     var windows: [AXWindow]
+    var screenID: String?
 
-    init(layout: LayoutKind = .tall, windows: [AXWindow] = []) {
+    init(layout: LayoutKind = .tall, windows: [AXWindow] = [], screenID: String? = nil) {
         self.layout = layout
         self.windows = windows
+        self.screenID = screenID
+    }
+    
+    /// Expands all windows in the WindowSet according to its layout on their assigned screen
+    func expandWindows() {
+        guard let screenID = screenID,
+              let screen = AMScreen.availableScreens.first(where: { $0.screenID() == screenID }) else {
+            log("❌ Cannot expand windows: no screen ID or screen not found")
+            return
+        }
+        expandWindows(on: screen)
+    }
+    
+    /// Expands all windows in the WindowSet according to its layout
+    /// - Parameter screen: The screen to expand windows on
+    func expandWindows(on screen: AMScreen) {
+        guard !windows.isEmpty else { return }
+        
+        let availableFrame = screen.adjustedFrame()
+        log("🔧 Expanding \(windows.count) windows in \(layout) layout on screen \(screen.screenID() ?? "unknown")")
+        log("📐 Available frame: \(NSStringFromRect(availableFrame))")
+        
+        switch layout {
+        case .wide:
+            expandWindowsWide(in: availableFrame)
+        case .tall:
+            expandWindowsTall(in: availableFrame)
+        case .fullscreen:
+            expandWindowsFullscreen(in: availableFrame)
+        case .floating:
+            // Floating windows maintain their current positions/sizes
+            log("💭 Skipping expansion for floating layout")
+        }
+    }
+    
+    private func expandWindowsWide(in frame: CGRect) {
+        let windowCount = windows.count
+        let windowWidth = frame.width / CGFloat(windowCount)
+        
+        for (index, window) in windows.enumerated() {
+            let windowFrame = CGRect(
+                x: frame.origin.x + (CGFloat(index) * windowWidth),
+                y: frame.origin.y,
+                width: windowWidth,
+                height: frame.height
+            )
+            
+            log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
+            move(window: window.axElementRef, to: windowFrame)
+        }
+    }
+    
+    private func expandWindowsTall(in frame: CGRect) {
+        let windowCount = windows.count
+        let windowHeight = frame.height / CGFloat(windowCount)
+        
+        for (index, window) in windows.enumerated() {
+            let windowFrame = CGRect(
+                x: frame.origin.x,
+                y: frame.origin.y + (CGFloat(index) * windowHeight),
+                width: frame.width,
+                height: windowHeight
+            )
+            
+            log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
+            move(window: window.axElementRef, to: windowFrame)
+        }
+    }
+    
+    private func expandWindowsFullscreen(in frame: CGRect) {
+        // In fullscreen mode, all windows take up the entire screen
+        // Only the focused window should be visible
+        for window in windows {
+            log("🖥️ Expanding window to fullscreen: \(window.title() ?? "untitled")")
+            move(window: window.axElementRef, to: frame)
+        }
     }
 }

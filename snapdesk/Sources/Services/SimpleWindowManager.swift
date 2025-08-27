@@ -21,7 +21,7 @@ class SimpleWindowManager: WindowManaging {
         for (win, screen) in discovered {
             if let idx = ws.screens.firstIndex(where: { $0.screen == screen }) {
                 // Create a fresh WindowSet just for this window
-                let newSet = WindowSet(layout: .wide, windows: [win])
+                let newSet = WindowSet(layout: .wide, windows: [win], screenID: screen.screenID())
                 ws.screens[idx].windowSets.append(newSet)
             }
         }
@@ -116,6 +116,10 @@ class SimpleWindowManager: WindowManaging {
         
         // Focus the window from the current WindowSet
         let currentSet = windowSets[bundleIDCycleIndex]
+        
+        // Expand all windows in the current WindowSet according to its layout
+        currentSet.expandWindows()
+        
         if let firstWindow = currentSet.windows.first {
             log("🎯 Focusing window: \(firstWindow.title() ?? "<untitled>")")
             firstWindow.focus()
@@ -343,7 +347,7 @@ class SimpleWindowManager: WindowManaging {
     
     private func addWindow(_ window: AXWindow, to screenWS: inout ScreenWorkspace) {
         // Create a separate WindowSet for each window to enable cycling
-        let newSet = WindowSet(layout: .wide, windows: [window])
+        let newSet = WindowSet(layout: .wide, windows: [window], screenID: screenWS.screen.screenID())
         screenWS.windowSets.append(newSet)
     }
     
