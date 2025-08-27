@@ -12,7 +12,6 @@ struct WorkspaceModel {
 
     init() {
         self.screens = AMScreen.availableScreens.map { ScreenWorkspace(screen: $0) }
-        log("Workspace initialized with \(screens.count) screens")
     }
 
 

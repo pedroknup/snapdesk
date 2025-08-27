@@ -31,7 +31,7 @@ protocol ApplicationType: Equatable {
      - Note:
      This value is cached. Call `dropWindowsCache()` if you believe this may be out of date.
      */
-    func windows() -> [Window]
+    func snapWindows() -> [Window]
 
     /// The process ID of the application.
     func pid() -> pid_t
@@ -133,8 +133,8 @@ class AnyApplication<Application: ApplicationType>: ApplicationType {
         return internalApplication.title()
     }
 
-    func windows() -> [Window] {
-        return internalApplication.windows()
+    func snapWindows() -> [Window] {
+        return internalApplication.snapWindows()
     }
 
     func pid() -> pid_t {
@@ -179,7 +179,7 @@ extension SIApplication: ApplicationType {
         self.init(runningApplication: runningApplication)
     }
 
-    func windows() -> [Window] {
+    func snapWindows() -> [Window] {
         let axWindows: [SIWindow] = self.windows()
         return axWindows.map { Window(axElement: $0.axElementRef) }
     }

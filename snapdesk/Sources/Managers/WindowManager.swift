@@ -151,7 +151,7 @@ final class WindowManager<Application: ApplicationType>: NSObject {
         }
 
         application.dropWindowsCache()
-        for window in application.windows() {
+        for window in application.snapWindows() {
             add(window: window)
         }
         activate(application: application)
@@ -166,7 +166,7 @@ final class WindowManager<Application: ApplicationType>: NSObject {
 
             application.dropWindowsCache()
 
-            for window in application.windows() {
+            for window in application.snapWindows() {
                 add(window: window)
             }
         }
@@ -231,7 +231,7 @@ extension WindowManager {
 
     fileprivate func add(application: AnyApplication<Application>) {
         guard applications[application.pid()] == nil else {
-            for window in application.windows() {
+            for window in application.snapWindows() {
                 add(window: window)
             }
             return
@@ -243,7 +243,7 @@ extension WindowManager {
                 onCompleted: { [weak self] in
                     self?.applications[application.pid()] = application
 
-                    for window in application.windows() {
+                    for window in application.snapWindows() {
                         self?.add(window: window)
                     }
                 }
@@ -252,7 +252,7 @@ extension WindowManager {
     }
 
     fileprivate func remove(application: AnyApplication<Application>) {
-        for window in application.windows() {
+        for window in application.snapWindows() {
             remove(window: window)
         }
         applications.removeValue(forKey: application.pid())
