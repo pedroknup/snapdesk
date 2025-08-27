@@ -85,15 +85,18 @@ class SimpleWindowManager: WindowManaging {
     func focusApp(_ bundleID: String) {
         log("🎯 NEW focusApp(\(bundleID)) called")
         
-        // Find running application with bundle ID
-        guard let runningApp = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first else {
-            log("❌ No running app found with bundle ID: \(bundleID)")
-            return
-        }
+//        // Find running application with bundle ID
+//        guard let runningApp = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first else {
+//            log("❌ No running app found with bundle ID: \(bundleID)")
+//            return
+//        }
+//        
+//        // Activate the application
+//        runningApp.activate(options: .activateIgnoringOtherApps)
+//        log("✅ Activated app: \(bundleID)")
+        let windowSets = windowSets(for: bundleID)
+        log("Found WindowSets: \(windowSets)")
         
-        // Activate the application
-        runningApp.activate(options: .activateIgnoringOtherApps)
-        log("✅ Activated app: \(bundleID)")
     }
     
     // MARK: - WindowManaging methods
@@ -169,4 +172,26 @@ class SimpleWindowManager: WindowManaging {
            }
            return nil
        }
+    
+    /// Returns all WindowSets that contain at least one window belonging to the given bundle ID.
+    private func windowSets(for bundleID: String) -> [WindowSet] {
+        var matchingSets: [WindowSet] = []
+
+        for screenWS in workspace.screens {
+            for set in screenWS.windowSets {
+                let matches = set.windows.contains { win in
+                    guard let app = NSRunningApplication(processIdentifier: win.pid()) else {
+                        return false
+                    }
+                    return app.bundleIdentifier == bundleID
+                }
+
+                if matches {
+                    matchingSets.append(set)
+                }
+            }
+        }
+
+        return matchingSets
+    }
 }
