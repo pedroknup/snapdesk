@@ -14,6 +14,7 @@ struct SettingsTabView: View {
     
     // Layout & Windows  
     @AppStorage("windowGap") private var windowGap: Double = 4
+    @AppStorage("windowMargin") private var windowMargin: Double = 8
     @AppStorage("defaultLayoutMode") private var defaultLayoutMode = "wide"
     @AppStorage("animateWindowTransitions") private var animateWindowTransitions = true
     @AppStorage("respectWindowMinimumSize") private var respectWindowMinimumSize = true
@@ -66,6 +67,17 @@ struct SettingsTabView: View {
                             .foregroundColor(.secondary)
                     }
                     .help("Space between windows when using a multi-window layout")
+                    
+                    HStack(spacing: 8) {
+                        Text("Window Margin")
+                        Spacer()
+                        TextField("Margin", value: $windowMargin, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 60)
+                        Text("px")
+                            .foregroundColor(.secondary)
+                    }
+                    .help("Space around each individual window (applies to all windows)")
                     
                     HStack(spacing: 8) {
                         Text("Default Layout Mode")

@@ -205,24 +205,27 @@ final class WindowSet: Identifiable {
     private func expandWindowsWide(in frame: CGRect) {
         let windowCount = windows.count
         
-        // Get window gap from settings (default: 4px)
+        // Get window gap and margin from settings
         let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 4.0)
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
         
         // Calculate available width after accounting for gaps
         let totalGapWidth = windowGap * CGFloat(windowCount - 1)
         let availableWidth = frame.width - totalGapWidth
         let windowWidth = availableWidth / CGFloat(windowCount)
         
-        log("📐 Wide layout: \(windowCount) windows, gap: \(windowGap)px, window width: \(windowWidth)px")
+        log("📐 Wide layout: \(windowCount) windows, gap: \(windowGap)px, margin: \(windowMargin)px, window width: \(windowWidth)px")
         
         // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
             let xOffset = CGFloat(index) * (windowWidth + windowGap)
+            
+            // Apply margin to shrink window inward from all sides
             let windowFrame = CGRect(
-                x: frame.origin.x + xOffset,
-                y: frame.origin.y,
-                width: windowWidth,
-                height: frame.height
+                x: frame.origin.x + xOffset + windowMargin,
+                y: frame.origin.y + windowMargin,
+                width: windowWidth - (windowMargin * 2),
+                height: frame.height - (windowMargin * 2)
             )
             
             log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
@@ -241,24 +244,27 @@ final class WindowSet: Identifiable {
     private func expandWindowsTall(in frame: CGRect) {
         let windowCount = windows.count
         
-        // Get window gap from settings (default: 4px)
+        // Get window gap and margin from settings
         let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 4.0)
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
         
         // Calculate available height after accounting for gaps
         let totalGapHeight = windowGap * CGFloat(windowCount - 1)
         let availableHeight = frame.height - totalGapHeight
         let windowHeight = availableHeight / CGFloat(windowCount)
         
-        log("📐 Tall layout: \(windowCount) windows, gap: \(windowGap)px, window height: \(windowHeight)px")
+        log("📐 Tall layout: \(windowCount) windows, gap: \(windowGap)px, margin: \(windowMargin)px, window height: \(windowHeight)px")
         
         // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
             let yOffset = CGFloat(index) * (windowHeight + windowGap)
+            
+            // Apply margin to shrink window inward from all sides
             let windowFrame = CGRect(
-                x: frame.origin.x,
-                y: frame.origin.y + yOffset,
-                width: frame.width,
-                height: windowHeight
+                x: frame.origin.x + windowMargin,
+                y: frame.origin.y + yOffset + windowMargin,
+                width: frame.width - (windowMargin * 2),
+                height: windowHeight - (windowMargin * 2)
             )
             
             log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
@@ -275,13 +281,26 @@ final class WindowSet: Identifiable {
     }
     
     private func expandWindowsFullscreen(in frame: CGRect) {
-        // In fullscreen mode, all windows take up the entire screen
+        // In fullscreen mode, all windows take up the entire screen (minus margin)
         // Only the focused window should be visible
+        
+        // Get window margin from settings
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
+        
+        // Apply margin to fullscreen frame
+        let fullscreenFrame = CGRect(
+            x: frame.origin.x + windowMargin,
+            y: frame.origin.y + windowMargin,
+            width: frame.width - (windowMargin * 2),
+            height: frame.height - (windowMargin * 2)
+        )
+        
+        log("🖥️ Fullscreen layout: margin: \(windowMargin)px, frame: \(NSStringFromRect(fullscreenFrame))")
         
         // First, move all windows to fullscreen
         for window in windows {
             log("🖥️ Expanding window to fullscreen: \(window.title() ?? "untitled")")
-            move(window: window.axElementRef, to: frame)
+            move(window: window.axElementRef, to: fullscreenFrame)
         }
         
         // Then, bring all windows to front with small delays
