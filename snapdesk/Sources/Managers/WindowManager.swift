@@ -841,7 +841,7 @@ extension WindowManager {
     
     // MARK: - Window Layout Management
     
-    public func removeCurrentWindowFromLayout() {
+    public func removeCurrentWindowFromLayoutOld() {
         log("🗑 removeCurrentWindowFromLayout() called")
         // TODO: Implement remove window from layout functionality
     }
