@@ -215,7 +215,10 @@ final class WindowSet: Identifiable {
             )
             
             log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
+            
+            // Move and bring window to front
             move(window: window.axElementRef, to: windowFrame)
+            window.raise()
         }
     }
     
@@ -232,7 +235,10 @@ final class WindowSet: Identifiable {
             )
             
             log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
+            
+            // Move and bring window to front
             move(window: window.axElementRef, to: windowFrame)
+            window.raise()
         }
     }
     
@@ -241,7 +247,10 @@ final class WindowSet: Identifiable {
         // Only the focused window should be visible
         for window in windows {
             log("🖥️ Expanding window to fullscreen: \(window.title() ?? "untitled")")
+            
+            // Move and bring window to front
             move(window: window.axElementRef, to: frame)
+            window.raise()
         }
     }
 }
