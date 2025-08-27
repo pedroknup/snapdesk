@@ -168,7 +168,80 @@ class SimpleWindowManager: WindowManaging {
     
     func throwToScreen(_ screenNumber: Int) {
         log("📤 throwToScreen(\(screenNumber)) called")
-        // TODO: Implement throw to screen functionality
+        
+        // Get the currently focused window
+        guard let focusedWindow = frontmostWindow() else {
+            log("❌ No focused window found")
+            FloatingWindowHelper.showFloatingWindow(
+                text: "No focused window", 
+                position: .center, 
+                duration: 2.0
+            )
+            return
+        }
+        
+        let axWindow = AXWindow(axElement: focusedWindow)
+        
+        // Get available screens (sorted consistently)
+        let screens = AMScreen.availableScreens
+        let screenIndex = screenNumber - 1  // Convert 1-based to 0-based index
+        
+        guard screenIndex >= 0 && screenIndex < screens.count else {
+            log("❌ Invalid screen number: \(screenNumber) (only \(screens.count) screens available)")
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Screen \(screenNumber) not available", 
+                position: .center, 
+                duration: 2.0
+            )
+            return
+        }
+        
+        let targetScreen = screens[screenIndex]
+        log("🎯 Throwing window '\(axWindow.title() ?? "<untitled>")' to screen \(screenNumber)")
+        
+        // Find the current WindowSet containing this window
+        if let (currentWindowSet, windowIndex, _) = findWindowSetContaining(axWindow) {
+            log("📦 Found window in WindowSet with \(currentWindowSet.windows.count) windows")
+            
+            // Remove window from current WindowSet
+            currentWindowSet.windows.remove(at: windowIndex)
+            
+            // Clean up empty WindowSet
+            if currentWindowSet.windows.isEmpty {
+                removeEmptyWindowSet(currentWindowSet)
+            } else {
+                // Re-expand remaining windows in the original WindowSet
+                currentWindowSet.expandWindows()
+            }
+        }
+        
+        // Create a new WindowSet on the target screen
+        let newWindowSet = WindowSet(layout: .wide, windows: [axWindow], screenID: targetScreen.screenID())
+        
+        // Add the new WindowSet to the target screen's workspace
+        if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == targetScreen }) {
+            workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+        } else {
+            // Create new screen workspace if it doesn't exist
+            let newScreenWS = ScreenWorkspace(screen: targetScreen, sets: [newWindowSet])
+            workspace.screens.append(newScreenWS)
+        }
+        
+        // Expand the window on the new screen
+        newWindowSet.expandWindows()
+        
+        // Focus the moved window
+        axWindow.focus()
+        moveCursorToCenter(of: axWindow)
+        
+        // Show confirmation
+        FloatingWindowHelper.showFloatingWindow(
+            text: "Moved to Screen \(screenNumber)", 
+            position: .center, 
+            duration: 1.5
+        )
+        
+        log("✅ Successfully threw window to screen \(screenNumber)")
     }
     
     // MARK: - App Management
@@ -315,12 +388,9 @@ class SimpleWindowManager: WindowManaging {
        }
 
        func throwFrontmostWindow(toScreen index: Int) {
-           guard let window = currentWindow() else { return }
-           let screens = screenList()
-           guard index < screens.count else { return }
-
-           let targetFrame = screens[index].visibleFrame.insetBy(dx: 8, dy: 8)
-           move(window: window, to: targetFrame)
+           log("📤 throwFrontmostWindow(toScreen: \(index)) called")
+           // Use the new throwToScreen method with 1-based indexing
+           throwToScreen(index + 1)
        }
 
        func throwToCurrentLayout() {
@@ -452,6 +522,17 @@ class SimpleWindowManager: WindowManaging {
                }
            }
            return nil
+       }
+       
+       /// Removes an empty WindowSet from the workspace
+       private func removeEmptyWindowSet(_ windowSet: WindowSet) {
+           for screenIndex in workspace.screens.indices {
+               if let setIndex = workspace.screens[screenIndex].windowSets.firstIndex(where: { $0.id == windowSet.id }) {
+                   workspace.screens[screenIndex].windowSets.remove(at: setIndex)
+                   log("🧹 Removed empty WindowSet from screen \(screenIndex)")
+                   break
+               }
+           }
        }
 
        func toggleFullScreenLayout() {
