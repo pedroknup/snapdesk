@@ -9,12 +9,45 @@ import Foundation
 import AppKit
 
 class SimpleWindowManager: WindowManaging {
-    private var WorkspaceModel: WorkspaceModel
-    
+    private var workspace: WorkspaceModel
+
     init() {
-        var workspace = snapdesk.WorkspaceModel()
-        self.WorkspaceModel = workspace
+        var ws = snapdesk.WorkspaceModel()
+
+        let discovered = scanWindows()
+        for (win, screen) in discovered {
+            if let idx = ws.screens.firstIndex(where: { $0.screen == screen }) {
+                // Create a fresh WindowSet just for this window
+                let newSet = WindowSet(layout: .wide, windows: [win])
+                ws.screens[idx].windowSets.append(newSet)
+            }
+        }
+
+        self.workspace = ws
+
+        print("Workspace initialized with \(ws.screens.count) screens and \(discovered.count) windows")
+
+        for screenWS in ws.screens {
+            let frame = screenWS.screen.frame()
+            print("\n🖥️  Screen \(screenWS.screen.screenID() ?? "?") frame=\(NSStringFromRect(frame))")
+
+            for (setIndex, set) in screenWS.windowSets.enumerated() {
+                let windowCount = set.windows.count
+                print("   ▾ WindowSet \(setIndex) [layout=\(set.layout)] — \(windowCount) window(s)")
+
+                if set.windows.isEmpty {
+                    print("      (no windows)")
+                } else {
+                    for (wIndex, w) in set.windows.enumerated() {
+                        let title = w.title() ?? "<untitled>"
+                        let rect  = NSStringFromRect(w.frame())
+                        print("      [\(wIndex)] PID \(w.pid()) — \"\(title)\" frame=\(rect)")
+                    }
+                }
+            }
+        }
     }
+
     
     func addWindowToLayout(_ bundleID: String) {
         log("TODO: addWindowToLayout")

@@ -14,8 +14,8 @@ struct ScreenWorkspace: Identifiable {
     /// Each screen can host multiple sets of windows (tiled, floating, etc.)
     var windowSets: [WindowSet]
 
-    init(screen: AMScreen, sets: [WindowSet] = [WindowSet()]) {
-        self.screen = screen
-        self.windowSets = sets
-    }
+    init(screen: AMScreen, sets: [WindowSet] = []) {
+           self.screen = screen
+           self.windowSets = sets
+   }
 }
