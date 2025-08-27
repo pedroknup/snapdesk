@@ -76,6 +76,7 @@ public class ConfigurationManager {
         let defaultGeneralShortcuts = [
             "Toggle Full Screen layout for the current screen",
             "Remove current window from layout",
+            "Toggle layout for current WindowSet",
             "Focus Screen 1",
             "Focus Screen 2",
             "Focus Screen 3",
@@ -116,6 +117,7 @@ public class ConfigurationManager {
         let defaultGeneralShortcuts = [
             "Toggle Full Screen layout for the current screen",
             "Remove current window from layout",
+            "Toggle layout for current WindowSet",
             "Focus Screen 1",
             "Focus Screen 2",
             "Focus Screen 3",
@@ -188,6 +190,10 @@ public class ConfigurationManager {
                 GeneralShortcutConfig(
                     name: "Remove current window from layout",
                     shortcut: ShortcutConfig(key: "2", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Toggle layout for current WindowSet",
+                    shortcut: ShortcutConfig(key: "l", modifiers: ["command", "option"])
                 ),
                 // Focus Screen shortcuts
                 GeneralShortcutConfig(

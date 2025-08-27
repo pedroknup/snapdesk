@@ -272,4 +272,31 @@ final class WindowSet: Identifiable {
             }
         }
     }
+    
+    /// Toggle between tall and wide layout types for this WindowSet
+    func toggleLayout() {
+        let nextLayout: LayoutKind
+        switch layout {
+        case .tall:
+            nextLayout = .wide
+        case .wide:
+            nextLayout = .tall
+        case .fullscreen, .floating:
+            // If currently in fullscreen or floating, default to tall
+            nextLayout = .tall
+        }
+        
+        log("🔄 Toggling WindowSet layout from \(layout) to \(nextLayout)")
+        layout = nextLayout
+        
+        // Always show floating notification about the layout change using the helper
+        FloatingWindowHelper.showFloatingWindow(
+            text: "Layout: \(nextLayout.rawValue.capitalized)", 
+            position: .center, 
+            duration: 1.5
+        )
+        
+        // Re-expand windows with the new layout
+        expandWindows()
+    }
 }

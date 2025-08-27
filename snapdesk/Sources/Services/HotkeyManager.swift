@@ -30,6 +30,7 @@ protocol HotKeyRegistrar {
 protocol WindowManaging: AnyObject {
     func toggleFullScreen()
     func removeCurrentWindowFromLayout()
+    func toggleLayoutForCurrentWindowSet()
     func focusScreen(_ screenNumber: Int)
     func throwToScreen(_ screenNumber: Int)
     func throwFrontmostWindow(toScreen index: Int)
@@ -96,6 +97,12 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         constructCommandWithCommandKey("remove-current-window-from-layout") { [weak self] in
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.removeCurrentWindowFromLayout()
+        }
+        
+        // Toggle layout for current WindowSet
+        constructCommandWithCommandKey("toggle-layout-current-windowset") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.toggleLayoutForCurrentWindowSet()
         }
         
         // Focus Screen shortcuts (1-6)
@@ -306,6 +313,7 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         return [
             "toggle-fullscreen-layout": "Toggle Full Screen layout for the current screen",
             "remove-current-window-from-layout": "Remove current window from layout",
+            "toggle-layout-current-windowset": "Toggle layout for current WindowSet",
             "focus-screen-1": "Focus Screen 1",
             "focus-screen-2": "Focus Screen 2",
             "focus-screen-3": "Focus Screen 3",
