@@ -99,8 +99,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         
         log("🚀 Snapdesk is listening for hotkeys")
         
-        // Show hello world floating window on startup
-        FloatingWindowHelper.showFloatingWindow(text: "Hello World!", position: .center, duration: 3.0)
+        FloatingWindowHelper.showFloatingWindow(text: "Snapdesk loaded", position: .center, duration: 3.0)
         
         // Initialize debug log viewer (this will show it if setting is enabled)
         _ = DebugLogViewer.shared
