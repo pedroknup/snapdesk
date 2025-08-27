@@ -177,11 +177,14 @@ class SimpleWindowManager: WindowManaging {
         // Get the currently focused window
         guard let focusedWindow = frontmostWindow() else {
             log("❌ No focused window found")
-            FloatingWindowHelper.showFloatingWindow(
-                text: "No focused window", 
-                position: .center, 
-                duration: 2.0
-            )
+            let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
+            if showThrowNotifications {
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "No focused window", 
+                    position: .center, 
+                    duration: 2.0
+                )
+            }
             return
         }
         
@@ -193,11 +196,14 @@ class SimpleWindowManager: WindowManaging {
         
         guard screenIndex >= 0 && screenIndex < screens.count else {
             log("❌ Invalid screen number: \(screenNumber) (only \(screens.count) screens available)")
-            FloatingWindowHelper.showFloatingWindow(
-                text: "Screen \(screenNumber) not available", 
-                position: .center, 
-                duration: 2.0
-            )
+            let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
+            if showThrowNotifications {
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "Screen \(screenNumber) not available", 
+                    position: .center, 
+                    duration: 2.0
+                )
+            }
             return
         }
         
@@ -263,12 +269,15 @@ class SimpleWindowManager: WindowManaging {
         axWindow.focus()
         moveCursorToCenter(of: axWindow)
         
-        // Show confirmation
-        FloatingWindowHelper.showFloatingWindow(
-            text: "Moved to Screen \(screenNumber)", 
-            position: .center, 
-            duration: 1.5
-        )
+        // Show confirmation if enabled in settings
+        let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
+        if showThrowNotifications {
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Moved to Screen \(screenNumber)", 
+                position: .center, 
+                duration: 1.5
+            )
+        }
         
         log("✅ Successfully threw window to screen \(screenNumber)")
     }

@@ -19,14 +19,28 @@ class FloatingWindowHelper {
     private static var activeWindows: [NSWindow] = []
     
     static func showFloatingWindow(text: String, position: FloatingPosition = .center, duration: TimeInterval = 2.0) {
-        let window = createFloatingWindow(text: text, position: position)
+        // Read settings for notification position and duration
+        let settingsDuration = UserDefaults.standard.object(forKey: "notificationDuration") as? Double ?? duration
+        let settingsPosition = UserDefaults.standard.string(forKey: "notificationPosition") ?? "center"
+        
+        // Convert settings position to FloatingPosition
+        let actualPosition: FloatingPosition
+        switch settingsPosition {
+        case "topLeft": actualPosition = .topLeft
+        case "topRight": actualPosition = .topRight
+        case "bottomLeft": actualPosition = .bottomLeft
+        case "bottomRight": actualPosition = .bottomRight
+        default: actualPosition = .center
+        }
+        
+        let window = createFloatingWindow(text: text, position: actualPosition)
         activeWindows.append(window)
         
         window.makeKeyAndOrderFront(nil)
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
         
-        // Auto-hide after duration
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+        // Auto-hide after duration (use settings duration)
+        DispatchQueue.main.asyncAfter(deadline: .now() + settingsDuration) {
             hideWindow(window)
         }
     }
