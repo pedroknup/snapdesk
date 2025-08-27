@@ -14,6 +14,11 @@ class SimpleWindowManager: WindowManaging {
     private var bundleIDCycleIndex: Int = 0
     private var windowIndexWithinSet: Int = 0
     private var currentWindowSet: WindowSet?
+    
+    // New state for tracking the current focus within the active WindowSet
+    private var currentFocusedWindowSetID: UUID?
+    private var currentWindowIndexInActiveSet: Int = 0
+    
     private var workspace: WorkspaceModel
 
     init() {
@@ -285,14 +290,41 @@ class SimpleWindowManager: WindowManaging {
             currentBundleIDCycling = bundleID
             bundleIDCycleIndex = 0
             windowIndexWithinSet = 0
+            currentFocusedWindowSetID = nil
+            currentWindowIndexInActiveSet = 0
             log("🔄 Starting new cycle for \(bundleID) - available WindowSets: \(windowSets.count)")
         } else {
             // Continue cycling through the same app
-            // Always move to the next WindowSet when continuing to cycle
-            let nextIndex = (bundleIDCycleIndex + 1) % windowSets.count
-            bundleIDCycleIndex = nextIndex
-            windowIndexWithinSet = 0
-            log("🔄 Moving to next WindowSet \(bundleIDCycleIndex) for \(bundleID) (was \((bundleIDCycleIndex - 1 + windowSets.count) % windowSets.count))")
+            // Ensure bundleIDCycleIndex is within bounds
+            if bundleIDCycleIndex >= windowSets.count {
+                bundleIDCycleIndex = 0
+                log("⚠️ bundleIDCycleIndex was out of bounds, resetting to 0")
+            }
+            
+            let currentSet = windowSets[bundleIDCycleIndex]
+            let bundleWindowsInCurrentSet = currentSet.windows.filter { window in
+                guard let app = NSRunningApplication(processIdentifier: window.pid()) else { return false }
+                return app.bundleIdentifier == bundleID
+            }
+            
+            // Check if we're still in the same WindowSet and have more windows to cycle through
+            if currentFocusedWindowSetID == currentSet.id && bundleWindowsInCurrentSet.count > 1 {
+                // Cycle to next window within the same WindowSet
+                currentWindowIndexInActiveSet = (currentWindowIndexInActiveSet + 1) % bundleWindowsInCurrentSet.count
+                log("🔄 Cycling to window \(currentWindowIndexInActiveSet) within WindowSet (has \(bundleWindowsInCurrentSet.count) windows)")
+            } else {
+                // Move to next WindowSet
+                bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+                windowIndexWithinSet = 0
+                currentWindowIndexInActiveSet = 0
+                log("🔄 Moving to next WindowSet \(bundleIDCycleIndex) for \(bundleID)")
+            }
+        }
+        
+        // Ensure bundleIDCycleIndex is still within bounds before final access
+        if bundleIDCycleIndex >= windowSets.count {
+            bundleIDCycleIndex = 0
+            log("⚠️ bundleIDCycleIndex was out of bounds at final access, resetting to 0")
         }
         
         let currentSet = windowSets[bundleIDCycleIndex]
@@ -305,10 +337,29 @@ class SimpleWindowManager: WindowManaging {
         
         log("📊 WindowSet \(bundleIDCycleIndex) has \(currentSet.windows.count) total windows, \(bundleWindowsInSet.count) from bundle \(bundleID)")
         
-        let targetWindow = windowIndexWithinSet < bundleWindowsInSet.count ? bundleWindowsInSet[windowIndexWithinSet] : bundleWindowsInSet.first
+        // Use the new cycling index for window selection
+        let targetWindow: AXWindow?
+        if currentFocusedWindowSetID == currentSet.id && bundleWindowsInSet.count > currentWindowIndexInActiveSet {
+            targetWindow = bundleWindowsInSet[currentWindowIndexInActiveSet]
+        } else {
+            targetWindow = bundleWindowsInSet.first
+            currentWindowIndexInActiveSet = 0
+        }
+        
+        // Update the focused WindowSet ID
+        currentFocusedWindowSetID = currentSet.id
         
         if let targetWindow = targetWindow {
-            log("✅ Selected target window: \(targetWindow.title() ?? "<untitled>")")
+            log("✅ Selected target window: \(targetWindow.title() ?? "<untitled>") (index \(currentWindowIndexInActiveSet) of \(bundleWindowsInSet.count))")
+            
+            // Debug: Show all windows in the current set with their indices
+            if bundleWindowsInSet.count > 1 {
+                log("🔍 Available windows in WindowSet \(currentSet.id):")
+                for (index, window) in bundleWindowsInSet.enumerated() {
+                    let marker = index == currentWindowIndexInActiveSet ? "→" : " "
+                    log("  \(marker) [\(index)] \(window.title() ?? "<untitled>")")
+                }
+            }
         } else {
             log("❌ No target window found in WindowSet \(bundleIDCycleIndex) for bundle \(bundleID)")
         }
@@ -361,6 +412,8 @@ class SimpleWindowManager: WindowManaging {
                     DispatchQueue.main.async {
                         self.currentBundleIDCycling = bundleID
                         self.bundleIDCycleIndex = 0
+                        self.currentFocusedWindowSetID = nil
+                        self.currentWindowIndexInActiveSet = 0
                         
                         // Give the app time to create windows, then refresh
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -633,6 +686,8 @@ class SimpleWindowManager: WindowManaging {
             bundleIDCycleIndex = 0
             windowIndexWithinSet = 0
             currentWindowSet = nil
+            currentFocusedWindowSetID = nil
+            currentWindowIndexInActiveSet = 0
         }
         
         refreshWindows()
@@ -651,6 +706,8 @@ class SimpleWindowManager: WindowManaging {
             bundleIDCycleIndex = 0
             windowIndexWithinSet = 0
             currentWindowSet = nil
+            currentFocusedWindowSetID = nil
+            currentWindowIndexInActiveSet = 0
         }
     }
     
