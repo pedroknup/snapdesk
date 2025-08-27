@@ -426,7 +426,8 @@ class UserConfiguration: NSObject {
         return "select-\(layoutKey)-layout"
     }
 
-    func constructCommand(for hotKeyRegistrar: HotKeyRegistrar, commandKey: String, handler: @escaping HotKeyHandler) {
+    // Original constructCommand method - kept for reference but not used in snapdesk integration
+    private func originalConstructCommand(for hotKeyRegistrar: HotKeyRegistrar, commandKey: String, handler: @escaping HotKeyHandler) {
         var override = false
         var command: [String: String]? = configurationValue(forKeyValue: commandKey, fallbackToDefault: false)
         if command != nil {
@@ -740,6 +741,7 @@ class UserConfiguration: NSObject {
     }
 }
 
+// MARK: - Snapdesk Integration Extensions
 extension UserConfiguration {
     @discardableResult func confirmAccessibilityPermissions() -> Bool {
         let options = [
@@ -747,5 +749,30 @@ extension UserConfiguration {
         ]
 
         return AXIsProcessTrustedWithOptions(options as CFDictionary)
+    }
+    
+    // Extension to work with snapdesk's ConfigurationManager
+    func constructCommand(for hotKeyRegistrar: HotKeyRegistrar, commandKey: String, handler: @escaping HotKeyHandler) {
+        let config = ConfigurationManager.shared.loadConfig() ?? ConfigurationManager.shared.getDefaultConfig()
+        let commandKeyToDisplayName = HotkeyManager.commandKeyToDisplayName()
+        
+        // Look for the command key in our general shortcuts
+        guard let displayName = commandKeyToDisplayName[commandKey],
+              let generalShortcut = config.generalShortcuts.first(where: { $0.name == displayName }),
+              let shortcut = generalShortcut.shortcut, !shortcut.key.isEmpty else {
+            return
+        }
+        
+        // Convert modifiers to AMModifierFlags
+        let modifiers = modifierFlagsForStrings(shortcut.modifiers)
+        
+        // Register the hotkey
+        hotKeyRegistrar.registerHotKey(
+            with: shortcut.key,
+            modifiers: modifiers,
+            handler: handler,
+            defaultsKey: commandKey,
+            override: false
+        )
     }
 }

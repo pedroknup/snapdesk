@@ -1,4 +1,5 @@
 import Foundation
+import Silica
 
 func log(_ message: String) {
     let path = "/tmp/snapdesk.log"

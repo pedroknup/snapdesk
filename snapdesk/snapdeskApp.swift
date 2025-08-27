@@ -10,8 +10,9 @@ import Cocoa
 
 @objc(SnapdeskApp)
 class SnapdeskApp: NSObject, NSApplicationDelegate {
-    var windowController: WindowController!
+    var windowManager: SimpleWindowManager!
     var hotkeyManager: HotkeyManager!
+    var userConfiguration: UserConfiguration!
     var statusItem: NSStatusItem?
     var settingsWindowController: SettingsWindowController?
     
@@ -41,11 +42,17 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
             exit(1)
         }
 
-        windowController = WindowController()
-        //windowController.startFocusObserver()
-        //windowController.startFocusPollingFallback()
+        // Initialize UserConfiguration
+        userConfiguration = UserConfiguration.shared
         
-        hotkeyManager = HotkeyManager(controller: windowController)
+        // Initialize WindowManager (simplified approach without Silica dependency)
+        windowManager = SimpleWindowManager()
+        
+        // Initialize HotkeyManager with the new simplified approach
+        hotkeyManager = HotkeyManager(windowManager: windowManager, userConfiguration: userConfiguration)
+        
+        // Set up hotkeys using the protocol-based pattern
+        hotkeyManager.setUpWithWindowController(windowManager, configuration: userConfiguration)
         
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
@@ -126,7 +133,12 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     
     @objc func revaluateWindows() {
         log("🔄 Revaluate windows clicked")
-        windowController?.scanAndTrackWindows()
+        // TODO: Add reevaluateWindows method to SimpleWindowManager if needed
+    }
+    
+    // Method to reload hotkey configuration when settings change
+    func reloadHotkeyConfiguration() {
+        hotkeyManager?.reloadConfiguration()
     }
 
 

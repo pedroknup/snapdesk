@@ -26,7 +26,7 @@ protocol WindowTransitionTarget: AnyObject {
     func executeTransition(_ transition: WindowTransition<Window>)
 
     func isWindowFloating(_ window: Window) -> Bool
-    func currentLayout() -> Layout<Application.Window>?
+//    func currentLayout() -> Layout<Application.Window>?
     func screen(at index: Int) -> Screen?
     func activeWindows(on screen: Screen) -> [Window]
     func nextScreenIndexClockwise(from screen: Screen) -> Int
