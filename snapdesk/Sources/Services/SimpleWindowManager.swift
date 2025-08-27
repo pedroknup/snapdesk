@@ -9,6 +9,13 @@ import Foundation
 import AppKit
 
 class SimpleWindowManager: WindowManaging {
+    private var WorkspaceModel: WorkspaceModel
+    
+    init() {
+        var workspace = snapdesk.WorkspaceModel()
+        self.WorkspaceModel = workspace
+    }
+    
     func addWindowToLayout(_ bundleID: String) {
         log("TODO: addWindowToLayout")
     }

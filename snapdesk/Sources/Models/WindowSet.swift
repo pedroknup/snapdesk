@@ -150,41 +150,21 @@ struct FrameAssignment<W: WindowType> {
     }
 }
 
+/// One logical collection of windows + how to arrange them
+final class WindowSet: Identifiable {
+    enum LayoutKind: String, Codable {
+        case tall        // vertical split, main + stack
+        case wide        // horizontal split
+        case fullscreen
+        case floating
+    }
 
-struct WindowSet<W: WindowType> {
-    // Store the real windows, not LayoutWindow wrappers
-    let windows: [W]
+    let id: UUID = UUID()
+    var layout: LayoutKind
+    var windows: [AXWindow]
 
-    private let isWindowWithIDActive: (W.WindowID) -> Bool
-    private let isWindowWithIDFloating: (W.WindowID) -> Bool
-    private let windowForID: (W.WindowID) -> W?
-
-    init(
-        windows: [W],
-        isWindowWithIDActive: @escaping (W.WindowID) -> Bool,
-        isWindowWithIDFloating: @escaping (W.WindowID) -> Bool,
-        windowForID: @escaping (W.WindowID) -> W?
-    ) {
+    init(layout: LayoutKind = .tall, windows: [AXWindow] = []) {
+        self.layout = layout
         self.windows = windows
-        self.isWindowWithIDActive = isWindowWithIDActive
-        self.isWindowWithIDFloating = isWindowWithIDFloating
-        self.windowForID = windowForID
-    }
-
-    // Now these take a real W (WindowType), not a LayoutWindow
-    func isWindowActive(_ window: W) -> Bool {
-        isWindowWithIDActive(window.id())
-    }
-
-    func isWindowFloating(_ window: W) -> Bool {
-        isWindowWithIDFloating(window.id())
-    }
-
-    // ⚠️ This method used to depend on LayoutWindow via `frameAssignment.window.id`.
-    // Make FrameAssignment carry a window *identifier* instead of a LayoutWindow.
-    func perform(frameAssignment: FrameAssignment<W>) {
-        guard let window = windowForID(frameAssignment.windowID) else { return }
-        frameAssignment.perform(withWindow: window)
     }
 }
-

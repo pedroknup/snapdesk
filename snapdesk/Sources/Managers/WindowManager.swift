@@ -809,9 +809,9 @@ extension WindowManager: ScreenManagerDelegate {
 //        }
     }
 
-    func activeWindowSet(forScreenManager screenManager: ScreenManager<WindowManager<Application>>) -> WindowSet<Window> {
-        return windows.windowSet(forActiveWindowsOnScreen: screenManager.screen!)
-    }
+//    func activeWindowSet(forScreenManager screenManager: ScreenManager<WindowManager<Application>>) -> WindowSet<Window> {
+////        return windows.windowSet(forActiveWindowsOnScreen: screenManager.screen!)
+//    }
 }
 
 // MARK: - SnapDesk Custom Extensions
@@ -831,11 +831,11 @@ extension WindowManager {
     
     public func throwToScreen(_ screenNumber: Int) {
         log("📤 throwToScreen(\(screenNumber)) called")
-        guard let focusedWindow = Window.currentlyFocused(),
-              let targetScreen = screen(at: screenNumber - 1) else {
-            log("❌ No focused window or invalid screen number")
-            return
-        }
+//        guard let focusedWindow = Window.currentlyFocused(),
+//              let targetScreen = screen(at: screenNumber - 1) else {
+//            log("❌ No focused window or invalid screen number")
+//            return
+//        }
 //        executeTransition(.moveWindowToScreen(focusedWindow, targetScreen))
     }
     

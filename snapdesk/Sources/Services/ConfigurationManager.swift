@@ -67,7 +67,7 @@ public class ConfigurationManager {
               let yamlString = String(data: data, encoding: .utf8) else {
             return nil
         }
-        print("Loading config from YAML:\n\(yamlString)")
+//        print("Loading config from YAML.")
         guard var config = try? YAMLDecoder().decode(Config.self, from: data) else {
             return nil
         }

@@ -157,22 +157,22 @@ extension WindowManager {
 
         // MARK: Window Sets
 
-        func windowSet(forWindowsOnScreen screen: Screen) -> WindowSet<Window> {
-            return windowSet(forWindows: windows(onScreen: screen))
-        }
-
-        func windowSet(forActiveWindowsOnScreen screen: Screen) -> WindowSet<Window> {
-            return windowSet(forWindows: activeWindows(onScreen: screen))
-        }
-        
-        func windowSet(forWindows windows: [Window]) -> WindowSet<Window> {
-                return WindowSet<Window>(
-                    windows: windows,
-                    isWindowWithIDActive: { _ in false },
-                    isWindowWithIDFloating: { _ in false },
-                    windowForID: { _ in nil }
-                )
-            }
+//        func windowSet(forWindowsOnScreen screen: Screen) -> WindowSet<Window> {
+//            return windowSet(forWindows: windows(onScreen: screen))
+//        }
+//
+//        func windowSet(forActiveWindowsOnScreen screen: Screen) -> WindowSet<Window> {
+//            return windowSet(forWindows: activeWindows(onScreen: screen))
+//        }
+//        
+//        func windowSet(forWindows windows: [Window]) -> WindowSet<Window> {
+//                return WindowSet<Window>(
+//                    windows: windows,
+//                    isWindowWithIDActive: { _ in false },
+//                    isWindowWithIDFloating: { _ in false },
+//                    windowForID: { _ in nil }
+//                )
+//            }
 
 //        func windowSet(forWindows windows: [Window]) -> WindowSet<Window> {
 //            let layoutWindows: [LayoutWindow<Window>] = windows.map {

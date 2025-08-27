@@ -12,7 +12,7 @@ import Silica
 protocol ScreenManagerDelegate: AnyObject {
     associatedtype Window: WindowType
     func applyWindowLimit(forScreenManager screenManager: ScreenManager<Self>, minimizingIn range: (_ windowCount: Int) -> Range<Int>)
-    func activeWindowSet(forScreenManager screenManager: ScreenManager<Self>) -> WindowSet<Window>
+//    func activeWindowSet(forScreenManager screenManager: ScreenManager<Self>) -> WindowSet<Window>
     func onReflowInitiation()
     func onReflowCompletion()
 }
