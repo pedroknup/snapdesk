@@ -276,7 +276,7 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         }
         
         hotKeys.append(hotKey)
-        log("Registered hotkey: \(keyString) with modifiers: \(modifiers)")
+//        log("Registered hotkey: \(keyString) with modifiers: \(modifiers)")
     }
     
     private func parseModifiers(_ modifierStrings: [String]) -> NSEvent.ModifierFlags {
