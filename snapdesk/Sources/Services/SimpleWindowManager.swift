@@ -220,7 +220,7 @@ class SimpleWindowManager: WindowManaging {
             // Clean up empty WindowSet
             if currentWindowSet.windows.isEmpty {
                 removeEmptyWindowSet(currentWindowSet)
-            } else {
+            }ƒ else {
                 // Re-expand remaining windows in the original WindowSet
                 currentWindowSet.expandWindows()
             }
