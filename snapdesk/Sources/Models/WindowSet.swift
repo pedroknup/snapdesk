@@ -149,15 +149,16 @@ struct FrameAssignment<W: WindowType> {
         }
     }
 }
+public enum LayoutKind: String, Codable {
+    case tall        // vertical split, main + stack
+    case wide        // horizontal split
+    case fullscreen
+    case floating
+}
 
 /// One logical collection of windows + how to arrange them
 final class WindowSet: Identifiable {
-    enum LayoutKind: String, Codable {
-        case tall        // vertical split, main + stack
-        case wide        // horizontal split
-        case fullscreen
-        case floating
-    }
+
 
     let id: UUID = UUID()
     var layout: LayoutKind
