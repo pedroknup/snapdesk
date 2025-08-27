@@ -215,31 +215,11 @@ class SimpleWindowManager: WindowManaging {
             log("🔄 Starting new cycle for \(bundleID) - available WindowSets: \(windowSets.count)")
         } else {
             // Continue cycling through the same app
-            let currentSet = windowSets[bundleIDCycleIndex]
-            
-            // Find all windows for this bundle in the current WindowSet
-            let bundleWindows = currentSet.windows.filter { window in
-                guard let app = NSRunningApplication(processIdentifier: window.pid()) else { return false }
-                return app.bundleIdentifier == bundleID
-            }
-            
-            if bundleWindows.count > 1 {
-                // Multiple windows of this bundle in current WindowSet - cycle through them
-                if windowIndexWithinSet < bundleWindows.count - 1 {
-                    windowIndexWithinSet += 1
-                    log("🔄 Cycling within WindowSet to bundle window \(windowIndexWithinSet)")
-                } else {
-                    // Finished cycling within WindowSet, move to next WindowSet
-                    bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
-                    windowIndexWithinSet = 0
-                    log("🔄 Moving to next WindowSet \(bundleIDCycleIndex), window 0")
-                }
-            } else {
-                // Single window of this bundle in WindowSet, move to next WindowSet
-                bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
-                windowIndexWithinSet = 0
-                log("🔄 Moving to next WindowSet \(bundleIDCycleIndex)")
-            }
+            // Always move to the next WindowSet when continuing to cycle
+            let nextIndex = (bundleIDCycleIndex + 1) % windowSets.count
+            bundleIDCycleIndex = nextIndex
+            windowIndexWithinSet = 0
+            log("🔄 Moving to next WindowSet \(bundleIDCycleIndex) for \(bundleID) (was \((bundleIDCycleIndex - 1 + windowSets.count) % windowSets.count))")
         }
         
         let currentSet = windowSets[bundleIDCycleIndex]
@@ -250,7 +230,15 @@ class SimpleWindowManager: WindowManaging {
             return app.bundleIdentifier == bundleID
         }
         
+        log("📊 WindowSet \(bundleIDCycleIndex) has \(currentSet.windows.count) total windows, \(bundleWindowsInSet.count) from bundle \(bundleID)")
+        
         let targetWindow = windowIndexWithinSet < bundleWindowsInSet.count ? bundleWindowsInSet[windowIndexWithinSet] : bundleWindowsInSet.first
+        
+        if let targetWindow = targetWindow {
+            log("✅ Selected target window: \(targetWindow.title() ?? "<untitled>")")
+        } else {
+            log("❌ No target window found in WindowSet \(bundleIDCycleIndex) for bundle \(bundleID)")
+        }
         
         // Store the current WindowSet for potential use in addWindowToLayout
         currentWindowSet = currentSet
@@ -388,7 +376,7 @@ class SimpleWindowManager: WindowManaging {
        }
     
     /// Returns all WindowSets that contain at least one window belonging to the given bundle ID, sorted consistently.
-    private func windowSets(for bundleID: String) -> [WindowSet] {
+    private func windowSetsold(for bundleID: String) -> [WindowSet] {
         var matchingSets: [WindowSet] = []
 
         for screenWS in workspace.screens {
@@ -589,6 +577,52 @@ class SimpleWindowManager: WindowManaging {
         // Create a separate WindowSet for each window to enable cycling
         let newSet = WindowSet(layout: .wide, windows: [window], screenID: screenWS.screen.screenID())
         screenWS.windowSets.append(newSet)
+    }
+    
+    /// Returns all WindowSets that contain at least one window belonging to the given bundle ID, sorted consistently.
+    private func windowSets(for bundleID: String) -> [WindowSet] {
+        var matchingSets: [WindowSet] = []
+        var seenWindowIDs: Set<CGWindowID> = []
+
+        for screenWS in workspace.screens {
+            for set in screenWS.windowSets {
+                // Filter windows in this set to only those belonging to the requested bundle
+                let bundleWindows = set.windows.filter { win in
+                    guard let app = NSRunningApplication(processIdentifier: win.pid()) else {
+                        return false
+                    }
+                    return app.bundleIdentifier == bundleID
+                }
+
+                // Only include WindowSets that have windows from this bundle that we haven't seen before
+                let uniqueBundleWindows = bundleWindows.filter { window in
+                    let windowID = window.cgID()
+                    if seenWindowIDs.contains(windowID) {
+                        return false // Skip duplicate window
+                    }
+                    seenWindowIDs.insert(windowID)
+                    return true
+                }
+
+                if !uniqueBundleWindows.isEmpty {
+                    matchingSets.append(set)
+                }
+            }
+        }
+
+        log("🔍 Found \(matchingSets.count) WindowSets containing windows for \(bundleID)")
+        
+        // Debug: Show details of each WindowSet found
+        for (index, set) in matchingSets.enumerated() {
+            let bundleWindows = set.windows.filter { win in
+                guard let app = NSRunningApplication(processIdentifier: win.pid()) else { return false }
+                return app.bundleIdentifier == bundleID
+            }
+            let windowTitles = bundleWindows.map { $0.title() ?? "<untitled>" }.joined(separator: ", ")
+            log("  WindowSet \(index): \(bundleWindows.count) \(bundleID) windows - [\(windowTitles)]")
+        }
+        
+        return matchingSets
     }
     
     deinit {
