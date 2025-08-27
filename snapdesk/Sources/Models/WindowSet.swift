@@ -289,12 +289,15 @@ final class WindowSet: Identifiable {
         log("🔄 Toggling WindowSet layout from \(layout) to \(nextLayout)")
         layout = nextLayout
         
-        // Always show floating notification about the layout change using the helper
-        FloatingWindowHelper.showFloatingWindow(
-            text: "Layout: \(nextLayout.rawValue.capitalized)", 
-            position: .center, 
-            duration: 1.5
-        )
+        // Show floating notification if enabled in settings (default: true)
+        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+        if showLayoutIndicator {
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Layout: \(nextLayout.rawValue.capitalized)", 
+                position: .center, 
+                duration: 1.5
+            )
+        }
         
         // Re-expand windows with the new layout
         expandWindows()
