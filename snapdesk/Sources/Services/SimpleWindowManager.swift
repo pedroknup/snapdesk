@@ -21,22 +21,71 @@ class SimpleWindowManager: WindowManaging {
     
     private var workspace: WorkspaceModel
 
+    /// Gets the default layout mode from settings
+    private func getDefaultLayoutMode() -> LayoutKind {
+        let defaultLayoutString = UserDefaults.standard.string(forKey: "defaultLayoutMode") ?? "wide"
+        
+        switch defaultLayoutString.lowercased() {
+        case "tall":
+            return .tall
+        case "fullscreen":
+            return .fullscreen
+        case "floating":
+            return .floating
+        default:
+            return .wide
+        }
+    }
+    
+    /// Gets whether auto-expand new windows is enabled
+    private func shouldAutoExpandNewWindows() -> Bool {
+        return UserDefaults.standard.object(forKey: "autoExpandNewWindows") as? Bool ?? true
+    }
+
     init() {
+        // Initialize workspace first
         var ws = snapdesk.WorkspaceModel()
+        self.workspace = ws
 
         let discovered = scanWindows()
+        let defaultLayout = getDefaultLayoutMode()
+        
         for (win, screen) in discovered {
-            if let idx = ws.screens.firstIndex(where: { $0.screen == screen }) {
-                // Create a fresh WindowSet just for this window
-                let newSet = WindowSet(layout: .wide, windows: [win], screenID: screen.screenID())
-                ws.screens[idx].windowSets.append(newSet)
+            if let idx = workspace.screens.firstIndex(where: { $0.screen == screen }) {
+                // Create a fresh WindowSet with the default layout
+                let newSet = WindowSet(layout: defaultLayout, windows: [win], screenID: screen.screenID())
+                workspace.screens[idx].windowSets.append(newSet)
+                
+                // Auto-expand the window if the setting is enabled
+                if shouldAutoExpandNewWindows() {
+                    log("🔧 Auto-expanding new window: \(win.title() ?? "<untitled>") with layout: \(defaultLayout)")
+                    newSet.expandWindows()
+                }
             }
         }
-
-        self.workspace = ws
         
         // Setup window observers
         setupWindowObservers()
+        
+        // Final comprehensive pass: Ensure ALL windows are expanded if auto-expand is enabled
+        if shouldAutoExpandNewWindows() {
+            log("🔧 Final startup auto-expand pass: ensuring all windows are properly expanded")
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                var totalWindowsExpanded = 0
+                for screenWS in self.workspace.screens {
+                    for windowSet in screenWS.windowSets {
+                        windowSet.expandWindows()
+                        totalWindowsExpanded += windowSet.windows.count
+                        log("🔧 Final expand: WindowSet with \(windowSet.windows.count) window(s) in layout: \(windowSet.layout)")
+                    }
+                }
+                log("✅ Final startup auto-expand complete: \(totalWindowsExpanded) windows expanded")
+            }
+        } else {
+            log("🔧 Auto-expand disabled: Windows will keep their original sizes on startup")
+        }
 
         print("Workspace initialized with \(ws.screens.count) screens and \(discovered.count) windows")
 
@@ -90,8 +139,10 @@ class SimpleWindowManager: WindowManaging {
         // Remove the window from its original WindowSet and clean up empty sets
         removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
         
-        // Expand all windows in the updated WindowSet according to its layout
-        currentWindowSet.expandWindows()
+        // Expand all windows in the updated WindowSet according to its layout (if auto-expand is enabled)
+        if shouldAutoExpandNewWindows() {
+            currentWindowSet.expandWindows()
+        }
         
         // Focus the newly added window
         log("🎯 Focusing newly added window: \(windowToAdd.title() ?? "<untitled>")")
@@ -220,15 +271,16 @@ class SimpleWindowManager: WindowManaging {
             // Clean up empty WindowSet
             if currentWindowSet.windows.isEmpty {
                 removeEmptyWindowSet(currentWindowSet)
-            }ƒ else {
+            } else {
                 // Re-expand remaining windows in the original WindowSet
                 currentWindowSet.expandWindows()
             }
         }
         
-        // Create a new WindowSet on the target screen
+        // Create a new WindowSet on the target screen with default layout
         let targetScreenID = targetScreen.screenID()
-        let newWindowSet = WindowSet(layout: .wide, windows: [axWindow], screenID: targetScreenID)
+        let defaultLayout = getDefaultLayoutMode()
+        let newWindowSet = WindowSet(layout: defaultLayout, windows: [axWindow], screenID: targetScreenID)
         
         log("📐 Created new WindowSet with screen ID: \(targetScreenID ?? "nil")")
         log("📐 Target screen frame: \(NSStringFromRect(targetScreen.adjustedFrame()))")
@@ -244,9 +296,13 @@ class SimpleWindowManager: WindowManaging {
             log("📦 Created new screen workspace")
         }
         
-        // Expand the window on the new screen - ensure it fits the target screen boundaries
-        log("📐 Expanding window to fit target screen boundaries...")
-        newWindowSet.expandWindows()
+        // Expand the window on the new screen if auto-expand is enabled
+        if shouldAutoExpandNewWindows() {
+            log("📐 Auto-expanding window to fit target screen boundaries with layout: \(defaultLayout)...")
+            newWindowSet.expandWindows()
+        } else {
+            log("📐 Auto-expand disabled, window keeps its current size")
+        }
         
         // Double-check: if expandWindows() didn't work, expand manually
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -294,8 +350,10 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        // Expand all windows in the current WindowSet according to its layout
-        windowSet.expandWindows()
+        // Expand all windows in the current WindowSet according to its layout (if auto-expand is enabled)
+        if shouldAutoExpandNewWindows() {
+            windowSet.expandWindows()
+        }
         
         if let targetWindow = targetWindow {
             log("🎯 Focusing window: \(targetWindow.title() ?? "<untitled>")")
@@ -550,7 +608,8 @@ class SimpleWindowManager: WindowManaging {
            
            let screen = AMScreen(screen: nsScreen)
            
-           let newWindowSet = WindowSet(layout: .wide, windows: [axWindow], screenID: screen.screenID())
+           let defaultLayout = getDefaultLayoutMode()
+           let newWindowSet = WindowSet(layout: defaultLayout, windows: [axWindow], screenID: screen.screenID())
            
            // Add the new WindowSet to the appropriate screen workspace
            if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == screen }) {
@@ -844,8 +903,15 @@ class SimpleWindowManager: WindowManaging {
     
     private func addWindow(_ window: AXWindow, to screenWS: inout ScreenWorkspace) {
         // Create a separate WindowSet for each window to enable cycling
-        let newSet = WindowSet(layout: .wide, windows: [window], screenID: screenWS.screen.screenID())
+        let defaultLayout = getDefaultLayoutMode()
+        let newSet = WindowSet(layout: defaultLayout, windows: [window], screenID: screenWS.screen.screenID())
         screenWS.windowSets.append(newSet)
+        
+        // Auto-expand the window if the setting is enabled
+        if shouldAutoExpandNewWindows() {
+            log("🔧 Auto-expanding newly added window: \(window.title() ?? "<untitled>") with layout: \(defaultLayout)")
+            newSet.expandWindows()
+        }
     }
     
     /// Returns all WindowSets that contain at least one window belonging to the given bundle ID, sorted consistently.
