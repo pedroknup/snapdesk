@@ -58,7 +58,6 @@ class SimpleWindowManager: WindowManaging {
                 
                 // Auto-expand the window if the setting is enabled (without bringing to front during startup)
                 if shouldAutoExpandNewWindows() {
-                    log("🔧 Auto-expanding new window: \(win.title() ?? "<untitled>") with layout: \(defaultLayout)")
                     newSet.expandWindows(on: screen, bringToFront: false)
                 }
             }
@@ -69,23 +68,16 @@ class SimpleWindowManager: WindowManaging {
         
         // Final comprehensive pass: Ensure ALL windows are expanded if auto-expand is enabled
         if shouldAutoExpandNewWindows() {
-            log("🔧 Final startup auto-expand pass: ensuring all windows are properly expanded")
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                var totalWindowsExpanded = 0
                 for screenWS in self.workspace.screens {
                     for windowSet in screenWS.windowSets {
                         // Expand windows without bringing to front during startup
                         windowSet.expandWindows(on: screenWS.screen, bringToFront: false)
-                        totalWindowsExpanded += windowSet.windows.count
-                        log("🔧 Final expand: WindowSet with \(windowSet.windows.count) window(s) in layout: \(windowSet.layout)")
                     }
                 }
-                log("✅ Final startup auto-expand complete: \(totalWindowsExpanded) windows expanded")
             }
-        } else {
-            log("🔧 Auto-expand disabled: Windows will keep their original sizes on startup")
         }
 
         print("Workspace initialized with \(ws.screens.count) screens and \(discovered.count) windows")
@@ -113,7 +105,6 @@ class SimpleWindowManager: WindowManaging {
 
     
     func addWindowToLayout(_ bundleID: String) {
-        log("➕ addWindowToLayout(\(bundleID)) called")
         
         // Use the current WindowSet if it exists
         guard let currentWindowSet = currentWindowSet else {
@@ -146,13 +137,8 @@ class SimpleWindowManager: WindowManaging {
         }
         
         // Focus the newly added window
-        log("🎯 Focusing newly added window: \(windowToAdd.title() ?? "<untitled>")")
         windowToAdd.focus()
-        
-        // Move cursor to center of newly focused window
         moveCursorToCenter(of: windowToAdd)
-        
-        log("✅ Window successfully added to layout. WindowSet now has \(currentWindowSet.windows.count) windows")
     }
     
     /// Gets the bundle ID for the first window in a WindowSet
@@ -166,7 +152,6 @@ class SimpleWindowManager: WindowManaging {
     private func getNextWindowToAdd(for bundleID: String) -> (WindowSet, AXWindow?)? {
         let windowSets = windowSets(for: bundleID)
         guard windowSets.count > 1 else {
-            log("❌ Only one WindowSet found for \(bundleID), nothing to add")
             return nil
         }
         
@@ -219,12 +204,10 @@ class SimpleWindowManager: WindowManaging {
     }
     
     func focusScreen(_ screenNumber: Int) {
-        log("🎯 focusScreen(\(screenNumber)) called")
         // TODO: Implement screen focus functionality
     }
     
     func throwToScreen(_ screenNumber: Int) {
-        log("📤 throwToScreen(\(screenNumber)) called")
         
         // Get the currently focused window
         guard let focusedWindow = frontmostWindow() else {
@@ -247,7 +230,6 @@ class SimpleWindowManager: WindowManaging {
         let screenIndex = screenNumber - 1  // Convert 1-based to 0-based index
         
         guard screenIndex >= 0 && screenIndex < screens.count else {
-            log("❌ Invalid screen number: \(screenNumber) (only \(screens.count) screens available)")
             let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
             if showThrowNotifications {
                 FloatingWindowHelper.showFloatingWindow(
@@ -260,11 +242,9 @@ class SimpleWindowManager: WindowManaging {
         }
         
         let targetScreen = screens[screenIndex]
-        log("🎯 Throwing window '\(axWindow.title() ?? "<untitled>")' to screen \(screenNumber)")
         
         // Find the current WindowSet containing this window
         if let (currentWindowSet, windowIndex, _) = findWindowSetContaining(axWindow) {
-            log("📦 Found window in WindowSet with \(currentWindowSet.windows.count) windows")
             
             // Remove window from current WindowSet
             currentWindowSet.windows.remove(at: windowIndex)
@@ -289,12 +269,10 @@ class SimpleWindowManager: WindowManaging {
         // Add the new WindowSet to the target screen's workspace
         if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == targetScreen }) {
             workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
-            log("📦 Added WindowSet to existing screen workspace")
         } else {
             // Create new screen workspace if it doesn't exist
             let newScreenWS = ScreenWorkspace(screen: targetScreen, sets: [newWindowSet])
             workspace.screens.append(newScreenWS)
-            log("📦 Created new screen workspace")
         }
         
         // Expand the window on the new screen if auto-expand is enabled
@@ -318,7 +296,6 @@ class SimpleWindowManager: WindowManaging {
                 // Force expand to full target screen
                 move(window: axWindow.axElementRef, to: targetFrame)
             } else {
-                log("✅ Window properly expanded to target screen")
             }
         }
         
@@ -336,17 +313,14 @@ class SimpleWindowManager: WindowManaging {
             )
         }
         
-        log("✅ Successfully threw window to screen \(screenNumber)")
     }
     
     // MARK: - App Management
     
     func focusApp(_ bundleID: String) {
-        log("🎯 NEW focusApp(\(bundleID)) called")
         
         guard let (windowSet, targetWindow) = getNextWindowSetToFocus(for: bundleID) else {
             // No windows found - try to launch the app
-            log("🚀 No windows found for \(bundleID), attempting to launch app")
             launchApp(bundleID: bundleID)
             return
         }
@@ -357,10 +331,7 @@ class SimpleWindowManager: WindowManaging {
         }
         
         if let targetWindow = targetWindow {
-            log("🎯 Focusing window: \(targetWindow.title() ?? "<untitled>")")
             targetWindow.focus()
-            
-            // Move cursor to center of focused window
             moveCursorToCenter(of: targetWindow)
         }
     }
@@ -442,16 +413,7 @@ class SimpleWindowManager: WindowManaging {
         currentFocusedWindowSetID = currentSet.id
         
         if let targetWindow = targetWindow {
-            log("✅ Selected target window: \(targetWindow.title() ?? "<untitled>") (index \(currentWindowIndexInActiveSet) of \(bundleWindowsInSet.count))")
             
-            // Debug: Show all windows in the current set with their indices
-            if bundleWindowsInSet.count > 1 {
-                log("🔍 Available windows in WindowSet \(currentSet.id):")
-                for (index, window) in bundleWindowsInSet.enumerated() {
-                    let marker = index == currentWindowIndexInActiveSet ? "→" : " "
-                    log("  \(marker) [\(index)] \(window.title() ?? "<untitled>")")
-                }
-            }
         } else {
             log("❌ No target window found in WindowSet \(bundleIDCycleIndex) for bundle \(bundleID)")
         }
@@ -485,7 +447,6 @@ class SimpleWindowManager: WindowManaging {
     }
     
     private func launchApp(bundleID: String) {
-        log("🚀 Launching app with bundle ID: \(bundleID)")
         
         // Try to launch the app using NSWorkspace
         let workspace = NSWorkspace.shared
@@ -910,7 +871,6 @@ class SimpleWindowManager: WindowManaging {
         
         // Auto-expand the window if the setting is enabled (without bringing to front during initialization)
         if shouldAutoExpandNewWindows() {
-            log("🔧 Auto-expanding newly added window: \(window.title() ?? "<untitled>") with layout: \(defaultLayout)")
             newSet.expandWindows(on: screenWS.screen, bringToFront: false)
         }
     }
