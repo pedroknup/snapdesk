@@ -9,6 +9,19 @@ import Foundation
 import AppKit
 
 class SimpleWindowManager: WindowManaging {
+    func addWindowToLayout(_ bundleID: String) {
+        log("TODO: addWindowToLayout")
+    }
+    
+    
+    private func currentWindow() -> AXUIElement? {
+         return frontmostWindow()
+     }
+    
+    private func screenList() -> [NSScreen] {
+        // Sort screens in a stable order (menu bar first)
+        return NSScreen.screens
+    }
     
     // MARK: - Screen Management
     
@@ -27,47 +40,6 @@ class SimpleWindowManager: WindowManaging {
         // TODO: Implement throw to screen functionality
     }
     
-    // MARK: - Window Layout Management
-    
-    func removeCurrentWindowFromLayout() {
-        log("🗑 removeCurrentWindowFromLayout() called")
-        // TODO: Implement remove window from layout functionality
-    }
-    
-    func throwToCurrentLayout() {
-        log("📦 throwToCurrentLayout() called")
-        // TODO: Implement throw to current layout functionality
-    }
-    
-    func addWindowToLayout(_ bundleID: String) {
-        log("➕ addWindowToLayout(\(bundleID)) called")
-        // TODO: Implement add window to layout functionality
-    }
-    
-    // MARK: - Panel Management
-    
-    func increaseMainPanelCount() {
-        log("⬆️ increaseMainPanelCount() called")
-        // TODO: Implement increase main panel count functionality
-    }
-    
-    func decreaseMainPanelCount() {
-        log("⬇️ decreaseMainPanelCount() called")
-        // TODO: Implement decrease main panel count functionality
-    }
-    
-    // MARK: - Window Cycling
-    
-    func cycleWindowsClockwise() {
-        log("🔄 cycleWindowsClockwise() called")
-        // TODO: Implement cycle windows clockwise functionality
-    }
-    
-    func cycleWindowsCounterclockwise() {
-        log("🔄 cycleWindowsCounterclockwise() called") 
-        // TODO: Implement cycle windows counterclockwise functionality
-    }
-    
     // MARK: - App Management
     
     func focusApp(_ bundleID: String) {
@@ -83,4 +55,78 @@ class SimpleWindowManager: WindowManaging {
         runningApp.activate(options: .activateIgnoringOtherApps)
         log("✅ Activated app: \(bundleID)")
     }
+    
+    // MARK: - WindowManaging methods
+
+       func focusScreen(at index: Int) {
+           let screens = screenList()
+           guard index < screens.count else { return }
+           let targetScreen = screens[index]
+
+           // Find a window on that screen and focus it
+           if let window = windowOnScreen(targetScreen) {
+               AXUIElementSetAttributeValue(window, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+           }
+       }
+
+       func throwFrontmostWindow(toScreen index: Int) {
+           guard let window = currentWindow() else { return }
+           let screens = screenList()
+           guard index < screens.count else { return }
+
+           let targetFrame = screens[index].visibleFrame.insetBy(dx: 8, dy: 8)
+           move(window: window, to: targetFrame)
+       }
+
+       func throwToCurrentLayout() {
+           guard let window = currentWindow(),
+                 let screen = NSScreen.main else { return }
+
+           // Example: tile full width, half height
+           let vf = screen.visibleFrame
+           let target = CGRect(x: vf.minX,
+                               y: vf.midY,
+                               width: vf.width,
+                               height: vf.height/2)
+           move(window: window, to: target)
+       }
+
+       func increaseMainPanelCount() {
+           print("TODO: implement layout engine, increase main count")
+       }
+
+       func decreaseMainPanelCount() {
+           print("TODO: implement layout engine, decrease main count")
+       }
+
+       func cycleWindowsClockwise() {
+           print("TODO: cycle window focus clockwise")
+       }
+
+       func cycleWindowsCounterclockwise() {
+           print("TODO: cycle window focus counterclockwise")
+       }
+
+       func removeCurrentWindowFromLayout() {
+           print("TODO: track floating windows, exclude from tiling")
+       }
+
+       func toggleFullScreenLayout() {
+           guard let window = currentWindow(),
+                 let screen = NSScreen.main else { return }
+           let vf = screen.visibleFrame
+           move(window: window, to: vf)
+       }
+
+       // MARK: - Utilities
+
+       private func windowOnScreen(_ screen: NSScreen) -> AXUIElement? {
+           // Super simple: if the frontmost window is already on this screen, return it
+           if let w = currentWindow(),
+              let f = windowFrame(of: w),
+              f.intersects(screen.frame) {
+               return w
+           }
+           return nil
+       }
 }

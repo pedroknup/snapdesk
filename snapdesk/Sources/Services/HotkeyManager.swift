@@ -32,6 +32,7 @@ protocol WindowManaging: AnyObject {
     func removeCurrentWindowFromLayout()
     func focusScreen(_ screenNumber: Int)
     func throwToScreen(_ screenNumber: Int)
+    func throwFrontmostWindow(toScreen index: Int)
     func throwToCurrentLayout()
     func increaseMainPanelCount()
     func decreaseMainPanelCount()
