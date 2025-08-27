@@ -94,8 +94,10 @@ class SimpleWindowManager: WindowManaging {
         let windowSets = windowSets(for: bundleID)
         log("Found \(windowSets.count) WindowSets for \(bundleID)")
         
-        guard !windowSets.isEmpty else {
-            log("❌ No windows found for bundle ID: \(bundleID)")
+        if windowSets.isEmpty {
+            // No windows found - try to launch the app
+            log("🚀 No windows found for \(bundleID), attempting to launch app")
+            launchApp(bundleID: bundleID)
             return
         }
         
@@ -104,11 +106,12 @@ class SimpleWindowManager: WindowManaging {
             // Reset cycling for new app
             currentBundleIDCycling = bundleID
             bundleIDCycleIndex = 0
-            log("🔄 Starting new cycle for \(bundleID)")
+            log("🔄 Starting new cycle for \(bundleID) - available WindowSets: \(windowSets.count)")
         } else {
             // Continue cycling through the same app
-            bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
-            log("🔄 Cycling to index \(bundleIDCycleIndex) for \(bundleID)")
+            let newIndex = (bundleIDCycleIndex + 1) % windowSets.count
+            bundleIDCycleIndex = newIndex
+            log("🔄 Cycling to index \(bundleIDCycleIndex) for \(bundleID) (total: \(windowSets.count))")
         }
         
         // Focus the window from the current WindowSet
@@ -116,6 +119,39 @@ class SimpleWindowManager: WindowManaging {
         if let firstWindow = currentSet.windows.first {
             log("🎯 Focusing window: \(firstWindow.title() ?? "<untitled>")")
             firstWindow.focus()
+        }
+    }
+    
+    private func launchApp(bundleID: String) {
+        log("🚀 Launching app with bundle ID: \(bundleID)")
+        
+        // Try to launch the app using NSWorkspace
+        let workspace = NSWorkspace.shared
+        
+        // First, try to find the app path by bundle identifier
+        if let appURL = workspace.urlForApplication(withBundleIdentifier: bundleID) {
+            log("📱 Found app at path: \(appURL.path)")
+            
+            workspace.openApplication(at: appURL, configuration: NSWorkspace.OpenConfiguration()) { runningApp, error in
+                if let error = error {
+                    log("❌ Failed to launch app: \(error.localizedDescription)")
+                } else if let app = runningApp {
+                    log("✅ Successfully launched: \(app.localizedName ?? "Unknown")")
+                    
+                    // Reset cycling state for the newly launched app
+                    DispatchQueue.main.async {
+                        self.currentBundleIDCycling = bundleID
+                        self.bundleIDCycleIndex = 0
+                        
+                        // Give the app time to create windows, then refresh
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            self.refreshWindows()
+                        }
+                    }
+                }
+            }
+        } else {
+            log("❌ Could not find app with bundle ID: \(bundleID)")
         }
     }
     
@@ -212,7 +248,7 @@ class SimpleWindowManager: WindowManaging {
             }
         }
 
-        return matchingSets
+       return matchingSets
     }
     
     // MARK: - Window Observers
@@ -306,31 +342,7 @@ class SimpleWindowManager: WindowManaging {
     }
     
     private func addWindow(_ window: AXWindow, to screenWS: inout ScreenWorkspace) {
-        // Try to find a WindowSet for the same app
-        guard let app = NSRunningApplication(processIdentifier: window.pid()),
-              let bundleID = app.bundleIdentifier else {
-            // Create a new set for windows without bundle ID
-            let newSet = WindowSet(layout: .wide, windows: [window])
-            screenWS.windowSets.append(newSet)
-            return
-        }
-        
-        // Check if there's already a WindowSet with windows from the same app
-        for i in screenWS.windowSets.indices {
-            let hasAppWindow = screenWS.windowSets[i].windows.contains { existingWindow in
-                guard let existingApp = NSRunningApplication(processIdentifier: existingWindow.pid()) else {
-                    return false
-                }
-                return existingApp.bundleIdentifier == bundleID
-            }
-            
-            if hasAppWindow {
-                screenWS.windowSets[i].windows.append(window)
-                return
-            }
-        }
-        
-        // Create a new WindowSet for this app
+        // Create a separate WindowSet for each window to enable cycling
         let newSet = WindowSet(layout: .wide, windows: [window])
         screenWS.windowSets.append(newSet)
     }
