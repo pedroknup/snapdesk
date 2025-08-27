@@ -83,6 +83,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         menu.addItem(versionItem)
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Revaluate Windows", action: #selector(revaluateWindows), keyEquivalent: "r"))
+        menu.addItem(NSMenuItem(title: "Test Floating Windows", action: #selector(testFloatingWindows), keyEquivalent: "t"))
         
         menu.addItem(NSMenuItem(title: "Preferences", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "About SnapDesk", action: #selector(showAbout), keyEquivalent: ""))
@@ -92,6 +93,9 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         statusItem?.menu = menu
         
         log("🚀 Snapdesk is listening for hotkeys")
+        
+        // Show hello world floating window on startup
+        FloatingWindowHelper.showFloatingWindow(text: "Hello World!", position: .center, duration: 3.0)
         
     }
     
@@ -134,6 +138,11 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     @objc func revaluateWindows() {
         log("🔄 Revaluate windows clicked")
         // TODO: Add reevaluateWindows method to SimpleWindowManager if needed
+    }
+    
+    @objc func testFloatingWindows() {
+        log("🪟 Test floating windows clicked")
+        FloatingWindowHelper.showMultipleDemo()
     }
     
     // Method to reload hotkey configuration when settings change
