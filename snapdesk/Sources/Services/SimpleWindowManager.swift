@@ -12,6 +12,8 @@ class SimpleWindowManager: WindowManaging {
     
     private var currentBundleIDCycling: String?
     private var bundleIDCycleIndex: Int = 0
+    private var windowIndexWithinSet: Int = 0
+    private var currentWindowSet: WindowSet?
     private var workspace: WorkspaceModel
 
     init() {
@@ -56,7 +58,90 @@ class SimpleWindowManager: WindowManaging {
 
     
     func addWindowToLayout(_ bundleID: String) {
-        log("TODO: addWindowToLayout")
+        log("➕ addWindowToLayout(\(bundleID)) called")
+        
+        // Use the current WindowSet if it exists
+        guard let currentWindowSet = currentWindowSet else {
+            log("❌ No current WindowSet - focus an app first")
+            return
+        }
+        
+        guard let (nextWindowSet, windowToAdd) = getNextWindowSetToFocus(for: bundleID) else {
+            log("❌ No next window found to add to layout")
+            return
+        }
+        
+        
+        guard let windowToAdd = windowToAdd else {
+            log("❌ No window found in next WindowSet to add")
+            return
+        }
+        
+        log("🔄 Adding window '\(windowToAdd.title() ?? "<untitled>")' to current WindowSet")
+        
+        // Add the window to the current WindowSet
+        currentWindowSet.windows.append(windowToAdd)
+        
+        // Remove the window from its original WindowSet and clean up empty sets
+        removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
+        
+        // Expand all windows in the updated WindowSet according to its layout
+        currentWindowSet.expandWindows()
+        
+        // Focus the newly added window
+        log("🎯 Focusing newly added window: \(windowToAdd.title() ?? "<untitled>")")
+        windowToAdd.focus()
+        
+        // Move cursor to center of newly focused window
+        moveCursorToCenter(of: windowToAdd)
+        
+        log("✅ Window successfully added to layout. WindowSet now has \(currentWindowSet.windows.count) windows")
+    }
+    
+    /// Gets the bundle ID for the first window in a WindowSet
+    private func getCurrentWindowSetBundleID(_ windowSet: WindowSet) -> String? {
+        guard let firstWindow = windowSet.windows.first else { return nil }
+        guard let app = NSRunningApplication(processIdentifier: firstWindow.pid()) else { return nil }
+        return app.bundleIdentifier
+    }
+    
+    /// Gets the next window that should be added to the current layout
+    private func getNextWindowToAdd(for bundleID: String) -> (WindowSet, AXWindow?)? {
+        let windowSets = windowSets(for: bundleID)
+        guard windowSets.count > 1 else {
+            log("❌ Only one WindowSet found for \(bundleID), nothing to add")
+            return nil
+        }
+        
+        // Get the next WindowSet in the cycle (the one that would be focused next)
+        let nextCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+        let nextWindowSet = windowSets[nextCycleIndex]
+        let windowToAdd = nextWindowSet.windows.first
+        
+        return (nextWindowSet, windowToAdd)
+    }
+    
+    /// Removes a window from its original WindowSet and cleans up empty WindowSets
+    private func removeWindowFromOriginalWindowSet(_ window: AXWindow, bundleID: String) {
+        for screenIndex in workspace.screens.indices {
+            for windowSetIndex in workspace.screens[screenIndex].windowSets.indices.reversed() {
+                let windowSet = workspace.screens[screenIndex].windowSets[windowSetIndex]
+                
+                // Check if this WindowSet contains the window and belongs to the same app
+                if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
+                    // Remove the window from this WindowSet
+                    windowSet.windows.remove(at: windowIndex)
+                    log("🗑️ Removed window from original WindowSet")
+                    
+                    // If the WindowSet is now empty, remove it entirely
+                    if windowSet.windows.isEmpty {
+                        workspace.screens[screenIndex].windowSets.remove(at: windowSetIndex)
+                        log("🧹 Removed empty WindowSet")
+                    }
+                    return
+                }
+            }
+        }
     }
     
     
@@ -91,14 +176,34 @@ class SimpleWindowManager: WindowManaging {
     func focusApp(_ bundleID: String) {
         log("🎯 NEW focusApp(\(bundleID)) called")
         
-        let windowSets = windowSets(for: bundleID)
-        log("Found \(windowSets.count) WindowSets for \(bundleID)")
-        
-        if windowSets.isEmpty {
+        guard let (windowSet, targetWindow) = getNextWindowSetToFocus(for: bundleID) else {
             // No windows found - try to launch the app
             log("🚀 No windows found for \(bundleID), attempting to launch app")
             launchApp(bundleID: bundleID)
             return
+        }
+        
+        // Expand all windows in the current WindowSet according to its layout
+        windowSet.expandWindows()
+        
+        if let targetWindow = targetWindow {
+            log("🎯 Focusing window: \(targetWindow.title() ?? "<untitled>")")
+            targetWindow.focus()
+            
+            // Move cursor to center of focused window
+            moveCursorToCenter(of: targetWindow)
+        }
+    }
+    
+    /// Returns the next WindowSet that should be focused for a given bundle ID and the target window within it
+    /// - Parameter bundleID: The bundle identifier of the app
+    /// - Returns: A tuple containing the WindowSet to focus and the target window, or nil if no windows exist
+    private func getNextWindowSetToFocus(for bundleID: String) -> (WindowSet, AXWindow?)? {
+        let windowSets = windowSets(for: bundleID)
+        log("Found \(windowSets.count) WindowSets for \(bundleID)")
+        
+        guard !windowSets.isEmpty else {
+            return nil
         }
         
         // Check if we're cycling through the same app
@@ -106,23 +211,72 @@ class SimpleWindowManager: WindowManaging {
             // Reset cycling for new app
             currentBundleIDCycling = bundleID
             bundleIDCycleIndex = 0
+            windowIndexWithinSet = 0
             log("🔄 Starting new cycle for \(bundleID) - available WindowSets: \(windowSets.count)")
         } else {
             // Continue cycling through the same app
-            let newIndex = (bundleIDCycleIndex + 1) % windowSets.count
-            bundleIDCycleIndex = newIndex
-            log("🔄 Cycling to index \(bundleIDCycleIndex) for \(bundleID) (total: \(windowSets.count))")
+            let currentSet = windowSets[bundleIDCycleIndex]
+            
+            // Find all windows for this bundle in the current WindowSet
+            let bundleWindows = currentSet.windows.filter { window in
+                guard let app = NSRunningApplication(processIdentifier: window.pid()) else { return false }
+                return app.bundleIdentifier == bundleID
+            }
+            
+            if bundleWindows.count > 1 {
+                // Multiple windows of this bundle in current WindowSet - cycle through them
+                if windowIndexWithinSet < bundleWindows.count - 1 {
+                    windowIndexWithinSet += 1
+                    log("🔄 Cycling within WindowSet to bundle window \(windowIndexWithinSet)")
+                } else {
+                    // Finished cycling within WindowSet, move to next WindowSet
+                    bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+                    windowIndexWithinSet = 0
+                    log("🔄 Moving to next WindowSet \(bundleIDCycleIndex), window 0")
+                }
+            } else {
+                // Single window of this bundle in WindowSet, move to next WindowSet
+                bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+                windowIndexWithinSet = 0
+                log("🔄 Moving to next WindowSet \(bundleIDCycleIndex)")
+            }
         }
         
-        // Focus the window from the current WindowSet
         let currentSet = windowSets[bundleIDCycleIndex]
         
-        // Expand all windows in the current WindowSet according to its layout
-        currentSet.expandWindows()
+        // Find the target window from the bundle within the current WindowSet
+        let bundleWindowsInSet = currentSet.windows.filter { window in
+            guard let app = NSRunningApplication(processIdentifier: window.pid()) else { return false }
+            return app.bundleIdentifier == bundleID
+        }
         
-        if let firstWindow = currentSet.windows.first {
-            log("🎯 Focusing window: \(firstWindow.title() ?? "<untitled>")")
-            firstWindow.focus()
+        let targetWindow = windowIndexWithinSet < bundleWindowsInSet.count ? bundleWindowsInSet[windowIndexWithinSet] : bundleWindowsInSet.first
+        
+        // Store the current WindowSet for potential use in addWindowToLayout
+        currentWindowSet = currentSet
+        
+        return (currentSet, targetWindow)
+    }
+    
+    /// Moves the mouse cursor to the center of the given window
+    private func moveCursorToCenter(of window: AXWindow) {
+        let windowFrame = window.frame()
+        let centerPoint = NSPoint(
+            x: windowFrame.midX,
+            y: windowFrame.midY
+        )
+        
+        log("🖱️ Moving cursor to center of window at \(NSStringFromPoint(centerPoint))")
+        
+        // Create and post mouse move event
+        if let mouseMoveEvent = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .mouseMoved,
+            mouseCursorPosition: centerPoint,
+            mouseButton: .left
+        ) {
+            mouseMoveEvent.flags = CGEventFlags(rawValue: 0)
+            mouseMoveEvent.post(tap: .cghidEventTap)
         }
     }
     
@@ -281,6 +435,9 @@ class SimpleWindowManager: WindowManaging {
             name: NSWorkspace.didActivateApplicationNotification,
             object: nil
         )
+        
+        // Set up accessibility observer for window focus changes
+        setupAccessibilityObserver()
     }
     
     @objc private func applicationDidLaunch(_ notification: Notification) {
@@ -307,6 +464,8 @@ class SimpleWindowManager: WindowManaging {
         if let bundleID = app.bundleIdentifier, bundleID == currentBundleIDCycling {
             currentBundleIDCycling = nil
             bundleIDCycleIndex = 0
+            windowIndexWithinSet = 0
+            currentWindowSet = nil
         }
         
         refreshWindows()
@@ -323,6 +482,87 @@ class SimpleWindowManager: WindowManaging {
         if let bundleID = app.bundleIdentifier, bundleID != currentBundleIDCycling {
             currentBundleIDCycling = nil
             bundleIDCycleIndex = 0
+            windowIndexWithinSet = 0
+            currentWindowSet = nil
+        }
+    }
+    
+    /// Sets up lightweight accessibility observer for window focus changes
+    private func setupAccessibilityObserver() {
+        // Use NSWorkspace notifications which are much more efficient than polling
+        // These fire only when actual focus changes occur
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowDidBecomeKey(_:)),
+            name: NSWindow.didBecomeKeyNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowDidBecomeMain(_:)),
+            name: NSWindow.didBecomeMainNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func windowDidBecomeKey(_ notification: Notification) {
+        // Only update if this is a window change we care about
+        DispatchQueue.main.async { [weak self] in
+            self?.updateCurrentWindowSetFromFocus()
+        }
+    }
+    
+    @objc private func windowDidBecomeMain(_ notification: Notification) {
+        // Only update if this is a window change we care about  
+        DispatchQueue.main.async { [weak self] in
+            self?.updateCurrentWindowSetFromFocus()
+        }
+    }
+    
+    /// Efficiently updates currentWindowSet based on the current focus (called only when focus actually changes)
+    private func updateCurrentWindowSetFromFocus() {
+        guard let focusedWindow = frontmostWindow() else { return }
+        let axWindow = AXWindow(axElement: focusedWindow)
+        
+        // Find which WindowSet contains this focused window
+        for screenWS in workspace.screens {
+            for windowSet in screenWS.windowSets {
+                if windowSet.windows.contains(where: { $0.cgID() == axWindow.cgID() }) {
+                    // Update currentWindowSet if it's different
+                    if currentWindowSet?.id != windowSet.id {
+                        currentWindowSet = windowSet
+                        
+                        // Update cycling state for the focused window's app
+                        if let app = NSRunningApplication(processIdentifier: axWindow.pid()),
+                           let bundleID = app.bundleIdentifier {
+                            
+                            // If we switched to a different app, reset cycling
+                            if currentBundleIDCycling != bundleID {
+                                currentBundleIDCycling = bundleID
+                                bundleIDCycleIndex = 0
+                            }
+                            
+                            // Update the cycle index to match the focused WindowSet
+                            let windowSets = windowSets(for: bundleID)
+                            if let setIndex = windowSets.firstIndex(where: { $0.id == windowSet.id }) {
+                                bundleIDCycleIndex = setIndex
+                                
+                                // Find the window index within the WindowSet
+                                if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == axWindow.cgID() }) {
+                                    windowIndexWithinSet = windowIndex
+                                } else {
+                                    windowIndexWithinSet = 0
+                                }
+                            }
+                        }
+                        
+                        log("🎯 Focus changed to WindowSet with \(windowSet.windows.count) window(s)")
+                    }
+                    return
+                }
+            }
         }
     }
     
