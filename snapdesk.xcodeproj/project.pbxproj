@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -44,6 +44,8 @@
 		13972B1A2E5EF30200588D1B /* Space.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B192E5EF30100588D1B /* Space.swift */; };
 		13972B1D2E5EF38700588D1B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B1C2E5EF38700588D1B /* SwiftyJSON */; };
 		13972B282E5EF70500588D1B /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B272E5EF70100588D1B /* WindowManager.swift */; };
+		13972B2B2E5EF80B00588D1B /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B2A2E5EF80B00588D1B /* HotkeyManager.swift */; };
+		13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */; };
 		13972B2F2E5EF83D00588D1B /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B2E2E5EF83D00588D1B /* RxSwift */; };
 		13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */; };
 		13972B332E5EF91F00588D1B /* FocusTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */; };
@@ -151,6 +153,8 @@
 		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
 		13972B192E5EF30100588D1B /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
 		13972B272E5EF70100588D1B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		13972B2A2E5EF80B00588D1B /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfiguration.swift; sourceTree = "<group>"; };
 		13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTransitionCoordinator.swift; sourceTree = "<group>"; };
 		13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTransitionCoordinator.swift; sourceTree = "<group>"; };
 		13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusFollowMouseManager.swift; sourceTree = "<group>"; };
@@ -163,11 +167,6 @@
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		13972B1E2E5EF49D00588D1B /* Preferences */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Preferences; sourceTree = "<group>"; };
-		13972B222E5EF68A00588D1B /* Events */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Events; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		130646C62DB38D4D00A63735 /* Frameworks */ = {
@@ -373,9 +372,9 @@
 		135B55192DB6596D00EC05FF /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				13972B422E5F001500588D1B /* Preferences */,
+				13972B412E5F000800588D1B /* Events */,
 				13972B262E5EF6FC00588D1B /* Managers */,
-				13972B222E5EF68A00588D1B /* Events */,
-				13972B1E2E5EF49D00588D1B /* Preferences */,
 				135B550B2DB6596D00EC05FF /* Models */,
 				135B55102DB6596D00EC05FF /* Services */,
 				135B55182DB6596D00EC05FF /* VIews */,
@@ -397,6 +396,22 @@
 			path = Managers;
 			sourceTree = "<group>";
 		};
+		13972B412E5F000800588D1B /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				13972B2A2E5EF80B00588D1B /* HotkeyManager.swift */,
+			);
+			path = Events;
+			sourceTree = "<group>";
+		};
+		13972B422E5F001500588D1B /* Preferences */ = {
+			isa = PBXGroup;
+			children = (
+				13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */,
+			);
+			path = Preferences;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -411,10 +426,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				13972B1E2E5EF49D00588D1B /* Preferences */,
-				13972B222E5EF68A00588D1B /* Events */,
 			);
 			name = snapdesk;
 			packageProductDependencies = (
@@ -492,6 +503,7 @@
 				130647302DB38D6F00A63735 /* SIUniversalAccessHelper.m in Sources */,
 				130647332DB38D6F00A63735 /* main.swift in Sources */,
 				135B55242DB6596D00EC05FF /* SettingsTabView.swift in Sources */,
+				13972B2B2E5EF80B00588D1B /* HotkeyManager.swift in Sources */,
 				13972B332E5EF91F00588D1B /* FocusTransitionCoordinator.swift in Sources */,
 				1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */,
 				135B551A2DB6596D00EC05FF /* PreferencesViewModel.swift in Sources */,
@@ -509,6 +521,7 @@
 				13972B282E5EF70500588D1B /* WindowManager.swift in Sources */,
 				13972B1A2E5EF30200588D1B /* Space.swift in Sources */,
 				13972B372E5EF95500588D1B /* WindowInformation.swift in Sources */,
+				13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				130647312DB38D6F00A63735 /* SIWindow.m in Sources */,
 				13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */,
