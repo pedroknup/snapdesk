@@ -17,6 +17,10 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     var settingsWindowController: SettingsWindowController?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Force SwiftyBeaver logging setup early to capture all logs
+        _ = log
+        log("🚀 App startup beginning - logging system initialized")
+        
         // Check if another instance is running
         let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.pedroknup.snapdesk"
         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier)
@@ -84,6 +88,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Revaluate Windows", action: #selector(revaluateWindows), keyEquivalent: "r"))
         menu.addItem(NSMenuItem(title: "Test Floating Windows", action: #selector(testFloatingWindows), keyEquivalent: "t"))
+        menu.addItem(NSMenuItem(title: "Toggle Debug Viewer", action: #selector(toggleDebugViewer), keyEquivalent: "d"))
         
         menu.addItem(NSMenuItem(title: "Preferences", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "About SnapDesk", action: #selector(showAbout), keyEquivalent: ""))
@@ -96,6 +101,10 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         
         // Show hello world floating window on startup
         FloatingWindowHelper.showFloatingWindow(text: "Hello World!", position: .center, duration: 3.0)
+        
+        // Initialize debug log viewer (this will show it if setting is enabled)
+        _ = DebugLogViewer.shared
+        log("🔧 Debug log viewer initialized")
         
     }
     
@@ -143,6 +152,11 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     @objc func testFloatingWindows() {
         log("🪟 Test floating windows clicked")
         FloatingWindowHelper.showMultipleDemo()
+    }
+    
+    @objc func toggleDebugViewer() {
+        let currentValue = UserDefaults.standard.object(forKey: "showLogsView") as? Bool ?? false
+        UserDefaults.standard.set(!currentValue, forKey: "showLogsView")
     }
     
     // Method to reload hotkey configuration when settings change
