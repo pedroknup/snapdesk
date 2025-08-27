@@ -188,8 +188,6 @@ final class WindowSet: Identifiable {
         guard !windows.isEmpty else { return }
         
         let availableFrame = screen.adjustedFrame()
-        log("🔧 Expanding \(windows.count) windows in \(layout) layout on screen \(screen.screenID() ?? "unknown")")
-        log("📐 Available frame: \(NSStringFromRect(availableFrame))")
         
         switch layout {
         case .wide:
@@ -200,7 +198,7 @@ final class WindowSet: Identifiable {
             expandWindowsFullscreen(in: availableFrame, bringToFront: bringToFront)
         case .floating:
             // Floating windows maintain their current positions/sizes
-            log("💭 Skipping expansion for floating layout")
+            break
         }
     }
     
@@ -216,7 +214,6 @@ final class WindowSet: Identifiable {
         let availableWidth = frame.width - totalGapWidth
         let windowWidth = availableWidth / CGFloat(windowCount)
         
-        log("📐 Wide layout: \(windowCount) windows, gap: \(windowGap)px, margin: \(windowMargin)px, window width: \(windowWidth)px")
         
         // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
@@ -230,7 +227,6 @@ final class WindowSet: Identifiable {
                 height: frame.height - (windowMargin * 2)
             )
             
-            log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
             move(window: window.axElementRef, to: windowFrame)
         }
         
@@ -239,7 +235,6 @@ final class WindowSet: Identifiable {
             for (index, window) in windows.enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
                     window.raise()
-                    log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
                 }
             }
         }
@@ -257,7 +252,6 @@ final class WindowSet: Identifiable {
         let availableHeight = frame.height - totalGapHeight
         let windowHeight = availableHeight / CGFloat(windowCount)
         
-        log("📐 Tall layout: \(windowCount) windows, gap: \(windowGap)px, margin: \(windowMargin)px, window height: \(windowHeight)px")
         
         // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
@@ -271,7 +265,6 @@ final class WindowSet: Identifiable {
                 height: windowHeight - (windowMargin * 2)
             )
             
-            log("📱 Moving window \(index): \(window.title() ?? "untitled") to \(NSStringFromRect(windowFrame))")
             move(window: window.axElementRef, to: windowFrame)
         }
         
@@ -280,7 +273,6 @@ final class WindowSet: Identifiable {
             for (index, window) in windows.enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
                     window.raise()
-                    log("🔝 Raised window \(index): \(window.title() ?? "untitled")")
                 }
             }
         }
@@ -301,11 +293,9 @@ final class WindowSet: Identifiable {
             height: frame.height - (windowMargin * 2)
         )
         
-        log("🖥️ Fullscreen layout: margin: \(windowMargin)px, frame: \(NSStringFromRect(fullscreenFrame))")
         
         // First, move all windows to fullscreen
         for window in windows {
-            log("🖥️ Expanding window to fullscreen: \(window.title() ?? "untitled")")
             move(window: window.axElementRef, to: fullscreenFrame)
         }
         
@@ -314,7 +304,6 @@ final class WindowSet: Identifiable {
             for (index, window) in windows.enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
                     window.raise()
-                    log("🔝 Raised fullscreen window \(index): \(window.title() ?? "untitled")")
                 }
             }
         }
@@ -333,7 +322,6 @@ final class WindowSet: Identifiable {
             nextLayout = .tall
         }
         
-        log("🔄 Toggling WindowSet layout from \(layout) to \(nextLayout)")
         layout = nextLayout
         
         // Show floating notification if enabled in settings (default: true)
