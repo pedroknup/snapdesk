@@ -53,6 +53,6 @@ struct PreferencesView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 700, minHeight: 500)
+        .frame(minWidth: 700, minHeight: 740)
     }
 }

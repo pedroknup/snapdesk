@@ -39,22 +39,41 @@ struct AboutTabView: View {
                 .padding(.horizontal, 40)
                 .foregroundColor(.secondary)
             
-            // Authors and License
+            // GitHub Link
+            Button(action: {
+                if let url = URL(string: "https://github.com/pedroknup/snapdesk") {
+                    NSWorkspace.shared.open(url)
+                }
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 16, weight: .medium))
+                    Text("github.com/pedroknup/snapdesk")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.blue.opacity(0.1))
+                .foregroundColor(.blue)
+                .cornerRadius(8)
+            }
+            .buttonStyle(.plain)
+            
+            // Author and Credits
             VStack(spacing: 12) {
                 HStack {
-                    Text("**Authors**")
+                    Text("**Author**")
                         .font(.headline)
                     Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("Pedro Knup")
-                    }
+                    Text("Pedro Knup")
+                        .foregroundColor(.secondary)
                 }
                 
                 HStack {
                     Text("**License**")
                         .font(.headline)
                     Spacer()
-                    Text("Proprietary – All rights reserved")
+                    Text("MIT License")
                         .foregroundColor(.secondary)
                 }
             }
@@ -64,22 +83,43 @@ struct AboutTabView: View {
             .background(Color.secondary.opacity(0.1))
             .cornerRadius(12)
             
-            // Update Button
-            Button(action: {
-                // dummy action
-            }) {
-                HStack {
-                    Image(systemName: "arrow.clockwise")
-                    Text("Check for Updates")
+            // Attribution Section
+            VStack(spacing: 12) {
+                Text("**Acknowledgments**")
+                    .font(.headline)
+                
+                Text("Heavily inspired by and built upon code from **Amethyst** by Ian Ynda-Hummel and contributors. Special thanks to the Amethyst project for pioneering tiling window management on macOS.")
+                    .font(.system(size: 13))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 16)
+                
+                Button(action: {
+                    if let url = URL(string: "https://github.com/ianyh/Amethyst") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "link")
+                            .font(.system(size: 12))
+                        Text("View Amethyst Project")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.secondary.opacity(0.1))
+                    .foregroundColor(.secondary)
+                    .cornerRadius(6)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
-            .padding(.top, 8)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .padding(.horizontal, 16)
+            .background(Color.secondary.opacity(0.05))
+            .cornerRadius(12)
             
             Spacer()
         }
