@@ -353,7 +353,74 @@ class SimpleWindowManager: WindowManaging {
        }
 
        func removeCurrentWindowFromLayout() {
-           print("TODO: track floating windows, exclude from tiling")
+           log("🗑️ removeCurrentWindowFromLayout() called")
+           
+           // Get the currently focused window
+           guard let focusedWindow = frontmostWindow() else {
+               log("❌ No focused window found")
+               return
+           }
+           
+           let axWindow = AXWindow(axElement: focusedWindow)
+           
+           log("🎯 Removing window from layout: \(axWindow.title() ?? "<untitled>")")
+           
+           // Find which WindowSet contains the focused window
+           guard let (windowSet, windowIndex, screenIndex) = findWindowSetContaining(axWindow) else {
+               log("❌ Focused window not found in any WindowSet")
+               return
+           }
+           
+           // Check if the WindowSet has more than one window
+           if windowSet.windows.count <= 1 {
+               log("⚠️ WindowSet only has one window - nothing to remove from layout")
+               return
+           }
+           
+           log("📤 Removing window from WindowSet with \(windowSet.windows.count) windows")
+           
+           // Determine which window should be focused after removal (the previous one, or first if removing first)
+           let windowToFocusIndex = windowIndex > 0 ? windowIndex - 1 : 0
+           let windowToFocus = windowSet.windows[windowToFocusIndex]
+           
+           // Remove the window from the current WindowSet
+           windowSet.windows.remove(at: windowIndex)
+           
+           // Create a new standalone WindowSet for the removed window
+           guard let nsScreen: NSScreen = axWindow.screen() else {
+               log("❌ Could not determine screen for window")
+               return
+           }
+           
+           let screen = AMScreen(screen: nsScreen)
+           
+           let newWindowSet = WindowSet(layout: .wide, windows: [axWindow], screenID: screen.screenID())
+           
+           // Add the new WindowSet to the appropriate screen workspace
+           if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == screen }) {
+               workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+           }
+           
+           // Expand the original WindowSet (now with one less window) and focus the previous window
+           windowSet.expandWindows()
+           
+           // Focus the window that was before the removed window in the original layout
+           windowToFocus.focus()
+           moveCursorToCenter(of: windowToFocus)
+           
+           log("✅ Successfully removed window from layout. Original WindowSet now has \(windowSet.windows.count) windows, focused: \(windowToFocus.title() ?? "<untitled>")")
+       }
+       
+       /// Finds the WindowSet containing the given window and returns the WindowSet, window index, and screen index
+       private func findWindowSetContaining(_ window: AXWindow) -> (WindowSet, Int, Int)? {
+           for (screenIndex, screenWS) in workspace.screens.enumerated() {
+               for windowSet in screenWS.windowSets {
+                   if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
+                       return (windowSet, windowIndex, screenIndex)
+                   }
+               }
+           }
+           return nil
        }
 
        func toggleFullScreenLayout() {
