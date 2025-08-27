@@ -1,5 +1,5 @@
 {
-  "originHash" : "aae6759e23dc46491bb5d3cce35b8ae26ed5369d39d2724f985cbf337aa33c79",
+  "originHash" : "26df7f7d10788034fd610060ef7667bb250cf1cdfe46619e28a019bdb75f73fc",
   "pins" : [
     {
       "identity" : "hotkey",
@@ -8,6 +8,33 @@
       "state" : {
         "branch" : "main",
         "revision" : "a3cf605d7a96f6ff50e04fcb6dea6e2613cfcbe4"
+      }
+    },
+    {
+      "identity" : "rxswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveX/RxSwift",
+      "state" : {
+        "revision" : "5dd1907d64f0d36f158f61a466bab75067224893",
+        "version" : "6.9.0"
+      }
+    },
+    {
+      "identity" : "silica",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ianyh/Silica",
+      "state" : {
+        "branch" : "master",
+        "revision" : "b91a18dbb822e99ce6b487d1cb4841e863139b2a"
+      }
+    },
+    {
+      "identity" : "swiftyjson",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftyJSON/SwiftyJSON.git",
+      "state" : {
+        "revision" : "af76cf3ef710b6ca5f8c05f3a31307d44a3c5828",
+        "version" : "5.0.2"
       }
     },
     {

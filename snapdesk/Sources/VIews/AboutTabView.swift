@@ -33,7 +33,7 @@ struct AboutTabView: View {
                 .padding(.horizontal, 100)
             
             // App Description
-            Text("Efficient window management and smart layout control for power users on macOS.")
+            Text("Efficient window management for power users on macOS.")
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
@@ -47,8 +47,6 @@ struct AboutTabView: View {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
                         Text("Pedro Knup")
-                        Text("Cherry")
-                            .foregroundColor(.secondary)
                     }
                 }
                 

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -38,6 +38,21 @@
 		135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */; };
 		135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */; };
 		135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55172DB6596D00EC05FF /* WindowDebugTest.swift */; };
+		13972B132E5EEF2F00588D1B /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B122E5EEF2C00588D1B /* Application.swift */; };
+		13972B162E5EF2BA00588D1B /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B152E5EF2BA00588D1B /* Silica */; };
+		13972B182E5EF2EC00588D1B /* Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B172E5EF2EA00588D1B /* Window.swift */; };
+		13972B1A2E5EF30200588D1B /* Space.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B192E5EF30100588D1B /* Space.swift */; };
+		13972B1D2E5EF38700588D1B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B1C2E5EF38700588D1B /* SwiftyJSON */; };
+		13972B282E5EF70500588D1B /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B272E5EF70100588D1B /* WindowManager.swift */; };
+		13972B2F2E5EF83D00588D1B /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B2E2E5EF83D00588D1B /* RxSwift */; };
+		13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */; };
+		13972B332E5EF91F00588D1B /* FocusTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */; };
+		13972B352E5EF93000588D1B /* FocusFollowMouseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */; };
+		13972B372E5EF95500588D1B /* WindowInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B362E5EF95100588D1B /* WindowInformation.swift */; };
+		13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B382E5EF96800588D1B /* CGInfo.swift */; };
+		13972B3C2E5EF9F700588D1B /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3B2E5EF9F600588D1B /* Screens.swift */; };
+		13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3D2E5EFA0700588D1B /* ScreenManager.swift */; };
+		13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3F2E5EFB6C00588D1B /* LogManager.swift */; };
 		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
 		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
@@ -132,19 +147,39 @@
 		135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
 		135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutsTabView.swift; sourceTree = "<group>"; };
 		135B55172DB6596D00EC05FF /* WindowDebugTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowDebugTest.swift; sourceTree = "<group>"; };
+		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
+		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
+		13972B192E5EF30100588D1B /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
+		13972B272E5EF70100588D1B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTransitionCoordinator.swift; sourceTree = "<group>"; };
+		13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTransitionCoordinator.swift; sourceTree = "<group>"; };
+		13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusFollowMouseManager.swift; sourceTree = "<group>"; };
+		13972B362E5EF95100588D1B /* WindowInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowInformation.swift; sourceTree = "<group>"; };
+		13972B382E5EF96800588D1B /* CGInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGInfo.swift; sourceTree = "<group>"; };
+		13972B3B2E5EF9F600588D1B /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
+		13972B3D2E5EFA0700588D1B /* ScreenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenManager.swift; sourceTree = "<group>"; };
+		13972B3F2E5EFB6C00588D1B /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		13972B1E2E5EF49D00588D1B /* Preferences */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Preferences; sourceTree = "<group>"; };
+		13972B222E5EF68A00588D1B /* Events */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Events; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		130646C62DB38D4D00A63735 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				13972B1D2E5EF38700588D1B /* SwiftyJSON in Frameworks */,
 				1345B2C32DB3C13E00B675E6 /* HotKey in Frameworks */,
+				13972B2F2E5EF83D00588D1B /* RxSwift in Frameworks */,
 				1306473F2DB38DE600A63735 /* ApplicationServices.framework in Frameworks */,
 				130647412DB38DEC00A63735 /* Carbon.framework in Frameworks */,
+				13972B162E5EF2BA00588D1B /* Silica in Frameworks */,
 				130647432DB38DF100A63735 /* Cocoa.framework in Frameworks */,
 				13A4B8A72DB527FA00390915 /* Yams in Frameworks */,
 				130647472DB38E0200A63735 /* IOKit.framework in Frameworks */,
@@ -299,7 +334,12 @@
 		135B550B2DB6596D00EC05FF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				13972B382E5EF96800588D1B /* CGInfo.swift */,
+				13972B362E5EF95100588D1B /* WindowInformation.swift */,
+				13972B122E5EEF2C00588D1B /* Application.swift */,
 				135B55082DB6596D00EC05FF /* PreferencesViewModel.swift */,
+				13972B172E5EF2EA00588D1B /* Window.swift */,
+				13972B192E5EF30100588D1B /* Space.swift */,
 				135B55092DB6596D00EC05FF /* SIApplication.swift */,
 				135B550A2DB6596D00EC05FF /* SIWindow.swift */,
 			);
@@ -333,11 +373,28 @@
 		135B55192DB6596D00EC05FF /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				13972B262E5EF6FC00588D1B /* Managers */,
+				13972B222E5EF68A00588D1B /* Events */,
+				13972B1E2E5EF49D00588D1B /* Preferences */,
 				135B550B2DB6596D00EC05FF /* Models */,
 				135B55102DB6596D00EC05FF /* Services */,
 				135B55182DB6596D00EC05FF /* VIews */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		13972B262E5EF6FC00588D1B /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				13972B3F2E5EFB6C00588D1B /* LogManager.swift */,
+				13972B3D2E5EFA0700588D1B /* ScreenManager.swift */,
+				13972B3B2E5EF9F600588D1B /* Screens.swift */,
+				13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */,
+				13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */,
+				13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */,
+				13972B272E5EF70100588D1B /* WindowManager.swift */,
+			);
+			path = Managers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -355,10 +412,17 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				13972B1E2E5EF49D00588D1B /* Preferences */,
+				13972B222E5EF68A00588D1B /* Events */,
+			);
 			name = snapdesk;
 			packageProductDependencies = (
 				1345B2C22DB3C13E00B675E6 /* HotKey */,
 				13A4B8A62DB527FA00390915 /* Yams */,
+				13972B152E5EF2BA00588D1B /* Silica */,
+				13972B1C2E5EF38700588D1B /* SwiftyJSON */,
+				13972B2E2E5EF83D00588D1B /* RxSwift */,
 			);
 			productName = snapdesk;
 			productReference = 130646C92DB38D4D00A63735 /* snapdesk.app */;
@@ -391,6 +455,9 @@
 			packageReferences = (
 				130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */,
 				13A4B8A52DB527FA00390915 /* XCRemoteSwiftPackageReference "Yams" */,
+				13972B142E5EF2BA00588D1B /* XCRemoteSwiftPackageReference "Silica" */,
+				13972B1B2E5EF38700588D1B /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
+				13972B292E5EF78300588D1B /* XCRemoteSwiftPackageReference "RxSwift" */,
 			);
 			productRefGroup = 130646CA2DB38D4D00A63735 /* Products */;
 			projectDirPath = "";
@@ -420,25 +487,37 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				13972B132E5EEF2F00588D1B /* Application.swift in Sources */,
+				13972B182E5EF2EC00588D1B /* Window.swift in Sources */,
 				130647302DB38D6F00A63735 /* SIUniversalAccessHelper.m in Sources */,
 				130647332DB38D6F00A63735 /* main.swift in Sources */,
 				135B55242DB6596D00EC05FF /* SettingsTabView.swift in Sources */,
+				13972B332E5EF91F00588D1B /* FocusTransitionCoordinator.swift in Sources */,
 				1306472D2DB38D6F00A63735 /* SIAccessibilityElement.m in Sources */,
 				135B551A2DB6596D00EC05FF /* PreferencesViewModel.swift in Sources */,
 				1306472C2DB38D6F00A63735 /* NSScreen+Silica.m in Sources */,
 				130646D12DB38D4D00A63735 /* Item.swift in Sources */,
+				13972B3C2E5EF9F700588D1B /* Screens.swift in Sources */,
 				1306472F2DB38D6F00A63735 /* SISystemWideElement.m in Sources */,
 				1306472B2DB38D6F00A63735 /* NSRunningApplication+Silica.m in Sources */,
 				135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */,
 				135B55232DB6596D00EC05FF /* PreferencesView.swift in Sources */,
+				13972B352E5EF93000588D1B /* FocusFollowMouseManager.swift in Sources */,
 				135B551C2DB6596D00EC05FF /* SIWindow.swift in Sources */,
+				13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */,
+				13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */,
+				13972B282E5EF70500588D1B /* WindowManager.swift in Sources */,
+				13972B1A2E5EF30200588D1B /* Space.swift in Sources */,
+				13972B372E5EF95500588D1B /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				130647312DB38D6F00A63735 /* SIWindow.m in Sources */,
+				13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */,
 				1306472E2DB38D6F00A63735 /* SIApplication.m in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
 				135B551B2DB6596D00EC05FF /* SIApplication.swift in Sources */,
 				13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */,
 				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
+				13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */,
 				135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */,
 				135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */,
 				135B55202DB6596D00EC05FF /* WindowController.swift in Sources */,
@@ -683,6 +762,30 @@
 				kind = branch;
 			};
 		};
+		13972B142E5EF2BA00588D1B /* XCRemoteSwiftPackageReference "Silica" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ianyh/Silica";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		13972B1B2E5EF38700588D1B /* XCRemoteSwiftPackageReference "SwiftyJSON" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyJSON/SwiftyJSON.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
+		13972B292E5EF78300588D1B /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.9.0;
+			};
+		};
 		13A4B8A52DB527FA00390915 /* XCRemoteSwiftPackageReference "Yams" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jpsim/Yams.git";
@@ -698,6 +801,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 130647482DB38F2800A63735 /* XCRemoteSwiftPackageReference "HotKey" */;
 			productName = HotKey;
+		};
+		13972B152E5EF2BA00588D1B /* Silica */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13972B142E5EF2BA00588D1B /* XCRemoteSwiftPackageReference "Silica" */;
+			productName = Silica;
+		};
+		13972B1C2E5EF38700588D1B /* SwiftyJSON */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13972B1B2E5EF38700588D1B /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
+			productName = SwiftyJSON;
+		};
+		13972B2E2E5EF83D00588D1B /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13972B292E5EF78300588D1B /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
 		};
 		13A4B8A62DB527FA00390915 /* Yams */ = {
 			isa = XCSwiftPackageProductDependency;
