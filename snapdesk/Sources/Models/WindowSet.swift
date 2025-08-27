@@ -204,12 +204,22 @@ final class WindowSet: Identifiable {
     
     private func expandWindowsWide(in frame: CGRect) {
         let windowCount = windows.count
-        let windowWidth = frame.width / CGFloat(windowCount)
+        
+        // Get window gap from settings (default: 4px)
+        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 4.0)
+        
+        // Calculate available width after accounting for gaps
+        let totalGapWidth = windowGap * CGFloat(windowCount - 1)
+        let availableWidth = frame.width - totalGapWidth
+        let windowWidth = availableWidth / CGFloat(windowCount)
+        
+        log("📐 Wide layout: \(windowCount) windows, gap: \(windowGap)px, window width: \(windowWidth)px")
         
         // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
+            let xOffset = CGFloat(index) * (windowWidth + windowGap)
             let windowFrame = CGRect(
-                x: frame.origin.x + (CGFloat(index) * windowWidth),
+                x: frame.origin.x + xOffset,
                 y: frame.origin.y,
                 width: windowWidth,
                 height: frame.height
@@ -230,13 +240,23 @@ final class WindowSet: Identifiable {
     
     private func expandWindowsTall(in frame: CGRect) {
         let windowCount = windows.count
-        let windowHeight = frame.height / CGFloat(windowCount)
+        
+        // Get window gap from settings (default: 4px)
+        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 4.0)
+        
+        // Calculate available height after accounting for gaps
+        let totalGapHeight = windowGap * CGFloat(windowCount - 1)
+        let availableHeight = frame.height - totalGapHeight
+        let windowHeight = availableHeight / CGFloat(windowCount)
+        
+        log("📐 Tall layout: \(windowCount) windows, gap: \(windowGap)px, window height: \(windowHeight)px")
         
         // First, move all windows to their positions
         for (index, window) in windows.enumerated() {
+            let yOffset = CGFloat(index) * (windowHeight + windowGap)
             let windowFrame = CGRect(
                 x: frame.origin.x,
-                y: frame.origin.y + (CGFloat(index) * windowHeight),
+                y: frame.origin.y + yOffset,
                 width: frame.width,
                 height: windowHeight
             )
