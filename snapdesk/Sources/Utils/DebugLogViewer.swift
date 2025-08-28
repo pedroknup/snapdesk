@@ -74,7 +74,7 @@ class DebugLogViewer {
         guard let window = logWindow else { return }
         
         // Configure window
-        window.title = "SnapDesk Debug Logs"
+        window.title = "Snapdesk Debug Logs"
         window.level = NSWindow.Level.floating
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
         window.isReleasedWhenClosed = false
@@ -109,13 +109,6 @@ class DebugLogViewer {
         
         // Set initial content
         updateLogDisplay()
-        
-        // Add some initial test entries to verify the viewer works
-        addLogEntry("🔧 Debug log viewer initialized")
-        addLogEntry("ℹ️ This is a test info message")
-        addLogEntry("⚠️ This is a test warning message")
-        
-        print("🔧 DebugLogViewer: Window setup complete at \(windowRect)")
     }
     
     func addLogEntry(_ entry: String) {
@@ -131,7 +124,6 @@ class DebugLogViewer {
                 return 
             }
             
-            print("🔧 Adding entry to logEntries array (current count: \(self.logEntries.count))")
             // Add to log entries array
             self.logEntries.append(formattedEntry)
             
@@ -139,8 +131,6 @@ class DebugLogViewer {
             if self.logEntries.count > self.maxLogEntries {
                 self.logEntries.removeFirst(self.logEntries.count - self.maxLogEntries)
             }
-            
-            print("🔧 New logEntries count: \(self.logEntries.count)")
             
             // Update display if visible
             self.updateLogDisplay()
@@ -150,14 +140,11 @@ class DebugLogViewer {
     
     private func updateLogDisplay() {
         guard let textView = textView else { 
-            print("🔧 updateLogDisplay: textView is nil!")
             return 
         }
         
         let logText = logEntries.joined(separator: "\n")
-        print("🔧 updateLogDisplay: Setting textView.string to: \(logText)")
         textView.string = logText
-        print("🔧 updateLogDisplay: textView.string is now: \(textView.string)")
     }
     
     private func scrollToBottom() {
