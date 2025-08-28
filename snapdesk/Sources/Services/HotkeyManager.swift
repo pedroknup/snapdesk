@@ -35,10 +35,6 @@ protocol WindowManaging: AnyObject {
     func throwToScreen(_ screenNumber: Int)
     func throwFrontmostWindow(toScreen index: Int)
     func throwToCurrentLayout()
-    func increaseMainPanelCount()
-    func decreaseMainPanelCount()
-    func cycleWindowsClockwise()
-    func cycleWindowsCounterclockwise()
     func focusApp(_ bundleID: String)
     func addWindowToLayout(_ bundleID: String)
 }
@@ -87,11 +83,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     }
 
     func setUpWithWindowController(_ windowManager: WindowManaging, configuration: UserConfiguration) {
-        // Toggle full screen layout
-        constructCommandWithCommandKey("toggle-fullscreen-layout") { [weak self, weak windowManager] in
-            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            windowManager?.toggleFullScreen()
-        }
         
         // Remove current window from layout
         constructCommandWithCommandKey("remove-current-window-from-layout") { [weak self] in
@@ -129,25 +120,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             self?.windowManager.throwToCurrentLayout()
         }
         
-//        constructCommandWithCommandKey("increase-main-panel-count") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager)?.increaseMainPanelCount()
-//        }
-//        
-//        constructCommandWithCommandKey("decrease-main-panel-count") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager<SIApplication>)?.decreaseMainPanelCount()
-//        }
-//        
-//        constructCommandWithCommandKey("cycle-windows-clockwise") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager)?.cycleWindowsClockwise()
-//        }
-//        
-//        constructCommandWithCommandKey("cycle-windows-counterclockwise") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager<SIApplication>)?.cycleWindowsCounterclockwise()
-//        }
         
         // Setup app shortcuts - we'll need to handle these dynamically
         setupAppShortcuts()
@@ -311,7 +283,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     
     static func commandKeyToDisplayName() -> [String: String] {
         return [
-            "toggle-fullscreen-layout": "Toggle Full Screen layout for the current screen",
             "remove-current-window-from-layout": "Remove current window from layout",
             "toggle-layout-current-windowset": "Toggle layout for current WindowSet",
             "focus-screen-1": "Focus Screen 1",
@@ -326,11 +297,7 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             "throw-screen-4": "Throw to Screen 4",
             "throw-screen-5": "Throw to Screen 5",
             "throw-screen-6": "Throw to Screen 6",
-            "throw-to-current-layout": "Throw app to current layout modifier",
-            "increase-main-panel-count": "Increase main panel count",
-            "decrease-main-panel-count": "Decrease main panel count",
-            "cycle-windows-clockwise": "Cycle current layout windows clockwise",
-            "cycle-windows-counterclockwise": "Cycle current layout windows counterclockwise"
+            "throw-to-current-layout": "Throw app to current layout modifier"
         ]
     }
     
