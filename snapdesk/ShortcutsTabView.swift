@@ -58,6 +58,7 @@ struct ShortcutsTabView: View {
     // Define the fixed list of general shortcuts
     private let defaultGeneralShortcuts: [String] = [
         "Remove current window from layout",
+        "Toggle layout for current WindowSet",
         "Focus Screen 1",
         "Focus Screen 2",
         "Focus Screen 3",
@@ -70,7 +71,9 @@ struct ShortcutsTabView: View {
         "Throw to Screen 4",
         "Throw to Screen 5",
         "Throw to Screen 6",
-        "Throw app to current layout modifier"
+        "Throw app to current layout modifier",
+        "Increase main panel size",
+        "Decrease main panel size"
     ]
     
     init() {

@@ -648,6 +648,155 @@ class SimpleWindowManager: WindowManaging {
            let vf = screen.visibleFrame
            move(window: window, to: vf)
        }
+       
+       func increaseMainPanelSize() {
+           log("⬆️ increaseMainPanelSize() called")
+           
+           // Use the current WindowSet if available, otherwise find it from the focused window
+           var targetWindowSet: WindowSet?
+           
+           if let currentWindowSet = currentWindowSet {
+               targetWindowSet = currentWindowSet
+           } else {
+               // Try to find the WindowSet containing the current focused window
+               guard let focusedWindow = frontmostWindow() else {
+                   log("❌ No focused window found")
+                   return
+               }
+               
+               let axWindow = AXWindow(axElement: focusedWindow)
+               if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+                   targetWindowSet = windowSet
+               }
+           }
+           
+           guard let windowSet = targetWindowSet else {
+               log("❌ No WindowSet found to adjust")
+               return
+           }
+           
+           // Only adjust if there are multiple windows
+           guard windowSet.windows.count > 1 else {
+               log("ℹ️ Cannot adjust main panel size with only one window")
+               return
+           }
+           
+           // Calculate reasonable max based on window count
+           // Allow main panel to take up to 70% of total space
+           let screen = AMScreen.availableScreens.first { $0.screenID() == windowSet.screenID }
+           let screenFrame = screen?.adjustedFrame() ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
+           let dimension = windowSet.layout == .wide ? screenFrame.width : screenFrame.height
+           let maxAdjustment = dimension * 0.7 - (dimension / CGFloat(windowSet.windows.count))
+           
+           // Increase by 40 pixels, but respect the maximum
+           let newAdjustment = min(windowSet.mainPanelSizeAdjustment + 40, maxAdjustment)
+           
+           if newAdjustment == windowSet.mainPanelSizeAdjustment {
+               log("⚠️ Main panel is already at maximum size")
+               // Show floating notification about max
+               let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+               if showLayoutIndicator {
+                   FloatingWindowHelper.showFloatingWindow(
+                       text: "Main Panel: MAX",
+                       position: .center,
+                       duration: 1.5
+                   )
+               }
+               return
+           }
+           
+           windowSet.mainPanelSizeAdjustment = newAdjustment
+           log("📏 Main panel size adjustment is now: \(windowSet.mainPanelSizeAdjustment)px")
+           
+           // Re-expand windows with the new adjustment
+           windowSet.expandWindows()
+           
+           // Show floating notification if enabled
+           let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+           if showLayoutIndicator {
+               let adjustmentText = windowSet.mainPanelSizeAdjustment >= 0 ? "+\(Int(windowSet.mainPanelSizeAdjustment))" : "\(Int(windowSet.mainPanelSizeAdjustment))"
+               FloatingWindowHelper.showFloatingWindow(
+                   text: "Main Panel: \(adjustmentText)px",
+                   position: .center,
+                   duration: 1.5
+               )
+           }
+       }
+       
+       func decreaseMainPanelSize() {
+           log("⬇️ decreaseMainPanelSize() called")
+           
+           // Use the current WindowSet if available, otherwise find it from the focused window
+           var targetWindowSet: WindowSet?
+           
+           if let currentWindowSet = currentWindowSet {
+               targetWindowSet = currentWindowSet
+           } else {
+               // Try to find the WindowSet containing the current focused window
+               guard let focusedWindow = frontmostWindow() else {
+                   log("❌ No focused window found")
+                   return
+               }
+               
+               let axWindow = AXWindow(axElement: focusedWindow)
+               if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+                   targetWindowSet = windowSet
+               }
+           }
+           
+           guard let windowSet = targetWindowSet else {
+               log("❌ No WindowSet found to adjust")
+               return
+           }
+           
+           // Only adjust if there are multiple windows
+           guard windowSet.windows.count > 1 else {
+               log("ℹ️ Cannot adjust main panel size with only one window")
+               return
+           }
+           
+           // Calculate reasonable min based on window count
+           // Prevent main panel from being smaller than 30% of equal space
+           let screen = AMScreen.availableScreens.first { $0.screenID() == windowSet.screenID }
+           let screenFrame = screen?.adjustedFrame() ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
+           let dimension = windowSet.layout == .wide ? screenFrame.width : screenFrame.height
+           let equalSpace = dimension / CGFloat(windowSet.windows.count)
+           let minAdjustment = equalSpace * 0.3 - equalSpace // This gives us -70% of equal space
+           
+           // Decrease by 40 pixels, but respect the minimum
+           let newAdjustment = max(windowSet.mainPanelSizeAdjustment - 40, minAdjustment)
+           
+           if newAdjustment == windowSet.mainPanelSizeAdjustment {
+               log("⚠️ Main panel is already at minimum size")
+               // Show floating notification about min
+               let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+               if showLayoutIndicator {
+                   FloatingWindowHelper.showFloatingWindow(
+                       text: "Main Panel: MIN",
+                       position: .center,
+                       duration: 1.5
+                   )
+               }
+               return
+           }
+           
+           windowSet.mainPanelSizeAdjustment = newAdjustment
+           log("📏 Main panel size adjustment is now: \(windowSet.mainPanelSizeAdjustment)px")
+           
+           // Re-expand windows with the new adjustment
+           windowSet.expandWindows()
+           
+           // Show floating notification if enabled
+           let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+           if showLayoutIndicator {
+               let adjustmentText = windowSet.mainPanelSizeAdjustment >= 0 ? "+\(Int(windowSet.mainPanelSizeAdjustment))" : "\(Int(windowSet.mainPanelSizeAdjustment))"
+               FloatingWindowHelper.showFloatingWindow(
+                   text: "Main Panel: \(adjustmentText)px",
+                   position: .center,
+                   duration: 1.5
+               )
+           }
+       }
 
        // MARK: - Utilities
 

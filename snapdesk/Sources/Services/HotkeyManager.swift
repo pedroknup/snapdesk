@@ -35,6 +35,8 @@ protocol WindowManaging: AnyObject {
     func throwToScreen(_ screenNumber: Int)
     func throwFrontmostWindow(toScreen index: Int)
     func throwToCurrentLayout()
+    func increaseMainPanelSize()
+    func decreaseMainPanelSize()
     func focusApp(_ bundleID: String)
     func addWindowToLayout(_ bundleID: String)
 }
@@ -120,6 +122,15 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             self?.windowManager.throwToCurrentLayout()
         }
         
+        constructCommandWithCommandKey("increase-main-panel-size") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.increaseMainPanelSize()
+        }
+        
+        constructCommandWithCommandKey("decrease-main-panel-size") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.decreaseMainPanelSize()
+        }
         
         // Setup app shortcuts - we'll need to handle these dynamically
         setupAppShortcuts()
@@ -297,7 +308,9 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             "throw-screen-4": "Throw to Screen 4",
             "throw-screen-5": "Throw to Screen 5",
             "throw-screen-6": "Throw to Screen 6",
-            "throw-to-current-layout": "Throw app to current layout modifier"
+            "throw-to-current-layout": "Throw app to current layout modifier",
+            "increase-main-panel-size": "Increase main panel size",
+            "decrease-main-panel-size": "Decrease main panel size"
         ]
     }
     
