@@ -88,7 +88,9 @@ public class ConfigurationManager {
             "Throw to Screen 4",
             "Throw to Screen 5",
             "Throw to Screen 6",
-            "Throw app to current layout modifier"
+            "Throw app to current layout modifier",
+            "Increase main panel size",
+            "Decrease main panel size"
         ]
         
         // Convert to Set for efficient lookup
@@ -130,7 +132,9 @@ public class ConfigurationManager {
             "Throw to Screen 4",
             "Throw to Screen 5",
             "Throw to Screen 6",
-            "Throw app to current layout modifier"
+            "Throw app to current layout modifier",
+            "Increase main panel size",
+            "Decrease main panel size"
         ]
         
         // Convert to Set for efficient lookup
@@ -247,6 +251,14 @@ public class ConfigurationManager {
                 GeneralShortcutConfig(
                     name: "Throw app to current layout modifier",
                     shortcut: ShortcutConfig(key: "t", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Increase main panel size",
+                    shortcut: ShortcutConfig(key: "=", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Decrease main panel size",
+                    shortcut: ShortcutConfig(key: "-", modifiers: ["command", "option"])
                 )
             ]
         )

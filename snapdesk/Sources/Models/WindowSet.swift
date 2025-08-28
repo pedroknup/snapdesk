@@ -164,6 +164,11 @@ final class WindowSet: Identifiable {
     var layout: LayoutKind
     var windows: [AXWindow]
     var screenID: String?
+    
+    /// The size adjustment for the main panel (first window) in pixels.
+    /// Positive values make the main panel larger, negative values make it smaller.
+    /// Resets to 0 when the WindowSet contains only one window.
+    var mainPanelSizeAdjustment: CGFloat = 0
 
     init(layout: LayoutKind = .tall, windows: [AXWindow] = [], screenID: String? = nil) {
         self.layout = layout
@@ -186,6 +191,11 @@ final class WindowSet: Identifiable {
     /// - Parameter bringToFront: Whether to bring windows to front after expansion (default: true)
     func expandWindows(on screen: AMScreen, bringToFront: Bool = true) {
         guard !windows.isEmpty else { return }
+        
+        // Reset mainPanelSizeAdjustment if only one window
+        if windows.count == 1 {
+            mainPanelSizeAdjustment = 0
+        }
         
         let availableFrame = screen.adjustedFrame()
         
@@ -212,22 +222,41 @@ final class WindowSet: Identifiable {
         // Calculate available width after accounting for gaps
         let totalGapWidth = windowGap * CGFloat(windowCount - 1)
         let availableWidth = frame.width - totalGapWidth
-        let windowWidth = availableWidth / CGFloat(windowCount)
         
+        // Calculate window widths with main panel adjustment
+        var windowWidths: [CGFloat] = []
+        if windowCount == 1 {
+            windowWidths = [availableWidth]
+        } else {
+            // Adjust the main panel size if there are multiple windows
+            let baseWidth = availableWidth / CGFloat(windowCount)
+            let adjustment = mainPanelSizeAdjustment
+            let adjustmentPerOther = adjustment / CGFloat(windowCount - 1)
+            
+            // First window gets the adjustment
+            windowWidths.append(baseWidth + adjustment)
+            
+            // Other windows share the inverse adjustment
+            for _ in 1..<windowCount {
+                windowWidths.append(baseWidth - adjustmentPerOther)
+            }
+        }
         
         // First, move all windows to their positions
+        var currentX: CGFloat = frame.origin.x
         for (index, window) in windows.enumerated() {
-            let xOffset = CGFloat(index) * (windowWidth + windowGap)
+            let windowWidth = windowWidths[index]
             
             // Apply margin to shrink window inward from all sides
             let windowFrame = CGRect(
-                x: frame.origin.x + xOffset + windowMargin,
+                x: currentX + windowMargin,
                 y: frame.origin.y + windowMargin,
                 width: windowWidth - (windowMargin * 2),
                 height: frame.height - (windowMargin * 2)
             )
             
             move(window: window.axElementRef, to: windowFrame)
+            currentX += windowWidth + windowGap
         }
         
         // Optionally bring all windows to front with small delays to ensure they all come up
@@ -250,22 +279,41 @@ final class WindowSet: Identifiable {
         // Calculate available height after accounting for gaps
         let totalGapHeight = windowGap * CGFloat(windowCount - 1)
         let availableHeight = frame.height - totalGapHeight
-        let windowHeight = availableHeight / CGFloat(windowCount)
         
+        // Calculate window heights with main panel adjustment
+        var windowHeights: [CGFloat] = []
+        if windowCount == 1 {
+            windowHeights = [availableHeight]
+        } else {
+            // Adjust the main panel size if there are multiple windows
+            let baseHeight = availableHeight / CGFloat(windowCount)
+            let adjustment = mainPanelSizeAdjustment
+            let adjustmentPerOther = adjustment / CGFloat(windowCount - 1)
+            
+            // First window gets the adjustment
+            windowHeights.append(baseHeight + adjustment)
+            
+            // Other windows share the inverse adjustment
+            for _ in 1..<windowCount {
+                windowHeights.append(baseHeight - adjustmentPerOther)
+            }
+        }
         
         // First, move all windows to their positions
+        var currentY: CGFloat = frame.origin.y
         for (index, window) in windows.enumerated() {
-            let yOffset = CGFloat(index) * (windowHeight + windowGap)
+            let windowHeight = windowHeights[index]
             
             // Apply margin to shrink window inward from all sides
             let windowFrame = CGRect(
                 x: frame.origin.x + windowMargin,
-                y: frame.origin.y + yOffset + windowMargin,
+                y: currentY + windowMargin,
                 width: frame.width - (windowMargin * 2),
                 height: windowHeight - (windowMargin * 2)
             )
             
             move(window: window.axElementRef, to: windowFrame)
+            currentY += windowHeight + windowGap
         }
         
         // Optionally bring all windows to front with small delays to ensure they all come up
