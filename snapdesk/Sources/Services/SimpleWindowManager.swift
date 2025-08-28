@@ -8,6 +8,17 @@
 import Foundation
 import AppKit
 
+// MARK: - AX Extensions for Window Observer
+
+private extension AXUIElement {
+    func axCopyAttribute<T>(_ attr: CFString) -> T? {
+        var ref: CFTypeRef?
+        let err = AXUIElementCopyAttributeValue(self, attr, &ref)
+        guard err == .success, let v = ref as? T else { return nil }
+        return v
+    }
+}
+
 class SimpleWindowManager: WindowManaging {
     
     private var currentBundleIDCycling: String?
@@ -861,6 +872,9 @@ class SimpleWindowManager: WindowManaging {
         
         // Set up accessibility observer for window focus changes
         setupAccessibilityObserver()
+        
+        // Set up application-specific AX observers for window creation
+        setupApplicationObservers()
     }
     
     @objc private func applicationDidLaunch(_ notification: Notification) {
@@ -869,6 +883,11 @@ class SimpleWindowManager: WindowManaging {
         }
         
         log("🚀 Application launched: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        
+        // Set up observer for the new app
+        if let bundleID = app.bundleIdentifier, app.isManageable == .manageable {
+            setupObserver(for: app)
+        }
         
         // Give the app a moment to create windows
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
@@ -882,6 +901,9 @@ class SimpleWindowManager: WindowManaging {
         }
         
         log("❌ Application terminated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        
+        // Remove observer for the terminated app
+        removeObserver(for: app)
         
         // Reset cycling if the terminated app was being cycled
         if let bundleID = app.bundleIdentifier, bundleID == currentBundleIDCycling {
@@ -1070,7 +1092,153 @@ class SimpleWindowManager: WindowManaging {
         return matchingSets
     }
     
+    // MARK: - Application Window Observers
+    
+    private var applicationObservers: [pid_t: AXObserver] = [:]
+    
+    private func setupApplicationObservers() {
+        // Set up observers for all currently running applications
+        for app in NSWorkspace.shared.runningApplications {
+            if let bundleID = app.bundleIdentifier, app.isManageable == .manageable {
+                setupObserver(for: app)
+            }
+        }
+    }
+    
+    private func setupObserver(for app: NSRunningApplication) {
+        guard let bundleID = app.bundleIdentifier else { return }
+        
+        let pid = app.processIdentifier
+        
+        // Skip if we already have an observer for this app
+        guard applicationObservers[pid] == nil else { return }
+        
+        // Create application element
+        let appElement = AXUIElementCreateApplication(pid)
+        
+        var observer: AXObserver?
+        let result = AXObserverCreate(pid, { observer, element, notification, userData in
+            guard let userData = userData else { return }
+            let manager = Unmanaged<SimpleWindowManager>.fromOpaque(userData).takeUnretainedValue()
+            
+            let notificationName = notification as String
+            if notificationName == kAXCreatedNotification as String {
+                DispatchQueue.main.async {
+                    manager.handleWindowCreated(element)
+                }
+            }
+        }, &observer)
+        
+        guard result == .success, let observer = observer else {
+            log("❌ Failed to create AX observer for \(app.localizedName ?? bundleID)")
+            return
+        }
+        
+        // Add observer for window creation notifications on this application
+        let addResult = AXObserverAddNotification(
+            observer,
+            appElement,
+            kAXCreatedNotification as CFString,
+            Unmanaged.passUnretained(self).toOpaque()
+        )
+        
+        if addResult == .success {
+            // Start observing
+            CFRunLoopAddSource(
+                CFRunLoopGetCurrent(),
+                AXObserverGetRunLoopSource(observer),
+                .defaultMode
+            )
+            applicationObservers[pid] = observer
+            log("✅ Window observer setup successful for \(app.localizedName ?? bundleID)")
+        } else {
+            log("❌ Failed to add window creation observer for \(app.localizedName ?? bundleID)")
+        }
+    }
+    
+    private func removeObserver(for app: NSRunningApplication) {
+        let pid = app.processIdentifier
+        
+        if let observer = applicationObservers.removeValue(forKey: pid) {
+            CFRunLoopRemoveSource(
+                CFRunLoopGetCurrent(),
+                AXObserverGetRunLoopSource(observer),
+                .defaultMode
+            )
+            log("🗑️ Removed window observer for \(app.localizedName ?? app.bundleIdentifier ?? "Unknown")")
+        }
+    }
+    
+    private func handleWindowCreated(_ windowElement: AXUIElement) {
+        // Check if this is a standard window we should track
+        let role: String? = windowElement.axCopyAttribute(kAXRoleAttribute as CFString)
+        let subrole: String? = windowElement.axCopyAttribute(kAXSubroleAttribute as CFString)
+        
+        guard role == (kAXWindowRole as String),
+              subrole != (kAXSystemDialogSubrole as String),
+              subrole != (kAXFloatingWindowSubrole as String),
+              subrole != "AXSheet" else {
+            return
+        }
+        
+        // Get the window's process ID to identify the app
+        var pid: pid_t = 0
+        guard AXUIElementGetPid(windowElement, &pid) == .success,
+              let app = NSRunningApplication(processIdentifier: pid),
+              let bundleID = app.bundleIdentifier else {
+            return
+        }
+        
+        log("🪟 New window created for \(app.localizedName ?? "Unknown") (\(bundleID))")
+        
+        // Create AXWindow wrapper
+        let axWindow = AXWindow(axElement: windowElement)
+        
+        // Find the appropriate screen for this window
+        guard let nsScreen: NSScreen = axWindow.screen() else {
+            log("❌ Could not determine screen for new window")
+            return
+        }
+        
+        let amScreen = AMScreen(screen: nsScreen)
+        
+        // Find or create screen workspace
+        var screenWS: ScreenWorkspace
+        if let existingIndex = workspace.screens.firstIndex(where: { $0.screen == amScreen }) {
+            screenWS = workspace.screens[existingIndex]
+        } else {
+            screenWS = ScreenWorkspace(screen: amScreen, sets: [])
+            workspace.screens.append(screenWS)
+        }
+        
+        // Create a new WindowSet for this window
+        let defaultLayout = getDefaultLayoutMode()
+        let newWindowSet = WindowSet(layout: defaultLayout, windows: [axWindow], screenID: amScreen.screenID())
+        
+        // Add to appropriate screen workspace
+        if let screenIndex = workspace.screens.firstIndex(where: { $0.screen == amScreen }) {
+            workspace.screens[screenIndex].windowSets.append(newWindowSet)
+        }
+        
+        // Auto-expand the new window if enabled
+        if shouldAutoExpandNewWindows() {
+            newWindowSet.expandWindows(on: amScreen, bringToFront: false)
+        }
+        
+        log("✅ Added new window to workspace - now tracking \(workspace.screens.flatMap { $0.windowSets }.count) WindowSets")
+    }
+    
     deinit {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        
+        // Clean up all application observers
+        for (_, observer) in applicationObservers {
+            CFRunLoopRemoveSource(
+                CFRunLoopGetCurrent(),
+                AXObserverGetRunLoopSource(observer),
+                .defaultMode
+            )
+        }
+        applicationObservers.removeAll()
     }
 }
