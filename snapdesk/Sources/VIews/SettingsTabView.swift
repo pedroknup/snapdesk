@@ -47,10 +47,10 @@ struct SettingsTabView: View {
                         .font(.headline)
 
                     Toggle("Launch at Login", isOn: $launchAtLogin)
-                        .help("Start SnapDesk automatically when you log in to your Mac")
+                        .help("Start Snapdesk automatically when you log in to your Mac")
                     
                     Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
-                        .help("Hide the SnapDesk icon from the menu bar (access via shortcuts only)")
+                        .help("Hide the Snapdesk icon from the menu bar (access via shortcuts only)")
                 }
 
                 // Layout & Windows
