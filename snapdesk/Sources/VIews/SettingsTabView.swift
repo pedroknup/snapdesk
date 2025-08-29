@@ -8,13 +8,13 @@ struct SettingsTabView: View {
     @AppStorage("notificationPosition") private var notificationPosition = "center"
     
     // Startup & System
-    @AppStorage("launchAtLogin") private var launchAtLogin = true
+    @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("hideMenuBarIcon") private var hideMenuBarIcon = false
     @AppStorage("enableAccessibilityOnStart") private var enableAccessibilityOnStart = true
     
     // Layout & Windows  
-    @AppStorage("windowGap") private var windowGap: Double = 0
-    @AppStorage("windowMargin") private var windowMargin: Double = 0
+    @AppStorage("windowGap") private var windowGap: Double = 4
+    @AppStorage("windowMargin") private var windowMargin: Double = 8
     @AppStorage("defaultLayoutMode") private var defaultLayoutMode = "wide"
     @AppStorage("animateWindowTransitions") private var animateWindowTransitions = true
     @AppStorage("respectWindowMinimumSize") private var respectWindowMinimumSize = true
@@ -24,7 +24,7 @@ struct SettingsTabView: View {
     @AppStorage("enableDebugLogging") private var enableDebugLogging = false
     @AppStorage("showLogsView") private var showLogsView = false
     @AppStorage("windowDetectionInterval") private var windowDetectionInterval: Double = 0.5
-    @AppStorage("focusFollowsMouse") private var focusFollowsMouse = true
+    @AppStorage("focusFollowsMouse") private var focusFollowsMouse = false
 
     var body: some View {
         ScrollView {
@@ -47,10 +47,10 @@ struct SettingsTabView: View {
                         .font(.headline)
 
                     Toggle("Launch at Login", isOn: $launchAtLogin)
-                        .help("Start Snapdesk automatically when you log in to your Mac")
+                        .help("Start SnapDesk automatically when you log in to your Mac")
                     
                     Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
-                        .help("Hide the Snapdesk icon from the menu bar (access via shortcuts only)")
+                        .help("Hide the SnapDesk icon from the menu bar (access via shortcuts only)")
                 }
 
                 // Layout & Windows
