@@ -206,8 +206,8 @@ final class WindowSet: Identifiable {
         let windowCount = windows.count
         
         // Get window gap and margin from settings
-        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 4.0)
-        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
+        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 0)
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 0)
         
         // Calculate available width after accounting for gaps
         let totalGapWidth = windowGap * CGFloat(windowCount - 1)
@@ -244,8 +244,8 @@ final class WindowSet: Identifiable {
         let windowCount = windows.count
         
         // Get window gap and margin from settings
-        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 4.0)
-        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
+        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 0)
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 0)
         
         // Calculate available height after accounting for gaps
         let totalGapHeight = windowGap * CGFloat(windowCount - 1)

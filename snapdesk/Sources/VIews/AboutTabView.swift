@@ -21,7 +21,7 @@ struct AboutTabView: View {
             
             // App Name and Version
             VStack(spacing: 8) {
-                Text("SnapDesk")
+                Text("Snapdesk")
                     .font(.system(size: 32, weight: .bold))
                 
                 Text("Version 0.0.1 (beta)")
