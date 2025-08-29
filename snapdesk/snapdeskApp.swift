@@ -27,8 +27,8 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         
         if runningApps.count > 1 {
             let alert = NSAlert()
-            alert.messageText = "Snapdesk is already running"
-            alert.informativeText = "Another instance of Snapdesk is already running. Please close it before starting a new instance."
+            alert.messageText = "SnapDesk is already running"
+            alert.informativeText = "Another instance of SnapDesk is already running. Please close it before starting a new instance."
             alert.alertStyle = .warning
             alert.addButton(withTitle: "OK")
             alert.runModal()
@@ -91,7 +91,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Toggle Debug Viewer", action: #selector(toggleDebugViewer), keyEquivalent: "d"))
         
         menu.addItem(NSMenuItem(title: "Preferences", action: #selector(openSettings), keyEquivalent: ","))
-        menu.addItem(NSMenuItem(title: "About Snapdesk", action: #selector(showAbout), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "About SnapDesk", action: #selector(showAbout), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit Snapdesk", action: #selector(quitApp), keyEquivalent: "q"))
 
