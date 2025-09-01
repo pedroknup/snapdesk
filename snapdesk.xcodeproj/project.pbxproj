@@ -26,6 +26,7 @@
 		135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */; };
 		135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */; };
 		135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55172DB6596D00EC05FF /* WindowDebugTest.swift */; };
+		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
 		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
 		13858B182E5F294200FD0DB8 /* SkyLight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13858B172E5F294200FD0DB8 /* SkyLight.framework */; };
@@ -89,6 +90,7 @@
 		135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
 		135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutsTabView.swift; sourceTree = "<group>"; };
 		135B55172DB6596D00EC05FF /* WindowDebugTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowDebugTest.swift; sourceTree = "<group>"; };
+		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
 		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
 		13858B172E5F294200FD0DB8 /* SkyLight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SkyLight.framework; path = ../../../../../System/Library/PrivateFrameworks/SkyLight.framework; sourceTree = "<group>"; };
@@ -279,6 +281,7 @@
 		13972B262E5EF6FC00588D1B /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				13726AE42E65D05F005D42DF /* AppCacheManager.swift */,
 				13972B3F2E5EFB6C00588D1B /* LogManager.swift */,
 				13972B3D2E5EFA0700588D1B /* ScreenManager.swift */,
 				13972B3B2E5EF9F600588D1B /* Screens.swift */,
@@ -435,6 +438,7 @@
 				13858B212E5F4AF600FD0DB8 /* ScanWindows.swift in Sources */,
 				13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */,
 				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
+				13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */,
 				13858B252E5F75B700FD0DB8 /* DebugLogViewer.swift in Sources */,
 				13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */,
 				13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */,
