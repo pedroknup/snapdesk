@@ -178,11 +178,13 @@ final class WindowSet: Identifiable {
     
     /// Expands all windows in the WindowSet according to its layout on their assigned screen
     func expandWindows() {
+        log("🔧 expandWindows() called for WindowSet with \(windows.count) windows")
         guard let screenID = screenID,
               let screen = AMScreen.availableScreens.first(where: { $0.screenID() == screenID }) else {
-            log("❌ Cannot expand windows: no screen ID or screen not found")
+            log("❌ Cannot expand windows: no screen ID (\(screenID ?? "nil")) or screen not found")
             return
         }
+        log("📐 Found screen with ID \(screenID), calling expandWindows(on:)")
         expandWindows(on: screen)
     }
     

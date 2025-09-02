@@ -90,7 +90,8 @@ public class ConfigurationManager {
             "Throw to Screen 6",
             "Throw app to current layout modifier",
             "Increase main panel size",
-            "Decrease main panel size"
+            "Decrease main panel size",
+            "Expand Windows"
         ]
         
         // Convert to Set for efficient lookup
@@ -134,7 +135,8 @@ public class ConfigurationManager {
             "Throw to Screen 6",
             "Throw app to current layout modifier",
             "Increase main panel size",
-            "Decrease main panel size"
+            "Decrease main panel size",
+            "Expand Windows"
         ]
         
         // Convert to Set for efficient lookup
@@ -259,6 +261,10 @@ public class ConfigurationManager {
                 GeneralShortcutConfig(
                     name: "Decrease main panel size",
                     shortcut: ShortcutConfig(key: "-", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Expand Windows",
+                    shortcut: nil  // No default shortcut, user can configure it
                 )
             ]
         )
