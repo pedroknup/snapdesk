@@ -116,6 +116,7 @@ class SimpleWindowManager: WindowManaging {
 
     
     func addWindowToLayout(_ bundleID: String) {
+        log("➕ addWindowToLayout called for bundleID: \(bundleID)")
         
         // Use the current WindowSet if it exists
         guard let currentWindowSet = currentWindowSet else {
@@ -123,14 +124,38 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        guard let (nextWindowSet, windowToAdd) = getNextWindowSetToFocus(for: bundleID) else {
-            log("❌ No next window found to add to layout")
-            return
+        // Find all WindowSets that contain windows from this bundle
+        let allWindowSets = windowSets(for: bundleID)
+        log("📊 Found \(allWindowSets.count) WindowSets for \(bundleID)")
+        
+        // Find a window from this bundle that's NOT in the current WindowSet
+        var windowToAdd: AXWindow? = nil
+        var sourceWindowSet: WindowSet? = nil
+        
+        for windowSet in allWindowSets {
+            // Skip the current WindowSet
+            if windowSet.id == currentWindowSet.id {
+                continue
+            }
+            
+            // Find windows in this set that belong to the bundle
+            for window in windowSet.windows {
+                guard let app = NSRunningApplication(processIdentifier: window.pid()),
+                      app.bundleIdentifier == bundleID else { continue }
+                
+                // Found a window to add
+                windowToAdd = window
+                sourceWindowSet = windowSet
+                break
+            }
+            
+            if windowToAdd != nil {
+                break
+            }
         }
         
-        
         guard let windowToAdd = windowToAdd else {
-            log("❌ No window found in next WindowSet to add")
+            log("❌ No window found from bundle \(bundleID) outside current WindowSet")
             return
         }
         
@@ -142,14 +167,23 @@ class SimpleWindowManager: WindowManaging {
         // Remove the window from its original WindowSet and clean up empty sets
         removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
         
-        // Expand all windows in the updated WindowSet according to its layout (if auto-expand is enabled)
-        if shouldAutoExpandNewWindows() {
-            currentWindowSet.expandWindows()
+        // If the layout is floating, change it to wide for proper tiling
+        if currentWindowSet.layout == .floating {
+            log("🔄 Changing layout from floating to wide for proper window arrangement")
+            currentWindowSet.layout = .wide
         }
+        
+        // Log the current state before expanding
+        log("📊 Current WindowSet has \(currentWindowSet.windows.count) windows, layout: \(currentWindowSet.layout), screenID: \(currentWindowSet.screenID ?? "nil")")
+        
+        // Expand all windows in the updated WindowSet according to its layout
+        currentWindowSet.expandWindows()
         
         // Focus the newly added window
         windowToAdd.focus()
         moveCursorToCenter(of: windowToAdd)
+        
+        log("✅ Successfully added window to layout. WindowSet now has \(currentWindowSet.windows.count) windows")
     }
     
     /// Gets the bundle ID for the first window in a WindowSet
@@ -803,6 +837,58 @@ class SimpleWindowManager: WindowManaging {
                let adjustmentText = windowSet.mainPanelSizeAdjustment >= 0 ? "+\(Int(windowSet.mainPanelSizeAdjustment))" : "\(Int(windowSet.mainPanelSizeAdjustment))"
                FloatingWindowHelper.showFloatingWindow(
                    text: "Main Panel: \(adjustmentText)px",
+                   position: .center,
+                   duration: 1.5
+               )
+           }
+       }
+       
+       func expandCurrentLayout() {
+           log("🔲 expandCurrentLayout() called")
+           
+           // Use the current WindowSet if available, otherwise find it from the focused window
+           var targetWindowSet: WindowSet?
+           
+           if let currentWindowSet = currentWindowSet {
+               targetWindowSet = currentWindowSet
+           } else {
+               // Try to find the WindowSet containing the current focused window
+               guard let focusedWindow = frontmostWindow() else {
+                   log("❌ No focused window found")
+                   return
+               }
+               
+               let axWindow = AXWindow(axElement: focusedWindow)
+               if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+                   targetWindowSet = windowSet
+                   currentWindowSet = windowSet
+               }
+           }
+           
+           guard let windowSet = targetWindowSet else {
+               log("❌ No WindowSet found to expand")
+               return
+           }
+           
+           log("📐 Current layout: \(windowSet.layout) for WindowSet with \(windowSet.windows.count) window(s)")
+           
+           // If the layout is floating, change it to wide first
+           if windowSet.layout == .floating {
+               log("🔄 Changing layout from floating to wide before expanding")
+               windowSet.layout = .wide
+           }
+           
+           // Expand the windows in the current WindowSet
+           windowSet.expandWindows()
+           
+           log("✅ Windows expanded according to \(windowSet.layout) layout")
+           
+           // Show floating notification if enabled
+           let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+           if showLayoutIndicator {
+               let layoutText = "\(windowSet.layout)".capitalized
+               FloatingWindowHelper.showFloatingWindow(
+                   text: "Expanded: \(layoutText)",
                    position: .center,
                    duration: 1.5
                )
