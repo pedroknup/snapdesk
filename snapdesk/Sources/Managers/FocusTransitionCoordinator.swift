@@ -49,7 +49,7 @@ class FocusTransitionCoordinator<Target: FocusTransitionTarget> {
             return
         }
 
-        guard let screen = focusedWindow.screen() else {
+        guard let screen = focusedWindow.snapScreen() else {
             return
         }
 
@@ -105,7 +105,7 @@ class FocusTransitionCoordinator<Target: FocusTransitionTarget> {
             return
         }
 
-        guard let screen = focusedWindow.screen() else {
+        guard let screen = focusedWindow.snapScreen() else {
             return
         }
 
@@ -126,7 +126,7 @@ class FocusTransitionCoordinator<Target: FocusTransitionTarget> {
         }
 
         // Do nothing if the screen is already focused
-        if let focusedWindow = Window.currentlyFocused(), let focusedScreen = focusedWindow.screen(), focusedScreen == screen {
+        if let focusedWindow = Window.currentlyFocused(), let focusedScreen = focusedWindow.snapScreen(), focusedScreen == screen {
             return
         }
 

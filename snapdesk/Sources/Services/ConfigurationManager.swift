@@ -72,9 +72,8 @@ public class ConfigurationManager {
             return nil
         }
         
-        // Ensure all general shortcuts from the default list are included
+        // Define the only supported general shortcuts
         let defaultGeneralShortcuts = [
-            "Toggle Full Screen layout for the current screen",
             "Remove current window from layout",
             "Toggle layout for current WindowSet",
             "Focus Screen 1",
@@ -90,13 +89,27 @@ public class ConfigurationManager {
             "Throw to Screen 5",
             "Throw to Screen 6",
             "Throw app to current layout modifier",
-            "Increase main panel count",
-            "Decrease main panel count",
-            "Cycle current layout windows clockwise",
-            "Cycle current layout windows counterclockwise"
+            "Increase main panel size",
+            "Decrease main panel size",
+            "Expand Windows",
+            "Position Window Left",
+            "Position Window Right", 
+            "Position Window Top",
+            "Position Window Bottom",
+            "Position Window Top Left",
+            "Position Window Top Right",
+            "Position Window Bottom Left",
+            "Position Window Bottom Right",
+            "Position Window Center"
         ]
         
-        // Create a set of existing shortcut names
+        // Convert to Set for efficient lookup
+        let supportedNames = Set(defaultGeneralShortcuts)
+        
+        // Filter out any unsupported shortcuts from the config file
+        config.generalShortcuts = config.generalShortcuts.filter { supportedNames.contains($0.name) }
+        
+        // Create a set of existing shortcut names after filtering
         let existingNames = Set(config.generalShortcuts.map { $0.name })
         
         // Add any missing shortcuts with nil values
@@ -113,9 +126,8 @@ public class ConfigurationManager {
         // Create a new config that includes all general shortcuts, even those with nil values
         var configToSave = config
         
-        // Ensure all general shortcuts from the default list are included
+        // Define the only supported general shortcuts
         let defaultGeneralShortcuts = [
-            "Toggle Full Screen layout for the current screen",
             "Remove current window from layout",
             "Toggle layout for current WindowSet",
             "Focus Screen 1",
@@ -131,14 +143,28 @@ public class ConfigurationManager {
             "Throw to Screen 5",
             "Throw to Screen 6",
             "Throw app to current layout modifier",
-            "Increase main panel count",
-            "Decrease main panel count",
-            "Cycle current layout windows clockwise",
-            "Cycle current layout windows counterclockwise"
+            "Increase main panel size",
+            "Decrease main panel size",
+            "Expand Windows",
+            "Position Window Left",
+            "Position Window Right", 
+            "Position Window Top",
+            "Position Window Bottom",
+            "Position Window Top Left",
+            "Position Window Top Right",
+            "Position Window Bottom Left",
+            "Position Window Bottom Right",
+            "Position Window Center"
         ]
         
-        // Create a set of existing shortcut names
-        let existingNames = Set(config.generalShortcuts.map { $0.name })
+        // Convert to Set for efficient lookup
+        let supportedNames = Set(defaultGeneralShortcuts)
+        
+        // Filter out any unsupported shortcuts before saving
+        configToSave.generalShortcuts = configToSave.generalShortcuts.filter { supportedNames.contains($0.name) }
+        
+        // Create a set of existing shortcut names after filtering
+        let existingNames = Set(configToSave.generalShortcuts.map { $0.name })
         
         // Add any missing shortcuts with nil values
         for name in defaultGeneralShortcuts {
@@ -183,10 +209,6 @@ public class ConfigurationManager {
                 )
             ],
             generalShortcuts: [
-                GeneralShortcutConfig(
-                    name: "Toggle Full Screen layout for the current screen",
-                    shortcut: ShortcutConfig(key: "0", modifiers: ["command", "option"])
-                ),
                 GeneralShortcutConfig(
                     name: "Remove current window from layout",
                     shortcut: ShortcutConfig(key: "2", modifiers: ["command", "option"])
@@ -251,20 +273,16 @@ public class ConfigurationManager {
                     shortcut: ShortcutConfig(key: "t", modifiers: ["command", "option"])
                 ),
                 GeneralShortcutConfig(
-                    name: "Increase main panel count",
+                    name: "Increase main panel size",
                     shortcut: ShortcutConfig(key: "=", modifiers: ["command", "option"])
                 ),
                 GeneralShortcutConfig(
-                    name: "Decrease main panel count",
+                    name: "Decrease main panel size",
                     shortcut: ShortcutConfig(key: "-", modifiers: ["command", "option"])
                 ),
                 GeneralShortcutConfig(
-                    name: "Cycle current layout windows clockwise",
-                    shortcut: ShortcutConfig(key: "]", modifiers: ["command", "option"])
-                ),
-                GeneralShortcutConfig(
-                    name: "Cycle current layout windows counterclockwise",
-                    shortcut: ShortcutConfig(key: "[", modifiers: ["command", "option"])
+                    name: "Expand Windows",
+                    shortcut: nil  // No default shortcut, user can configure it
                 )
             ]
         )
