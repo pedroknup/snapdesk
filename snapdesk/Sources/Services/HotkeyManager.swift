@@ -35,12 +35,22 @@ protocol WindowManaging: AnyObject {
     func throwToScreen(_ screenNumber: Int)
     func throwFrontmostWindow(toScreen index: Int)
     func throwToCurrentLayout()
-    func increaseMainPanelCount()
-    func decreaseMainPanelCount()
-    func cycleWindowsClockwise()
-    func cycleWindowsCounterclockwise()
+    func increaseMainPanelSize()
+    func decreaseMainPanelSize()
+    func expandCurrentLayout()
     func focusApp(_ bundleID: String)
     func addWindowToLayout(_ bundleID: String)
+    
+    // Window positioning commands
+    func positionWindowLeft()
+    func positionWindowRight()
+    func positionWindowTop()
+    func positionWindowBottom()
+    func positionWindowTopLeft()
+    func positionWindowTopRight()
+    func positionWindowBottomLeft()
+    func positionWindowBottomRight()
+    func positionWindowCenter()
 }
 
 // Static storage for the active HotkeyManager instance (outside generic class)
@@ -87,11 +97,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     }
 
     func setUpWithWindowController(_ windowManager: WindowManaging, configuration: UserConfiguration) {
-        // Toggle full screen layout
-        constructCommandWithCommandKey("toggle-fullscreen-layout") { [weak self, weak windowManager] in
-            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            windowManager?.toggleFullScreen()
-        }
         
         // Remove current window from layout
         constructCommandWithCommandKey("remove-current-window-from-layout") { [weak self] in
@@ -129,25 +134,67 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             self?.windowManager.throwToCurrentLayout()
         }
         
-//        constructCommandWithCommandKey("increase-main-panel-count") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager)?.increaseMainPanelCount()
-//        }
-//        
-//        constructCommandWithCommandKey("decrease-main-panel-count") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager<SIApplication>)?.decreaseMainPanelCount()
-//        }
-//        
-//        constructCommandWithCommandKey("cycle-windows-clockwise") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager)?.cycleWindowsClockwise()
-//        }
-//        
-//        constructCommandWithCommandKey("cycle-windows-counterclockwise") { [weak self, weak windowManager] in
-//            guard !(self?.isRecordingShortcut ?? false) else { return }
-//            (windowManager as? WindowManager<SIApplication>)?.cycleWindowsCounterclockwise()
-//        }
+        constructCommandWithCommandKey("increase-main-panel-size") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.increaseMainPanelSize()
+        }
+        
+        constructCommandWithCommandKey("decrease-main-panel-size") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.decreaseMainPanelSize()
+        }
+        
+        // Expand current layout
+        constructCommandWithCommandKey("expand-current-layout") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.expandCurrentLayout()
+        }
+        
+        // Window positioning shortcuts
+        constructCommandWithCommandKey("position-window-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowLeft()
+        }
+        
+        constructCommandWithCommandKey("position-window-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowRight()
+        }
+        
+        constructCommandWithCommandKey("position-window-top") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowTop()
+        }
+        
+        constructCommandWithCommandKey("position-window-bottom") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowBottom()
+        }
+        
+        constructCommandWithCommandKey("position-window-top-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowTopLeft()
+        }
+        
+        constructCommandWithCommandKey("position-window-top-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowTopRight()
+        }
+        
+        constructCommandWithCommandKey("position-window-bottom-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowBottomLeft()
+        }
+        
+        constructCommandWithCommandKey("position-window-bottom-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowBottomRight()
+        }
+        
+        constructCommandWithCommandKey("position-window-center") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowCenter()
+        }
         
         // Setup app shortcuts - we'll need to handle these dynamically
         setupAppShortcuts()
@@ -311,7 +358,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     
     static func commandKeyToDisplayName() -> [String: String] {
         return [
-            "toggle-fullscreen-layout": "Toggle Full Screen layout for the current screen",
             "remove-current-window-from-layout": "Remove current window from layout",
             "toggle-layout-current-windowset": "Toggle layout for current WindowSet",
             "focus-screen-1": "Focus Screen 1",
@@ -327,10 +373,18 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             "throw-screen-5": "Throw to Screen 5",
             "throw-screen-6": "Throw to Screen 6",
             "throw-to-current-layout": "Throw app to current layout modifier",
-            "increase-main-panel-count": "Increase main panel count",
-            "decrease-main-panel-count": "Decrease main panel count",
-            "cycle-windows-clockwise": "Cycle current layout windows clockwise",
-            "cycle-windows-counterclockwise": "Cycle current layout windows counterclockwise"
+            "increase-main-panel-size": "Increase main panel size",
+            "decrease-main-panel-size": "Decrease main panel size",
+            "expand-current-layout": "Expand Windows",
+            "position-window-left": "Position Window Left",
+            "position-window-right": "Position Window Right",
+            "position-window-top": "Position Window Top",
+            "position-window-bottom": "Position Window Bottom",
+            "position-window-top-left": "Position Window Top Left",
+            "position-window-top-right": "Position Window Top Right",
+            "position-window-bottom-left": "Position Window Bottom Left",
+            "position-window-bottom-right": "Position Window Bottom Right",
+            "position-window-center": "Position Window Center"
         ]
     }
     

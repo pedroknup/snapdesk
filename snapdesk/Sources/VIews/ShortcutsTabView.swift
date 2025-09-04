@@ -10,12 +10,18 @@ import AppKit
 import HotKey
 import Swift
 
-struct AppInfo: Identifiable {
+struct AppInfo: Identifiable, Codable {
     let id = UUID()
     let name: String
     let bundleIdentifier: String
-    let icon: NSImage
     var shortcut: ShortcutConfig? = nil
+    
+    // Icon is not Codable, so we handle it separately
+    var icon: NSImage? = nil
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, bundleIdentifier, shortcut
+    }
 }
 
 struct ShortcutItem: Identifiable {
@@ -27,11 +33,13 @@ struct ShortcutItem: Identifiable {
 
 struct ShortcutsTabView: View {
     @State private var apps: [AppInfo] = []
-    @State private var isLoading = true
+    @State private var isLoading = false // Changed to false initially
+    @State private var isRefreshing = false
     @State private var config: Config
     @State private var searchText: String = ""
     @State private var refreshTrigger: Bool = false
     private let configManager = ConfigurationManager.shared
+    private let cacheManager = AppCacheManager.shared
     
     init() {
         _config = State(initialValue: ConfigurationManager.shared.loadConfig() ?? ConfigurationManager.shared.getDefaultConfig())
@@ -127,7 +135,7 @@ struct ShortcutsTabView: View {
                 }
                 
                 Section("Applications") {
-                    if isLoading {
+                    if isLoading && apps.isEmpty {
                         ProgressView("Loading applications...")
                             .frame(maxWidth: .infinity)
                     } else if filteredApps.isEmpty && !searchText.isEmpty {
@@ -138,7 +146,7 @@ struct ShortcutsTabView: View {
                     } else {
                         ForEach(filteredApps) { app in
                             HStack {
-                                Image(nsImage: app.icon)
+                                Image(nsImage: app.icon ?? NSImage())
                                     .resizable()
                                     .frame(width: 32, height: 32)
                                     .cornerRadius(6)
@@ -186,9 +194,7 @@ struct ShortcutsTabView: View {
             }
         }
         .onAppear {
-            Task {
-                await loadApps()
-            }
+            loadAppsWithCache()
         }
         .onChange(of: refreshTrigger) { _ in
             // This will trigger a UI refresh when refreshTrigger changes
@@ -196,20 +202,61 @@ struct ShortcutsTabView: View {
         .navigationTitle("Shortcuts")
     }
 
-    private func loadApps() async {
-        isLoading = true
-        apps = await Task.detached(priority: .userInitiated) {
+    private func loadAppsWithCache() {
+        // First, load from cache immediately if available
+        if let cachedApps = cacheManager.getCachedApps() {
+            self.apps = cachedApps
+            updateAppsWithShortcuts()
+        } else {
+            // No cache, show loading indicator
+            isLoading = true
+        }
+        
+        // Then fetch fresh data in background
+        Task {
+            await refreshAppsInBackground()
+        }
+    }
+    
+    private func refreshAppsInBackground() async {
+        isRefreshing = true
+        
+        let freshApps = await Task.detached(priority: .background) {
             fetchInstalledApps()
         }.value
         
+        // Update UI on main thread
+        await MainActor.run {
+            // Only update if data has changed or we didn't have cached data
+            if apps.isEmpty || hasAppsChanged(old: apps, new: freshApps) {
+                self.apps = freshApps
+                updateAppsWithShortcuts()
+                
+                // Save to cache
+                cacheManager.setCachedApps(freshApps)
+            }
+            
+            isLoading = false
+            isRefreshing = false
+        }
+    }
+    
+    private func hasAppsChanged(old: [AppInfo], new: [AppInfo]) -> Bool {
+        if old.count != new.count { return true }
+        
+        let oldSet = Set(old.map { $0.bundleIdentifier })
+        let newSet = Set(new.map { $0.bundleIdentifier })
+        
+        return oldSet != newSet
+    }
+    
+    private func updateAppsWithShortcuts() {
         // Update apps with their shortcuts from config
         for (index, app) in apps.enumerated() {
             if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
                 apps[index].shortcut = shortcut
             }
         }
-        
-        isLoading = false
     }
 
     private func fetchInstalledApps() -> [AppInfo] {
@@ -226,11 +273,12 @@ struct ShortcutsTabView: View {
                     let bundle = Bundle(url: fileURL)
                     let bundleIdentifier = bundle?.bundleIdentifier ?? "Unknown Bundle ID"
                     
-                    results.append(AppInfo(
+                    var appInfo = AppInfo(
                         name: name,
-                        bundleIdentifier: bundleIdentifier,
-                        icon: icon
-                    ))
+                        bundleIdentifier: bundleIdentifier
+                    )
+                    appInfo.icon = icon
+                    results.append(appInfo)
                 }
             }
         }

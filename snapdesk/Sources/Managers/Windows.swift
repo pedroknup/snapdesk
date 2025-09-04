@@ -28,7 +28,7 @@ extension WindowManager {
         }
 
         func windows(onScreen screen: Screen) -> [Window] {
-            return windows.filter { $0.screen() == screen }
+            return windows.filter { $0.snapScreen() == screen }
         }
 
         func activeWindows(onScreen screen: Screen) -> [Window] {
@@ -44,7 +44,7 @@ extension WindowManager {
             let screenWindows = windows.filter { window in
                 let space = CGWindowsInfo.windowSpace(window)
 
-                guard let windowScreen = window.screen(), currentSpace.id == space else {
+                guard let windowScreen = window.snapScreen(), currentSpace.id == space else {
                     return false
                 }
 
@@ -60,7 +60,7 @@ extension WindowManager {
 
         func activeWindowOnCurrentScreen(atIndex: Int) -> Window? {
             guard let focusedWindow = Window.currentlyFocused(),
-                  let currentScreen = focusedWindow.screen() else {
+                  let currentScreen = focusedWindow.snapScreen() else {
                 return nil
             }
             let activeWindows = activeWindows(onScreen: currentScreen)

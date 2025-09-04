@@ -103,7 +103,7 @@ final class WindowManager<Application: ApplicationType>: NSObject {
     }
 
     @objc func applicationActivated(_ sender: AnyObject) {
-        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
+        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.snapScreen() else {
             return
         }
         markScreen(screen, forReflowWithChange: .applicationActivate)
@@ -276,7 +276,7 @@ extension WindowManager {
     }
 
     func toggleFloatForFocusedWindow() {
-        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
+        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.snapScreen() else {
             return
         }
 
@@ -399,7 +399,7 @@ extension WindowManager {
 
         windows.add(window: window, atFront: userConfiguration.sendNewWindowsToMainPane())
 
-        guard let screen = window.screen() else {
+        guard let screen = window.snapScreen() else {
             return
         }
         let space = CGWindowsInfo.windowSpace(window)
@@ -409,7 +409,7 @@ extension WindowManager {
     }
 
     func swapInTab(window: Window) {
-        guard let screen = window.screen() else {
+        guard let screen = window.snapScreen() else {
             return
         }
 
@@ -517,7 +517,7 @@ extension WindowManager: MouseStateKeeperDelegate {
     }
 
     func swapDraggedWindowWithDropzone(_ draggedWindow: Window) {
-        guard let screen = draggedWindow.screen() else { return }
+        guard let screen = draggedWindow.snapScreen() else { return }
 
         let windows: [Window] = self.windows.windows(onScreen: screen)
 
@@ -553,7 +553,7 @@ extension WindowManager: ApplicationObservationDelegate {
     }
 
     func application(_ application: AnyApplication<Application>, didFocusWindow window: Window) {
-        guard let screen = window.screen() else {
+        guard let screen = window.snapScreen() else {
             return
         }
 
@@ -577,7 +577,7 @@ extension WindowManager: ApplicationObservationDelegate {
             return
         }
 
-        guard let screen = window.screen(), activeWindows(on: screen).contains(window) else {
+        guard let screen = window.snapScreen(), activeWindows(on: screen).contains(window) else {
             return
         }
 
@@ -607,7 +607,7 @@ extension WindowManager: ApplicationObservationDelegate {
             return
         }
 
-        guard let screen = window.screen(), activeWindows(on: screen).contains(window) else {
+        guard let screen = window.snapScreen(), activeWindows(on: screen).contains(window) else {
             return
         }
 
@@ -692,7 +692,7 @@ extension WindowManager: WindowTransitionTarget {
 
             markAllScreensForReflow(withChange: .windowSwap(window: window, otherWindow: otherWindow))
         case let .moveWindowToScreen(window, screen):
-            let currentScreen = window.screen()
+            let currentScreen = window.snapScreen()
             window.moveScaled(to: screen)
             if let currentScreen = currentScreen {
                 markScreen(currentScreen, forReflowWithChange: .remove(window: window))
@@ -701,7 +701,7 @@ extension WindowManager: WindowTransitionTarget {
             window.focus()
         case let .moveWindowToSpaceAtIndex(window, spaceIndex, sourceSpaceIndex):
             guard
-                let screen = window.screen(),
+                let screen = window.snapScreen(),
                 let spaces = CGSpacesInfo<Window>.spacesForAllScreens(includeOnlyUserSpaces: true),
                 spaceIndex < spaces.count
             else {

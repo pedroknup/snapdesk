@@ -129,18 +129,34 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     
     @objc func openSettings() {
         log("⚙️ Settings clicked")
-        if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController()
+        
+        // Ensure we're on the main thread
+        DispatchQueue.main.async { [weak self] in
+            if self?.settingsWindowController == nil {
+                log("📱 Creating new SettingsWindowController...")
+                self?.settingsWindowController = SettingsWindowController()
+            } else {
+                log("♻️ Reusing existing SettingsWindowController")
+            }
+            
+            self?.settingsWindowController?.showTab(.settings)
         }
-        settingsWindowController?.showTab(.settings)
     }
 
     @objc func showAbout() {
         log("ℹ️ About clicked")
-        if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController()
+        
+        // Ensure we're on the main thread
+        DispatchQueue.main.async { [weak self] in
+            if self?.settingsWindowController == nil {
+                log("📱 Creating new SettingsWindowController...")
+                self?.settingsWindowController = SettingsWindowController()
+            } else {
+                log("♻️ Reusing existing SettingsWindowController")
+            }
+            
+            self?.settingsWindowController?.showTab(.about)
         }
-        settingsWindowController?.showTab(.about)
     }
     
     @objc func revaluateWindows() {
