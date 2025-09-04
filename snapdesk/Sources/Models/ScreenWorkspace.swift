@@ -9,7 +9,7 @@ import Foundation
 
 struct ScreenWorkspace: Identifiable {
     let id: UUID = UUID()
-    let screen: AMScreen
+    var screen: AMScreen
 
     /// Each screen can host multiple sets of windows (tiled, floating, etc.)
     var windowSets: [WindowSet]
