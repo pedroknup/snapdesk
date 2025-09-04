@@ -183,6 +183,7 @@ class SimpleWindowManager: WindowManaging {
         currentWindowSet.expandWindows()
         
         // Focus the newly added window
+        windowToAdd.raise()
         windowToAdd.focus()
         moveCursorToCenter(of: windowToAdd)
         
@@ -348,6 +349,7 @@ class SimpleWindowManager: WindowManaging {
         }
         
         // Focus the moved window
+        axWindow.raise()
         axWindow.focus()
         moveCursorToCenter(of: axWindow)
         
@@ -379,6 +381,10 @@ class SimpleWindowManager: WindowManaging {
         }
         
         if let targetWindow = targetWindow {
+            // First raise the window to ensure it's on top, especially important 
+            // when cycling between windows of the same app in a split layout
+            targetWindow.raise()
+            // Then focus it
             targetWindow.focus()
             moveCursorToCenter(of: targetWindow)
         }
@@ -630,6 +636,7 @@ class SimpleWindowManager: WindowManaging {
            windowSet.expandWindows()
            
            // Focus the window that was before the removed window in the original layout
+           windowToFocus.raise()
            windowToFocus.focus()
            moveCursorToCenter(of: windowToFocus)
            
