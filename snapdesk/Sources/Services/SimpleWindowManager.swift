@@ -894,6 +894,202 @@ class SimpleWindowManager: WindowManaging {
                )
            }
        }
+       
+       // MARK: - Window Positioning
+       
+       private func positionSingleWindow(to position: String) {
+           // Get the currently focused window
+           guard let focusedWindow = frontmostWindow() else {
+               log("❌ No focused window found")
+               return
+           }
+           
+           let axWindow = AXWindow(axElement: focusedWindow)
+           
+           // Find the WindowSet containing this window
+           guard let (windowSet, _, _) = findWindowSetContaining(axWindow) else {
+               log("❌ Window not found in any WindowSet")
+               return
+           }
+           
+           // Check if WindowSet has only one window
+           if windowSet.windows.count > 1 {
+               log("⚠️ Cannot position window - WindowSet has \(windowSet.windows.count) windows")
+               let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+               if showLayoutIndicator {
+                   FloatingWindowHelper.showFloatingWindow(
+                       text: "Cannot position: \(windowSet.windows.count) windows in layout",
+                       position: .center,
+                       duration: 2.0
+                   )
+               }
+               return
+           }
+           
+           // Change layout to floating
+           if windowSet.layout != .floating {
+               log("🔄 Changing layout to floating for window positioning")
+               windowSet.layout = .floating
+           }
+           
+           // Get the screen frame
+           guard let nsScreen = axWindow.snapScreen()?.screen else {
+               log("❌ Could not determine screen for window")
+               return
+           }
+           let screen = AMScreen(screen: nsScreen)
+           let screenFrame = screen.adjustedFrame()
+           
+           // Calculate the target frame based on position
+           var targetFrame: CGRect
+           let halfWidth = screenFrame.width / 2
+           let halfHeight = screenFrame.height / 2
+           
+           switch position {
+           case "left":
+               targetFrame = CGRect(
+                   x: screenFrame.minX,
+                   y: screenFrame.minY,
+                   width: halfWidth,
+                   height: screenFrame.height
+               )
+           case "right":
+               targetFrame = CGRect(
+                   x: screenFrame.minX + halfWidth,
+                   y: screenFrame.minY,
+                   width: halfWidth,
+                   height: screenFrame.height
+               )
+           case "top":
+               // TODO: not quite working. Fix this
+               targetFrame = CGRect(
+                   x: screenFrame.minX,
+                   y: screenFrame.minY,
+                   width: screenFrame.width,
+                   height: halfHeight
+               )
+           case "bottom":
+               // TODO: not quite working. Fix this
+               targetFrame = CGRect(
+                   x: screenFrame.minX,
+                   y: screenFrame.minY + halfHeight,
+                   width: screenFrame.width,
+                   height: halfHeight
+               )
+           case "topLeft":
+               // TODO: not quite working. Fix this
+               targetFrame = CGRect(
+                   x: screenFrame.minX,
+                   y: screenFrame.minY,
+                   width: halfWidth,
+                   height: halfHeight
+               )
+           case "topRight":
+               // TODO: not quite working. Fix this
+               targetFrame = CGRect(
+                   x: screenFrame.minX + halfWidth,
+                   y: screenFrame.minY,
+                   width: halfWidth,
+                   height: halfHeight
+               )
+           case "bottomLeft":
+               // TODO: not quite working. Fix this
+               targetFrame = CGRect(
+                   x: screenFrame.minX,
+                   y: screenFrame.minY + halfHeight,
+                   width: halfWidth,
+                   height: halfHeight
+               )
+           case "bottomRight":
+               // TODO: not quite working. Fix this
+               targetFrame = CGRect(
+                   x: screenFrame.minX + halfWidth,
+                   y: screenFrame.minY + halfHeight,
+                   width: halfWidth,
+                   height: halfHeight
+               )
+           case "center":
+               let centerWidth = screenFrame.width * 0.6  // 60% of screen width
+               let centerHeight = screenFrame.height * 0.6  // 60% of screen height
+               targetFrame = CGRect(
+                   x: screenFrame.minX + (screenFrame.width - centerWidth) / 2,
+                   y: screenFrame.minY + (screenFrame.height - centerHeight) / 2,
+                   width: centerWidth,
+                   height: centerHeight
+               )
+           default:
+               log("❌ Unknown position: \(position)")
+               return
+           }
+           
+           // Apply window margin from settings
+           let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
+           targetFrame = CGRect(
+               x: targetFrame.minX + windowMargin,
+               y: targetFrame.minY + windowMargin,
+               width: targetFrame.width - (windowMargin * 2),
+               height: targetFrame.height - (windowMargin * 2)
+           )
+           
+           // Move the window
+           move(window: axWindow.axElementRef, to: targetFrame)
+           log("📐 Positioned window to \(position): \(NSStringFromRect(targetFrame))")
+           
+           // Show notification
+           let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+           if showLayoutIndicator {
+               FloatingWindowHelper.showFloatingWindow(
+                   text: "Window: \(position.capitalized)",
+                   position: .center,
+                   duration: 1.0
+               )
+           }
+       }
+       
+       func positionWindowLeft() {
+           log("⬅️ positionWindowLeft() called")
+           positionSingleWindow(to: "left")
+       }
+       
+       func positionWindowRight() {
+           log("➡️ positionWindowRight() called")
+           positionSingleWindow(to: "right")
+       }
+       
+       func positionWindowTop() {
+           log("⬆️ positionWindowTop() called")
+           positionSingleWindow(to: "top")
+       }
+       
+       func positionWindowBottom() {
+           log("⬇️ positionWindowBottom() called")
+           positionSingleWindow(to: "bottom")
+       }
+       
+       func positionWindowTopLeft() {
+           log("↖️ positionWindowTopLeft() called")
+           positionSingleWindow(to: "topLeft")
+       }
+       
+       func positionWindowTopRight() {
+           log("↗️ positionWindowTopRight() called")
+           positionSingleWindow(to: "topRight")
+       }
+       
+       func positionWindowBottomLeft() {
+           log("↙️ positionWindowBottomLeft() called")
+           positionSingleWindow(to: "bottomLeft")
+       }
+       
+       func positionWindowBottomRight() {
+           log("↘️ positionWindowBottomRight() called")
+           positionSingleWindow(to: "bottomRight")
+       }
+       
+       func positionWindowCenter() {
+           log("🎯 positionWindowCenter() called")
+           positionSingleWindow(to: "center")
+       }
 
        // MARK: - Utilities
 
