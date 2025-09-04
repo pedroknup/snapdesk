@@ -77,6 +77,9 @@ class SimpleWindowManager: WindowManaging {
         // Setup window observers
         setupWindowObservers()
         
+        // Setup screen change observer
+        setupScreenChangeObserver()
+        
         // Final comprehensive pass: Ensure ALL windows are expanded if auto-expand is enabled
         if shouldAutoExpandNewWindows() {
             DispatchQueue.main.async { [weak self] in
@@ -1159,6 +1162,98 @@ class SimpleWindowManager: WindowManaging {
         setupApplicationObservers()
     }
     
+    // MARK: - Screen Change Observer
+    
+    private func setupScreenChangeObserver() {
+        // Listen for screen configuration changes
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(screenParametersDidChange(_:)),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func screenParametersDidChange(_ notification: Notification) {
+        log("🖥️ Screen configuration changed, remapping windows...")
+        
+        // Store current window sets before updating screens
+        var orphanedWindowSets: [WindowSet] = []
+        let previousScreenIDs = Set(workspace.screens.compactMap { $0.screen.screenID() })
+        
+        // Get the new screens
+        let newScreens = AMScreen.availableScreens
+        let newScreenIDs = Set(newScreens.compactMap { $0.screenID() })
+        
+        // Find removed screen IDs
+        let removedScreenIDs = previousScreenIDs.subtracting(newScreenIDs)
+        
+        if !removedScreenIDs.isEmpty {
+            log("📤 Screens removed: \(removedScreenIDs)")
+            
+            // Collect all window sets from removed screens
+            for screenWS in workspace.screens {
+                if let screenID = screenWS.screen.screenID(), removedScreenIDs.contains(screenID) {
+                    orphanedWindowSets.append(contentsOf: screenWS.windowSets)
+                }
+            }
+        }
+        
+        // Update workspace with new screens
+        workspace.refreshScreens()
+        
+        // Remap orphaned windows to their new screens
+        if !orphanedWindowSets.isEmpty {
+            log("🔄 Remapping \(orphanedWindowSets.count) orphaned WindowSets...")
+            
+            for windowSet in orphanedWindowSets {
+                // For each window in the set, find its current screen
+                for window in windowSet.windows {
+                    // Get the window's current screen based on its frame
+                    if let currentScreen = window.snapScreen() {
+                        // Find or create the screen workspace
+                        if let screenIndex = workspace.screens.firstIndex(where: { $0.screen == currentScreen }) {
+                            // Create a new WindowSet for this window on its new screen
+                            let newSet = WindowSet(
+                                layout: windowSet.layout,
+                                windows: [window],
+                                screenID: currentScreen.screenID()
+                            )
+                            workspace.screens[screenIndex].windowSets.append(newSet)
+                            
+                            log("✅ Remapped window '\(window.title() ?? "<untitled>")' to screen \(currentScreen.screenID() ?? "unknown")")
+                            
+                            // Expand the window if auto-expand is enabled
+                            if shouldAutoExpandNewWindows() {
+                                newSet.expandWindows(on: currentScreen, bringToFront: false)
+                            }
+                        }
+                    } else {
+                        log("⚠️ Could not determine screen for window '\(window.title() ?? "<untitled>")'")
+                    }
+                }
+            }
+        }
+        
+        // Refresh all existing windows to ensure proper positioning
+        for screenWS in workspace.screens {
+            for windowSet in screenWS.windowSets {
+                // Verify the windowSet's screenID matches the current screen
+                if windowSet.screenID != screenWS.screen.screenID() {
+                    log("🔧 Updating WindowSet screen ID from \(windowSet.screenID ?? "nil") to \(screenWS.screen.screenID() ?? "nil")")
+                    windowSet.screenID = screenWS.screen.screenID()
+                }
+                
+                // Re-expand windows to ensure proper positioning
+                if shouldAutoExpandNewWindows() {
+                    windowSet.expandWindows(on: screenWS.screen, bringToFront: false)
+                }
+            }
+        }
+        
+        log("✅ Screen remapping complete")
+    }
+    
     @objc private func applicationDidLaunch(_ notification: Notification) {
         guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
             return
@@ -1512,6 +1607,7 @@ class SimpleWindowManager: WindowManaging {
     
     deinit {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
         
         // Clean up all application observers
         for (_, observer) in applicationObservers {
