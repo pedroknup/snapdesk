@@ -40,6 +40,17 @@ protocol WindowManaging: AnyObject {
     func expandCurrentLayout()
     func focusApp(_ bundleID: String)
     func addWindowToLayout(_ bundleID: String)
+    
+    // Window positioning commands
+    func positionWindowLeft()
+    func positionWindowRight()
+    func positionWindowTop()
+    func positionWindowBottom()
+    func positionWindowTopLeft()
+    func positionWindowTopRight()
+    func positionWindowBottomLeft()
+    func positionWindowBottomRight()
+    func positionWindowCenter()
 }
 
 // Static storage for the active HotkeyManager instance (outside generic class)
@@ -137,6 +148,52 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         constructCommandWithCommandKey("expand-current-layout") { [weak self] in
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.expandCurrentLayout()
+        }
+        
+        // Window positioning shortcuts
+        constructCommandWithCommandKey("position-window-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowLeft()
+        }
+        
+        constructCommandWithCommandKey("position-window-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowRight()
+        }
+        
+        constructCommandWithCommandKey("position-window-top") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowTop()
+        }
+        
+        constructCommandWithCommandKey("position-window-bottom") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowBottom()
+        }
+        
+        constructCommandWithCommandKey("position-window-top-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowTopLeft()
+        }
+        
+        constructCommandWithCommandKey("position-window-top-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowTopRight()
+        }
+        
+        constructCommandWithCommandKey("position-window-bottom-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowBottomLeft()
+        }
+        
+        constructCommandWithCommandKey("position-window-bottom-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowBottomRight()
+        }
+        
+        constructCommandWithCommandKey("position-window-center") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.positionWindowCenter()
         }
         
         // Setup app shortcuts - we'll need to handle these dynamically
@@ -318,7 +375,16 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             "throw-to-current-layout": "Throw app to current layout modifier",
             "increase-main-panel-size": "Increase main panel size",
             "decrease-main-panel-size": "Decrease main panel size",
-            "expand-current-layout": "Expand Windows"
+            "expand-current-layout": "Expand Windows",
+            "position-window-left": "Position Window Left",
+            "position-window-right": "Position Window Right",
+            "position-window-top": "Position Window Top",
+            "position-window-bottom": "Position Window Bottom",
+            "position-window-top-left": "Position Window Top Left",
+            "position-window-top-right": "Position Window Top Right",
+            "position-window-bottom-left": "Position Window Bottom Left",
+            "position-window-bottom-right": "Position Window Bottom Right",
+            "position-window-center": "Position Window Center"
         ]
     }
     

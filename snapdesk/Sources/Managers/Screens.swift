@@ -59,7 +59,7 @@ extension WindowManager {
             guard let focusedWindow = Window.currentlyFocused() else {
                 return nil
             }
-            return screenManagers.first { $0.screen?.screenID() == focusedWindow.screen()?.screenID() }
+            return screenManagers.first { $0.screen?.screenID() == focusedWindow.snapScreen()?.screenID() }
         }
 
         func updateScreens(windowManager: WindowManager) {

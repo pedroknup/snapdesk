@@ -50,7 +50,7 @@ protocol WindowType: Equatable {
     func frame() -> CGRect
 
     /// Returns the screen, if any, that the window is currently on.
-    func screen() -> Screen?
+    func snapScreen() -> Screen?
 
     /**
      Sets the frame of the window with an error threshold for what constitutes a new frame.
@@ -239,7 +239,7 @@ extension AXWindow: WindowType {
         return windowID()
     }
 
-    func screen() -> AMScreen? {
+    func snapScreen() -> AMScreen? {
         let nsScreen: NSScreen? = screen()
         return nsScreen.flatMap { AMScreen(screen: $0) }
     }

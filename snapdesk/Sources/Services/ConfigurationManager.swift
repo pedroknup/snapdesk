@@ -91,7 +91,16 @@ public class ConfigurationManager {
             "Throw app to current layout modifier",
             "Increase main panel size",
             "Decrease main panel size",
-            "Expand Windows"
+            "Expand Windows",
+            "Position Window Left",
+            "Position Window Right", 
+            "Position Window Top",
+            "Position Window Bottom",
+            "Position Window Top Left",
+            "Position Window Top Right",
+            "Position Window Bottom Left",
+            "Position Window Bottom Right",
+            "Position Window Center"
         ]
         
         // Convert to Set for efficient lookup
@@ -136,7 +145,16 @@ public class ConfigurationManager {
             "Throw app to current layout modifier",
             "Increase main panel size",
             "Decrease main panel size",
-            "Expand Windows"
+            "Expand Windows",
+            "Position Window Left",
+            "Position Window Right", 
+            "Position Window Top",
+            "Position Window Bottom",
+            "Position Window Top Left",
+            "Position Window Top Right",
+            "Position Window Bottom Left",
+            "Position Window Bottom Right",
+            "Position Window Center"
         ]
         
         // Convert to Set for efficient lookup

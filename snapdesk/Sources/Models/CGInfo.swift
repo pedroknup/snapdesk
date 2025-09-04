@@ -137,7 +137,7 @@ struct CGSpacesInfo<Window: WindowType> {
     }
 
     static func spacesForFocusedScreen() -> [Space]? {
-        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
+        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.snapScreen() else {
             return nil
         }
 
@@ -169,7 +169,7 @@ struct CGSpacesInfo<Window: WindowType> {
     }
 
     static func currentFocusedSpace() -> Space? {
-        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.screen() else {
+        guard let focusedWindow = Window.currentlyFocused(), let screen = focusedWindow.snapScreen() else {
             return nil
         }
 

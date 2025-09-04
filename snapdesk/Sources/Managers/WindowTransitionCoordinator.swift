@@ -43,7 +43,7 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
     init() {}
 
     func swapFocusedWindowToMain() {
-        guard let focusedWindow = Window.currentlyFocused(), target?.isWindowFloating(focusedWindow) == false, let screen = focusedWindow.screen() else {
+        guard let focusedWindow = Window.currentlyFocused(), target?.isWindowFloating(focusedWindow) == false, let screen = focusedWindow.snapScreen() else {
             return
         }
 
@@ -75,7 +75,7 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
             return
         }
 
-        guard let screen = focusedWindow.screen() else {
+        guard let screen = focusedWindow.snapScreen() else {
             return
         }
 
@@ -94,7 +94,7 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
             return
         }
 
-        guard let screen = focusedWindow.screen() else {
+        guard let screen = focusedWindow.snapScreen() else {
             return
         }
 
@@ -113,7 +113,7 @@ class WindowTransitionCoordinator<Target: WindowTransitionTarget> {
         }
 
         // If the window is already on the screen do nothing.
-        guard let focusedScreen = focusedWindow.screen(), focusedScreen.screenID() != screen.screenID() else {
+        guard let focusedScreen = focusedWindow.snapScreen(), focusedScreen.screenID() != screen.screenID() else {
             return
         }
 
