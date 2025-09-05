@@ -56,7 +56,9 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         hotkeyManager = HotkeyManager(windowManager: windowManager, userConfiguration: userConfiguration)
         
         // Set up hotkeys using the protocol-based pattern
-        hotkeyManager.setUpWithWindowController(windowManager, configuration: userConfiguration)
+        Task {
+            await hotkeyManager.setUpWithWindowController(windowManager, configuration: userConfiguration)
+        }
         
         NSWorkspace.shared.notificationCenter.addObserver(
             self,

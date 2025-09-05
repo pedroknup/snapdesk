@@ -359,6 +359,21 @@ final class WindowSet: Identifiable {
         }
     }
     
+    /// Raises all windows in this WindowSet to bring them to front
+    func raiseAllWindows(excluding excludeWindow: AXWindow? = nil) async {
+        log("📤 Raising all \(windows.count) windows in WindowSet")
+        for window in windows {
+            // Skip the excluded window if specified
+            if let exclude = excludeWindow, window.cgID() == exclude.cgID() {
+               continue
+                }
+            window.raise()
+            window.focus()
+            // Add a tiny delay (10ms) between each window raise to prevent race conditions
+            try? await Task.sleep(nanoseconds: 10_000_000) // 10ms = 10 million nanoseconds
+        }
+    }
+    
     /// Toggle between tall and wide layout types for this WindowSet
     func toggleLayout() {
         let nextLayout: LayoutKind

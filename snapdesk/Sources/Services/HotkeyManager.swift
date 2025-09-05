@@ -38,7 +38,7 @@ protocol WindowManaging: AnyObject {
     func increaseMainPanelSize()
     func decreaseMainPanelSize()
     func expandCurrentLayout()
-    func focusApp(_ bundleID: String)
+    func focusApp(_ bundleID: String) async
     func addWindowToLayout(_ bundleID: String)
     
     // Window positioning commands
@@ -96,7 +96,7 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         HotkeyManagerStorage.activeInstance = self
     }
 
-    func setUpWithWindowController(_ windowManager: WindowManaging, configuration: UserConfiguration) {
+    func setUpWithWindowController(_ windowManager: WindowManaging, configuration: UserConfiguration) async {
         
         // Remove current window from layout
         constructCommandWithCommandKey("remove-current-window-from-layout") { [weak self] in
@@ -197,10 +197,10 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         }
         
         // Setup app shortcuts - we'll need to handle these dynamically
-        setupAppShortcuts()
+        await setupAppShortcuts()
     }
     
-    private func setupAppShortcuts() {
+    private func setupAppShortcuts() async {
         let config = ConfigurationManager.shared.loadConfig() ?? ConfigurationManager.shared.getDefaultConfig()
         
         // Setup app shortcuts
@@ -214,7 +214,9 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             let focusHotKey = HotKey(key: key, modifiers: modifiers)
             focusHotKey.keyDownHandler = { [weak self] in
                 guard !(self?.isRecordingShortcut ?? false) else { return }
-                self?.windowManager.focusApp(appShortcut.bundleIdentifier)
+                Task {
+                    await self?.windowManager.focusApp(appShortcut.bundleIdentifier)
+                }
             }
             hotKeys.append(focusHotKey)
             
@@ -395,6 +397,8 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         hotKeys.removeAll()
         
         // Reload general shortcuts with new Amethyst pattern
-        setUpWithWindowController(windowManager, configuration: userConfiguration)
+        Task {
+            await setUpWithWindowController(windowManager, configuration: userConfiguration)
+        }
     }
 }
