@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Read(/Users/pedroknup/Library/Logs/**)"
+      "Read(/Users/pedroknup/Library/Logs/**)",
+      "Bash(swift build:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
