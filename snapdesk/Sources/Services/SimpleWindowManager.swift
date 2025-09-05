@@ -367,7 +367,7 @@ class SimpleWindowManager: WindowManaging {
     
     // MARK: - App Management
     
-    func focusApp(_ bundleID: String) {
+    func focusApp(_ bundleID: String) async {
         
         guard let (windowSet, targetWindow) = getNextWindowSetToFocus(for: bundleID) else {
             // No windows found - try to launch the app
@@ -379,11 +379,12 @@ class SimpleWindowManager: WindowManaging {
         if shouldAutoExpandNewWindows() {
             windowSet.expandWindows()
         }
+    
+            await windowSet.raiseAllWindows(excluding: targetWindow)
         
         if let targetWindow = targetWindow {
             // First raise the window to ensure it's on top, especially important 
             // when cycling between windows of the same app in a split layout
-            targetWindow.raise()
             // Then focus it
             targetWindow.focus()
             moveCursorToCenter(of: targetWindow)
