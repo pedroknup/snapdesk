@@ -20,15 +20,56 @@ This is a macOS window manager application built with Swift. The main components
 ## Current Features
 
 - Window tracking with automatic observers for app launch/termination
-- App cycling: Multiple invocations of the same app cycle through its windows
-- Layout-based window expansion: Windows automatically arrange according to their WindowSet layout
-- Screen-aware: Each WindowSet knows which screen it belongs to
+- **Per-app cycling**: Repeatedly invoking the same app shortcut cycles through that app’s windows
+- **Split layout preservation**: If a window is in a split layout with another window, that split configuration **must remain unchanged** when any of its windows are focused again (via cycling or other focus actions)
+- Layout-based window expansion: Windows automatically arrange according to their `WindowSet` layout
+- Screen-aware: Each `WindowSet` knows which screen it belongs to
+
+## Behavioral Contracts (Important)
+
+Treat these rules as invariants for cycling, focus, and layout behavior.
+
+### App Cycling
+- Cycling is triggered by pressing the **same shortcut** for the **same app** repeatedly.
+- Cycling iterates through the app’s windows **on the active screen/workspace** in a stable order (MRU or deterministic WindowSet order).
+- Cycling **does not** modify any `WindowSet` layout or pane sizes—it only changes focus.
+
+### Split Layout Preservation
+- If two (or more) windows share a split layout inside a `WindowSet` (e.g., wide/tall two-pane arrangement), that arrangement **must persist** when:
+  - Focusing any window in the split via cycling
+  - Refocusing the app from another app
+  - Expanding/bringing the app forward within the same `WindowSet`
+- Focusing a window inside a split **must not**:
+  - Resize or move either split participant
+  - Collapse the split into fullscreen
+  - Detach a window from its `WindowSet`
+
+### WindowSet & Expansion
+- All `WindowSet`s are created with **individual** windows (not grouped stacks) to enable proper cycling.
+- Expansion/reflow is allowed when **membership or layout type changes** (e.g., a new window enters the set, layout switches to fullscreen), but **not** on mere focus changes within an existing split.
+- `WindowSet.layout ∈ { wide, tall, fullscreen, floating }`. Split preservation applies to `wide` and `tall` configurations.
+
+### Screen Awareness
+- `WorkspaceModel` maintains the **screen → spaces → WindowSets → windows** hierarchy.
+- Cycling and focus target the `WindowSet` on the **active screen** unless explicitly moved.
+
+## Implementation Notes
+
+- Use `NSWorkspace` notifications to track app lifecycle (launch/terminate/activate) and maintain per-app window lists.
+- Use existing `AX+Windows` helpers to focus and bring windows to front **without** reflowing layout.
+- Maintain a per-app, per-screen ordering (MRU or deterministic index) for cycling and update it when a window receives focus.
+- When cycling:
+  1. Resolve the target app’s windows on the active screen.
+  2. Select the next window in order.
+  3. **Focus via AX** without modifying `WindowSet.layout` or pane sizes.
 
 ## Development Notes
 
-- All WindowSets are created with individual windows (not grouped) to enable proper cycling
-- Window expansion happens automatically when focusing apps
-- The system uses NSWorkspace notifications to track app lifecycle events
+- All `WindowSet`s are created with individual windows (not grouped) to enable proper cycling
+- Window expansion happens automatically when focusing apps, but must **respect split preservation**: pure focus changes inside an existing split must not reflow pane sizes
+- The system uses `NSWorkspace` notifications to track app lifecycle events
 - Window positioning uses the AX (Accessibility) API through the existing helper functions
 
-Remember: **NO file creation or deletion** - request these operations via comments instead.
+---
+
+**Remember:** **NO file creation or deletion** — request these operations via comments instead.
