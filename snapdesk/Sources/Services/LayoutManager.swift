@@ -1,0 +1,627 @@
+//
+//  LayoutManager.swift
+//  snapdesk
+//
+//  Created by Pedro Knup on 05/09/2025.
+//
+
+import Foundation
+import AppKit
+
+class LayoutManager {
+    
+    private weak var workspace: WorkspaceModel?
+    
+    init(workspace: WorkspaceModel) {
+        self.workspace = workspace
+    }
+    
+    // MARK: - Layout Management
+    
+    /// Toggles the layout for the given WindowSet
+    func toggleLayout(for windowSet: WindowSet) {
+        log("🔄 Toggling layout for WindowSet with \(windowSet.windows.count) windows")
+        windowSet.toggleLayout()
+    }
+    
+    /// Expands the current layout for the given WindowSet
+    func expandLayout(for windowSet: WindowSet) {
+        log("🔲 Expanding layout for WindowSet")
+        log("📐 Current layout: \(windowSet.layout) for WindowSet with \(windowSet.windows.count) window(s)")
+        
+        // If the layout is floating, change it to wide first
+        if windowSet.layout == .floating {
+            log("🔄 Changing layout from floating to wide before expanding")
+            windowSet.layout = .wide
+        }
+        
+        // Expand the windows in the current WindowSet
+        windowSet.expandWindows()
+        
+        log("✅ Windows expanded according to \(windowSet.layout) layout")
+        
+        // Show floating notification if enabled
+        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+        if showLayoutIndicator {
+            let layoutText = "\(windowSet.layout)".capitalized
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Expanded: \(layoutText)",
+                position: .center,
+                duration: 1.5
+            )
+        }
+    }
+    
+    // MARK: - Panel Size Management
+    
+    /// Increases the main panel size for the given WindowSet
+    func increaseMainPanelSize(for windowSet: WindowSet) {
+        log("⬆️ Increasing main panel size")
+        
+        // Only adjust if there are multiple windows
+        guard windowSet.windows.count > 1 else {
+            log("ℹ️ Cannot adjust main panel size with only one window")
+            return
+        }
+        
+        // Calculate reasonable max based on window count
+        // Allow main panel to take up to 70% of total space
+        let screen = AMScreen.availableScreens.first { $0.screenID() == windowSet.screenID }
+        let screenFrame = screen?.adjustedFrame() ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let dimension = windowSet.layout == .wide ? screenFrame.width : screenFrame.height
+        let maxAdjustment = dimension * 0.7 - (dimension / CGFloat(windowSet.windows.count))
+        
+        // Increase by 40 pixels, but respect the maximum
+        let newAdjustment = min(windowSet.mainPanelSizeAdjustment + 40, maxAdjustment)
+        
+        if newAdjustment == windowSet.mainPanelSizeAdjustment {
+            log("⚠️ Main panel is already at maximum size")
+            showMainPanelSizeNotification(text: "Main Panel: MAX")
+            return
+        }
+        
+        windowSet.mainPanelSizeAdjustment = newAdjustment
+        log("📏 Main panel size adjustment is now: \(windowSet.mainPanelSizeAdjustment)px")
+        
+        // Re-expand windows with the new adjustment
+        windowSet.expandWindows()
+        
+        // Show floating notification if enabled
+        let adjustmentText = windowSet.mainPanelSizeAdjustment >= 0 ? "+\(Int(windowSet.mainPanelSizeAdjustment))" : "\(Int(windowSet.mainPanelSizeAdjustment))"
+        showMainPanelSizeNotification(text: "Main Panel: \(adjustmentText)px")
+    }
+    
+    /// Decreases the main panel size for the given WindowSet
+    func decreaseMainPanelSize(for windowSet: WindowSet) {
+        log("⬇️ Decreasing main panel size")
+        
+        // Only adjust if there are multiple windows
+        guard windowSet.windows.count > 1 else {
+            log("ℹ️ Cannot adjust main panel size with only one window")
+            return
+        }
+        
+        // Calculate reasonable min based on window count
+        // Prevent main panel from being smaller than 30% of equal space
+        let screen = AMScreen.availableScreens.first { $0.screenID() == windowSet.screenID }
+        let screenFrame = screen?.adjustedFrame() ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let dimension = windowSet.layout == .wide ? screenFrame.width : screenFrame.height
+        let equalSpace = dimension / CGFloat(windowSet.windows.count)
+        let minAdjustment = equalSpace * 0.3 - equalSpace // This gives us -70% of equal space
+        
+        // Decrease by 40 pixels, but respect the minimum
+        let newAdjustment = max(windowSet.mainPanelSizeAdjustment - 40, minAdjustment)
+        
+        if newAdjustment == windowSet.mainPanelSizeAdjustment {
+            log("⚠️ Main panel is already at minimum size")
+            showMainPanelSizeNotification(text: "Main Panel: MIN")
+            return
+        }
+        
+        windowSet.mainPanelSizeAdjustment = newAdjustment
+        log("📏 Main panel size adjustment is now: \(windowSet.mainPanelSizeAdjustment)px")
+        
+        // Re-expand windows with the new adjustment
+        windowSet.expandWindows()
+        
+        // Show floating notification if enabled
+        let adjustmentText = windowSet.mainPanelSizeAdjustment >= 0 ? "+\(Int(windowSet.mainPanelSizeAdjustment))" : "\(Int(windowSet.mainPanelSizeAdjustment))"
+        showMainPanelSizeNotification(text: "Main Panel: \(adjustmentText)px")
+    }
+    
+    // MARK: - Window Management
+    
+    /// Adds a window to the current layout from other WindowSets of the same app
+    func addWindowToLayout(currentWindowSet: WindowSet, bundleID: String) {
+        log("➕ Adding window to layout for bundleID: \(bundleID)")
+        guard let workspace = workspace else { return }
+        
+        // Find all WindowSets that contain windows from this bundle
+        let allWindowSets = windowSets(for: bundleID)
+        log("📊 Found \(allWindowSets.count) WindowSets for \(bundleID)")
+        
+        // Find a window from this bundle that's NOT in the current WindowSet
+        var windowToAdd: AXWindow? = nil
+        var sourceWindowSet: WindowSet? = nil
+        
+        for windowSet in allWindowSets {
+            // Skip the current WindowSet
+            if windowSet.id == currentWindowSet.id {
+                continue
+            }
+            
+            // Find windows in this set that belong to the bundle
+            for window in windowSet.windows {
+                guard let app = NSRunningApplication(processIdentifier: window.pid()),
+                      app.bundleIdentifier == bundleID else { continue }
+                
+                // Found a window to add
+                windowToAdd = window
+                sourceWindowSet = windowSet
+                break
+            }
+            
+            if windowToAdd != nil {
+                break
+            }
+        }
+        
+        guard let windowToAdd = windowToAdd else {
+            log("❌ No window found from bundle \(bundleID) outside current WindowSet")
+            return
+        }
+        
+        log("🔄 Adding window '\(windowToAdd.title() ?? "<untitled>")' to current WindowSet")
+        
+        // Add the window to the current WindowSet
+        currentWindowSet.windows.append(windowToAdd)
+        
+        // Remove the window from its original WindowSet and clean up empty sets
+        removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
+        
+        // If the layout is floating, change it to wide for proper tiling
+        if currentWindowSet.layout == .floating {
+            log("🔄 Changing layout from floating to wide for proper window arrangement")
+            currentWindowSet.layout = .wide
+        }
+        
+        // Log the current state before expanding
+        log("📊 Current WindowSet has \(currentWindowSet.windows.count) windows, layout: \(currentWindowSet.layout), screenID: \(currentWindowSet.screenID ?? "nil")")
+        
+        // Expand all windows in the updated WindowSet according to its layout
+        currentWindowSet.expandWindows()
+        
+        // Focus the newly added window
+        windowToAdd.raise()
+        windowToAdd.focus()
+        moveCursorToCenter(of: windowToAdd)
+        
+        log("✅ Successfully added window to layout. WindowSet now has \(currentWindowSet.windows.count) windows")
+    }
+    
+    /// Removes the current window from its layout
+    func removeCurrentWindowFromLayout(currentWindow: AXWindow) -> AXWindow? {
+        log("🗑️ Removing current window from layout")
+        guard let workspace = workspace else { return nil }
+        
+        log("🎯 Removing window from layout: \(currentWindow.title() ?? "<untitled>")")
+        
+        // Find which WindowSet contains the focused window
+        guard let (windowSet, windowIndex, screenIndex) = findWindowSetContaining(currentWindow) else {
+            log("❌ Focused window not found in any WindowSet")
+            return nil
+        }
+        
+        // Check if the WindowSet has more than one window
+        if windowSet.windows.count <= 1 {
+            log("⚠️ WindowSet only has one window - nothing to remove from layout")
+            return nil
+        }
+        
+        log("📤 Removing window from WindowSet with \(windowSet.windows.count) windows")
+        
+        // Determine which window should be focused after removal (the previous one, or first if removing first)
+        let windowToFocusIndex = windowIndex > 0 ? windowIndex - 1 : 0
+        let windowToFocus = windowSet.windows[windowToFocusIndex]
+        
+        // Remove the window from the current WindowSet
+        windowSet.windows.remove(at: windowIndex)
+        
+        // Create a new standalone WindowSet for the removed window
+        guard let nsScreen: NSScreen = currentWindow.screen() else {
+            log("❌ Could not determine screen for window")
+            return nil
+        }
+        
+        let screen = AMScreen(screen: nsScreen)
+        
+        let defaultLayout = getDefaultLayoutMode()
+        let newWindowSet = WindowSet(layout: defaultLayout, windows: [currentWindow], screenID: screen.screenID())
+        
+        // Add the new WindowSet to the appropriate screen workspace
+        if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == screen }) {
+            workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+        }
+        
+        // Expand the original WindowSet (now with one less window) and focus the previous window
+        windowSet.expandWindows()
+        
+        log("✅ Successfully removed window from layout. Original WindowSet now has \(windowSet.windows.count) windows, focused: \(windowToFocus.title() ?? "<untitled>")")
+        
+        return windowToFocus
+    }
+    
+    // MARK: - Window Positioning
+    
+    /// Positions a single window to the specified position
+    func positionSingleWindow(_ window: AXWindow, to position: String) {
+        guard let workspace = workspace else { return }
+        
+        // Find the WindowSet containing this window
+        guard let (windowSet, _, _) = findWindowSetContaining(window) else {
+            log("❌ Window not found in any WindowSet")
+            return
+        }
+        
+        // Check if WindowSet has only one window
+        if windowSet.windows.count > 1 {
+            log("⚠️ Cannot position window - WindowSet has \(windowSet.windows.count) windows")
+            let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+            if showLayoutIndicator {
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "Cannot position: \(windowSet.windows.count) windows in layout",
+                    position: .center,
+                    duration: 2.0
+                )
+            }
+            return
+        }
+        
+        // Change layout to floating
+        if windowSet.layout != .floating {
+            log("🔄 Changing layout to floating for window positioning")
+            windowSet.layout = .floating
+        }
+        
+        // Get the screen frame
+        guard let nsScreen = window.snapScreen()?.screen else {
+            log("❌ Could not determine screen for window")
+            return
+        }
+        let screen = AMScreen(screen: nsScreen)
+        let screenFrame = screen.adjustedFrame()
+        
+        // Calculate the target frame based on position
+        let targetFrame = calculateTargetFrame(for: position, on: screenFrame)
+        
+        // Apply window margin from settings
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
+        let adjustedFrame = CGRect(
+            x: targetFrame.minX + windowMargin,
+            y: targetFrame.minY + windowMargin,
+            width: targetFrame.width - (windowMargin * 2),
+            height: targetFrame.height - (windowMargin * 2)
+        )
+        
+        // Move the window
+        move(window: window.axElementRef, to: adjustedFrame)
+        log("📐 Positioned window to \(position): \(NSStringFromRect(adjustedFrame))")
+        
+        // Show notification
+        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+        if showLayoutIndicator {
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Window: \(position.capitalized)",
+                position: .center,
+                duration: 1.0
+            )
+        }
+    }
+    
+    /// Throws a window to the specified screen
+    func throwWindow(_ window: AXWindow, toScreen screenNumber: Int) {
+        guard let workspace = workspace else { return }
+        
+        // Get available screens (sorted consistently)
+        let screens = AMScreen.availableScreens
+        let screenIndex = screenNumber - 1  // Convert 1-based to 0-based index
+        
+        guard screenIndex >= 0 && screenIndex < screens.count else {
+            let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
+            if showThrowNotifications {
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "Screen \(screenNumber) not available", 
+                    position: .center, 
+                    duration: 2.0
+                )
+            }
+            return
+        }
+        
+        let targetScreen = screens[screenIndex]
+        
+        // Find the current WindowSet containing this window
+        if let (currentWindowSet, windowIndex, _) = findWindowSetContaining(window) {
+            
+            // Remove window from current WindowSet
+            currentWindowSet.windows.remove(at: windowIndex)
+            
+            // Clean up empty WindowSet
+            if currentWindowSet.windows.isEmpty {
+                removeEmptyWindowSet(currentWindowSet)
+            } else {
+                // Re-expand remaining windows in the original WindowSet
+                currentWindowSet.expandWindows()
+            }
+        }
+        
+        // Create a new WindowSet on the target screen with default layout
+        let targetScreenID = targetScreen.screenID()
+        let defaultLayout = getDefaultLayoutMode()
+        let newWindowSet = WindowSet(layout: defaultLayout, windows: [window], screenID: targetScreenID)
+        
+        log("📐 Created new WindowSet with screen ID: \(targetScreenID ?? "nil")")
+        log("📐 Target screen frame: \(NSStringFromRect(targetScreen.adjustedFrame()))")
+        
+        // Add the new WindowSet to the target screen's workspace
+        if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == targetScreen }) {
+            workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+        } else {
+            // Create new screen workspace if it doesn't exist
+            let newScreenWS = ScreenWorkspace(screen: targetScreen, sets: [newWindowSet])
+            workspace.screens.append(newScreenWS)
+        }
+        
+        // Expand the window on the new screen if auto-expand is enabled
+        if shouldAutoExpandNewWindows() {
+            log("📐 Auto-expanding window to fit target screen boundaries with layout: \(defaultLayout)...")
+            newWindowSet.expandWindows()
+        } else {
+            log("📐 Auto-expand disabled, window keeps its current size")
+        }
+        
+        // Double-check: if expandWindows() didn't work, expand manually
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            let currentFrame = window.frame()
+            let targetFrame = targetScreen.adjustedFrame()
+            
+            if !targetFrame.contains(currentFrame) || currentFrame.size != targetFrame.size {
+                log("⚠️ Window not properly expanded, forcing manual expansion")
+                log("📐 Current frame: \(NSStringFromRect(currentFrame))")
+                log("📐 Target frame: \(NSStringFromRect(targetFrame))")
+                
+                // Force expand to full target screen
+                move(window: window.axElementRef, to: targetFrame)
+            }
+        }
+        
+        // Show confirmation if enabled in settings
+        let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
+        if showThrowNotifications {
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Moved to Screen \(screenNumber)", 
+                position: .center, 
+                duration: 1.5
+            )
+        }
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func getDefaultLayoutMode() -> LayoutKind {
+        let defaultLayoutString = UserDefaults.standard.string(forKey: "defaultLayoutMode") ?? "wide"
+        
+        switch defaultLayoutString.lowercased() {
+        case "tall":
+            return .tall
+        case "fullscreen":
+            return .fullscreen
+        case "floating":
+            return .floating
+        default:
+            return .wide
+        }
+    }
+    
+    private func shouldAutoExpandNewWindows() -> Bool {
+        return UserDefaults.standard.object(forKey: "autoExpandNewWindows") as? Bool ?? true
+    }
+    
+    private func showMainPanelSizeNotification(text: String) {
+        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
+        if showLayoutIndicator {
+            FloatingWindowHelper.showFloatingWindow(
+                text: text,
+                position: .center,
+                duration: 1.5
+            )
+        }
+    }
+    
+    private func calculateTargetFrame(for position: String, on screenFrame: CGRect) -> CGRect {
+        let halfWidth = screenFrame.width / 2
+        let halfHeight = screenFrame.height / 2
+        
+        switch position {
+        case "left":
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.minY,
+                width: halfWidth,
+                height: screenFrame.height
+            )
+        case "right":
+            return CGRect(
+                x: screenFrame.minX + halfWidth,
+                y: screenFrame.minY,
+                width: halfWidth,
+                height: screenFrame.height
+            )
+        case "top":
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.minY,
+                width: screenFrame.width,
+                height: halfHeight
+            )
+        case "bottom":
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.minY + halfHeight,
+                width: screenFrame.width,
+                height: halfHeight
+            )
+        case "topLeft":
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.minY,
+                width: halfWidth,
+                height: halfHeight
+            )
+        case "topRight":
+            return CGRect(
+                x: screenFrame.minX + halfWidth,
+                y: screenFrame.minY,
+                width: halfWidth,
+                height: halfHeight
+            )
+        case "bottomLeft":
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.minY + halfHeight,
+                width: halfWidth,
+                height: halfHeight
+            )
+        case "bottomRight":
+            return CGRect(
+                x: screenFrame.minX + halfWidth,
+                y: screenFrame.minY + halfHeight,
+                width: halfWidth,
+                height: halfHeight
+            )
+        case "center":
+            let centerWidth = screenFrame.width * 0.6  // 60% of screen width
+            let centerHeight = screenFrame.height * 0.6  // 60% of screen height
+            return CGRect(
+                x: screenFrame.minX + (screenFrame.width - centerWidth) / 2,
+                y: screenFrame.minY + (screenFrame.height - centerHeight) / 2,
+                width: centerWidth,
+                height: centerHeight
+            )
+        default:
+            log("❌ Unknown position: \(position)")
+            return screenFrame
+        }
+    }
+    
+    private func moveCursorToCenter(of window: AXWindow) {
+        let windowFrame = window.frame()
+        let centerPoint = NSPoint(
+            x: windowFrame.midX,
+            y: windowFrame.midY
+        )
+        
+        log("🖱️ Moving cursor to center of window at \(NSStringFromPoint(centerPoint))")
+        
+        // Create and post mouse move event
+        if let mouseMoveEvent = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .mouseMoved,
+            mouseCursorPosition: centerPoint,
+            mouseButton: .left
+        ) {
+            mouseMoveEvent.flags = CGEventFlags(rawValue: 0)
+            mouseMoveEvent.post(tap: .cghidEventTap)
+        }
+    }
+    
+    /// Finds the WindowSet containing the given window and returns the WindowSet, window index, and screen index
+    private func findWindowSetContaining(_ window: AXWindow) -> (WindowSet, Int, Int)? {
+        guard let workspace = workspace else { return nil }
+        
+        for (screenIndex, screenWS) in workspace.screens.enumerated() {
+            for windowSet in screenWS.windowSets {
+                if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
+                    return (windowSet, windowIndex, screenIndex)
+                }
+            }
+        }
+        return nil
+    }
+    
+    /// Removes an empty WindowSet from the workspace
+    private func removeEmptyWindowSet(_ windowSet: WindowSet) {
+        guard let workspace = workspace else { return }
+        
+        for screenIndex in workspace.screens.indices {
+            if let setIndex = workspace.screens[screenIndex].windowSets.firstIndex(where: { $0.id == windowSet.id }) {
+                workspace.screens[screenIndex].windowSets.remove(at: setIndex)
+                log("🧹 Removed empty WindowSet from screen \(screenIndex)")
+                break
+            }
+        }
+    }
+    
+    /// Removes a window from its original WindowSet and cleans up empty WindowSets
+    private func removeWindowFromOriginalWindowSet(_ window: AXWindow, bundleID: String) {
+        guard let workspace = workspace else { return }
+        
+        for screenIndex in workspace.screens.indices {
+            for windowSetIndex in workspace.screens[screenIndex].windowSets.indices.reversed() {
+                let windowSet = workspace.screens[screenIndex].windowSets[windowSetIndex]
+                
+                // Check if this WindowSet contains the window and belongs to the same app
+                if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
+                    // Remove the window from this WindowSet
+                    windowSet.windows.remove(at: windowIndex)
+                    log("🗑️ Removed window from original WindowSet")
+                    
+                    // If the WindowSet is now empty, remove it entirely
+                    if windowSet.windows.isEmpty {
+                        workspace.screens[screenIndex].windowSets.remove(at: windowSetIndex)
+                        log("🧹 Removed empty WindowSet")
+                    }
+                    return
+                }
+            }
+        }
+    }
+    
+    /// Returns all WindowSets that contain at least one window belonging to the given bundle ID, sorted consistently.
+    private func windowSets(for bundleID: String) -> [WindowSet] {
+        guard let workspace = workspace else { return [] }
+        
+        var matchingSets: [WindowSet] = []
+        var seenWindowIDs: Set<CGWindowID> = []
+
+        for screenWS in workspace.screens {
+            for set in screenWS.windowSets {
+                // Check if this WindowSet contains any windows from the requested bundle
+                let bundleWindows = set.windows.filter { win in
+                    guard let app = NSRunningApplication(processIdentifier: win.pid()) else {
+                        return false
+                    }
+                    return app.bundleIdentifier == bundleID
+                }
+
+                if !bundleWindows.isEmpty {
+                    // Check if this WindowSet contains any new windows we haven't seen
+                    let hasNewWindows = bundleWindows.contains { window in
+                        let windowID = window.cgID()
+                        return !seenWindowIDs.contains(windowID)
+                    }
+                    
+                    if hasNewWindows {
+                        matchingSets.append(set)
+                        // Track the window IDs we've seen
+                        for window in bundleWindows {
+                            seenWindowIDs.insert(window.cgID())
+                        }
+                    }
+                }
+            }
+        }
+
+        return matchingSets
+    }
+}

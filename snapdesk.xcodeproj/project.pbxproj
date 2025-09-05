@@ -52,6 +52,10 @@
 		13972B3C2E5EF9F700588D1B /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3B2E5EF9F600588D1B /* Screens.swift */; };
 		13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3D2E5EFA0700588D1B /* ScreenManager.swift */; };
 		13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3F2E5EFB6C00588D1B /* LogManager.swift */; };
+		13A3EEB32E6B1DB300DA7702 /* Untitled.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB22E6B1DAF00DA7702 /* Untitled.swift */; };
+		13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */; };
+		13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */; };
+		13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */; };
 		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
 		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
@@ -113,6 +117,10 @@
 		13972B3B2E5EF9F600588D1B /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
 		13972B3D2E5EFA0700588D1B /* ScreenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenManager.swift; sourceTree = "<group>"; };
 		13972B3F2E5EFB6C00588D1B /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		13A3EEB22E6B1DAF00DA7702 /* Untitled.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Untitled.swift; sourceTree = "<group>"; };
+		13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLifecycleManager.swift; sourceTree = "<group>"; };
+		13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclingManager.swift; sourceTree = "<group>"; };
+		13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
 		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
@@ -232,6 +240,9 @@
 		135B55102DB6596D00EC05FF /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */,
+				13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */,
+				13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */,
 				13F42D6A2E5F18EF001F7A25 /* SimpleWindowManager.swift */,
 				135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */,
 				135B550D2DB6596D00EC05FF /* HotkeyManager.swift */,
@@ -281,6 +292,7 @@
 		13972B262E5EF6FC00588D1B /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				13A3EEB22E6B1DAF00DA7702 /* Untitled.swift */,
 				13726AE42E65D05F005D42DF /* AppCacheManager.swift */,
 				13972B3F2E5EFB6C00588D1B /* LogManager.swift */,
 				13972B3D2E5EFA0700588D1B /* ScreenManager.swift */,
@@ -424,12 +436,16 @@
 				13F42D5F2E5F0819001F7A25 /* Change.swift in Sources */,
 				13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */,
 				13972B282E5EF70500588D1B /* WindowManager.swift in Sources */,
+				13A3EEB32E6B1DB300DA7702 /* Untitled.swift in Sources */,
 				13972B1A2E5EF30200588D1B /* Space.swift in Sources */,
 				13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */,
 				13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */,
 				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				13858B232E5F680900FD0DB8 /* FloatingWindowHelper.swift in Sources */,
+				13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */,
+				13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */,
+				13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */,
 				13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */,
 				13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
