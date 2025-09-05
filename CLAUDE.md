@@ -17,6 +17,79 @@ This is a macOS window manager application built with Swift. The main components
 - **WorkspaceModel**: Screen and window hierarchy management
 - **AX+Windows**: Accessibility API utilities for window manipulation
 
+## Project Structure
+
+```
+snapdesk/
+├── main.swift                              # App entry point
+├── snapdeskApp.swift                       # SwiftUI app definition
+├── Item.swift                              # Data models
+├── ShortcutRecorderView.swift             # Legacy shortcut UI
+├── ShortcutsTabView.swift                 # Legacy shortcuts tab
+│
+├── Sources/
+│   ├── Categories/
+│   │   └── NSRunningApplication+Manageable.swift  # App manageability extensions
+│   │
+│   ├── Managers/                          # Core management systems
+│   │   ├── AX+Windows.swift              # Accessibility window operations
+│   │   ├── AppCacheManager.swift         # App metadata caching
+│   │   ├── FocusFollowMouseManager.swift # Mouse-based focus management
+│   │   ├── FocusTransitionCoordinator.swift # Focus transition handling
+│   │   ├── LogManager.swift              # Logging system
+│   │   ├── ScreenManager.swift           # Screen management
+│   │   ├── Screens.swift                 # Screen utilities
+│   │   ├── WindowManager.swift           # Window management interface
+│   │   ├── WindowTransitionCoordinator.swift # Window transition handling
+│   │   ├── Windows.swift                 # Window utilities
+│   │   └── Models/                       # Manager-specific models (legacy)
+│   │
+│   ├── Models/                           # Core data models
+│   │   ├── Application.swift             # App representation
+│   │   ├── ApplicationEventHandler.swift # App event handling
+│   │   ├── ApplicationObservation.swift  # App observation
+│   │   ├── CGInfo.swift                  # Core Graphics info
+│   │   ├── Change.swift                  # Change tracking
+│   │   ├── MouseState.swift              # Mouse state tracking
+│   │   ├── PreferencesViewModel.swift    # Settings view model
+│   │   ├── Reliable.swift                # Reliability utilities
+│   │   ├── Screen.swift                  # Screen representation
+│   │   ├── ScreenWorkspace.swift         # Screen workspace model
+│   │   ├── Space.swift                   # Space/desktop model
+│   │   ├── Window.swift                  # Window representation
+│   │   ├── WindowInformation.swift       # Window metadata
+│   │   ├── WindowSet.swift               # **Window layout container**
+│   │   └── WorkspaceModel.swift          # **Screen hierarchy model**
+│   │
+│   ├── Preferences/
+│   │   └── UserConfiguration.swift       # User settings management
+│   │
+│   ├── Services/                         # Application services
+│   │   ├── ConfigurationManager.swift    # Configuration management
+│   │   ├── HotkeyManager.swift          # Hotkey handling
+│   │   ├── SettingsWindowController.swift # Settings window
+│   │   └── SimpleWindowManager.swift     # **Main window manager**
+│   │
+│   ├── Utils/                           # Utilities
+│   │   ├── DebugLogViewer.swift         # Debug log viewer
+│   │   ├── FloatingWindowHelper.swift   # Floating notifications
+│   │   └── ScanWindows.swift            # Window discovery
+│   │
+│   └── VIews/                           # User interface
+│       ├── AboutTabView.swift           # About tab
+│       ├── PreferencesView.swift        # Main preferences view
+│       ├── SettingsTabView.swift        # Settings tab
+│       ├── ShortcutRecorder.swift       # Shortcut recording
+│       ├── ShortcutsTabView.swift       # Shortcuts tab
+│       └── WindowDebugTest.swift        # Window debugging UI
+│
+└── Assets.xcassets/                     # App resources
+    ├── AccentColor.colorset
+    ├── AppIcon.appiconset
+    ├── snapdesk-logo.imageset
+    └── snapdesk-status-bar-icon.imageset
+```
+
 ## Current Features
 
 - Window tracking with automatic observers for app launch/termination
