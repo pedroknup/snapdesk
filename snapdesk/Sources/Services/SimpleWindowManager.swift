@@ -30,6 +30,9 @@ class SimpleWindowManager: WindowManaging {
     private var currentFocusedWindowSetID: UUID?
     private var currentWindowIndexInActiveSet: Int = 0
     
+    // Flag to track when we're programmatically focusing an app via hotkey
+    private var isProgrammaticFocus: Bool = false
+    
     private var workspace: WorkspaceModel
 
     /// Gets the default layout mode from settings
@@ -369,9 +372,13 @@ class SimpleWindowManager: WindowManaging {
     
     func focusApp(_ bundleID: String) async {
         
+        // Set flag to indicate we're programmatically focusing
+        isProgrammaticFocus = true
+        
         guard let (windowSet, targetWindow) = getNextWindowSetToFocus(for: bundleID) else {
             // No windows found - try to launch the app
             launchApp(bundleID: bundleID)
+            isProgrammaticFocus = false
             return
         }
         
@@ -385,9 +392,15 @@ class SimpleWindowManager: WindowManaging {
         if let targetWindow = targetWindow {
             // First raise the window to ensure it's on top, especially important 
             // when cycling between windows of the same app in a split layout
+            targetWindow.raise()
             // Then focus it
             targetWindow.focus()
             moveCursorToCenter(of: targetWindow)
+        }
+        
+        // Reset the flag after a short delay to allow the focus events to fire
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isProgrammaticFocus = false
         }
     }
     
@@ -396,7 +409,6 @@ class SimpleWindowManager: WindowManaging {
     /// - Returns: A tuple containing the WindowSet to focus and the target window, or nil if no windows exist
     private func getNextWindowSetToFocus(for bundleID: String) -> (WindowSet, AXWindow?)? {
         let windowSets = windowSets(for: bundleID)
-        log("Found \(windowSets.count) WindowSets for \(bundleID)")
         
         guard !windowSets.isEmpty else {
             return nil
@@ -410,13 +422,11 @@ class SimpleWindowManager: WindowManaging {
             windowIndexWithinSet = 0
             currentFocusedWindowSetID = nil
             currentWindowIndexInActiveSet = 0
-            log("🔄 Starting new cycle for \(bundleID) - available WindowSets: \(windowSets.count)")
         } else {
             // Continue cycling through the same app
-            // Ensure bundleIDCycleIndex is within bounds
+                // Ensure bundleIDCycleIndex is within bounds
             if bundleIDCycleIndex >= windowSets.count {
                 bundleIDCycleIndex = 0
-                log("⚠️ bundleIDCycleIndex was out of bounds, resetting to 0")
             }
             
             let currentSet = windowSets[bundleIDCycleIndex]
@@ -425,24 +435,47 @@ class SimpleWindowManager: WindowManaging {
                 return app.bundleIdentifier == bundleID
             }
             
-            // Check if we're still in the same WindowSet and have more windows to cycle through
-            if currentFocusedWindowSetID == currentSet.id && bundleWindowsInCurrentSet.count > 1 {
-                // Cycle to next window within the same WindowSet
-                currentWindowIndexInActiveSet = (currentWindowIndexInActiveSet + 1) % bundleWindowsInCurrentSet.count
-                log("🔄 Cycling to window \(currentWindowIndexInActiveSet) within WindowSet (has \(bundleWindowsInCurrentSet.count) windows)")
+            // Check if we need to move to the next window or WindowSet
+            
+            if currentFocusedWindowSetID == currentSet.id {
+                // We're trying to cycle within the same WindowSet
+                if bundleWindowsInCurrentSet.count > 1 {
+                    // Multiple windows from this app in the set
+                    let nextWindowIndex = currentWindowIndexInActiveSet + 1
+                    if nextWindowIndex < bundleWindowsInCurrentSet.count {
+                        // Move to next window within the same WindowSet
+                        currentWindowIndexInActiveSet = nextWindowIndex
+                    } else {
+                        // We've reached the end of windows in this WindowSet, move to next WindowSet
+                        bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+                        windowIndexWithinSet = 0
+                        currentWindowIndexInActiveSet = 0
+                        currentFocusedWindowSetID = nil // Reset so we start fresh in the new WindowSet
+                    }
+                } else if bundleWindowsInCurrentSet.count == 1 {
+                    // Only one window from this app in the set
+                    // Check if we have more than one WindowSet with this app
+                    if windowSets.count > 1 {
+                        // Move to the next WindowSet that contains this app
+                        bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
+                        windowIndexWithinSet = 0
+                        currentWindowIndexInActiveSet = 0
+                    } else {
+                        // Only one WindowSet and only one window - stay on current window
+                        // Don't change anything, will re-focus the same window
+                    }
+                }
             } else {
-                // Move to next WindowSet
+                // Not in the same WindowSet, move to next WindowSet
                 bundleIDCycleIndex = (bundleIDCycleIndex + 1) % windowSets.count
                 windowIndexWithinSet = 0
                 currentWindowIndexInActiveSet = 0
-                log("🔄 Moving to next WindowSet \(bundleIDCycleIndex) for \(bundleID)")
             }
         }
         
         // Ensure bundleIDCycleIndex is still within bounds before final access
         if bundleIDCycleIndex >= windowSets.count {
             bundleIDCycleIndex = 0
-            log("⚠️ bundleIDCycleIndex was out of bounds at final access, resetting to 0")
         }
         
         let currentSet = windowSets[bundleIDCycleIndex]
@@ -453,25 +486,26 @@ class SimpleWindowManager: WindowManaging {
             return app.bundleIdentifier == bundleID
         }
         
-        log("📊 WindowSet \(bundleIDCycleIndex) has \(currentSet.windows.count) total windows, \(bundleWindowsInSet.count) from bundle \(bundleID)")
         
         // Use the new cycling index for window selection
         let targetWindow: AXWindow?
         if currentFocusedWindowSetID == currentSet.id && bundleWindowsInSet.count > currentWindowIndexInActiveSet {
+            // We're continuing to cycle within the same WindowSet
             targetWindow = bundleWindowsInSet[currentWindowIndexInActiveSet]
         } else {
+            // First time focusing this WindowSet or starting fresh
             targetWindow = bundleWindowsInSet.first
-            currentWindowIndexInActiveSet = 0
+            // Find the actual index of this window in the bundle's windows
+            if let target = targetWindow,
+               let actualIndex = bundleWindowsInSet.firstIndex(where: { $0.cgID() == target.cgID() }) {
+                currentWindowIndexInActiveSet = actualIndex
+            } else {
+                currentWindowIndexInActiveSet = 0
+            }
         }
         
         // Update the focused WindowSet ID
         currentFocusedWindowSetID = currentSet.id
-        
-        if let targetWindow = targetWindow {
-            
-        } else {
-            log("❌ No target window found in WindowSet \(bundleIDCycleIndex) for bundle \(bundleID)")
-        }
         
         // Store the current WindowSet for potential use in addWindowToLayout
         currentWindowSet = currentSet
@@ -1310,7 +1344,12 @@ class SimpleWindowManager: WindowManaging {
         
         log("🎯 Application activated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
         
-        // Reset cycling if a different app was activated manually
+        // Don't reset cycling if we're programmatically focusing via hotkey
+        if isProgrammaticFocus {
+            return
+        }
+        
+        // Reset cycling if a different app was activated manually (not via our hotkey)
         if let bundleID = app.bundleIdentifier, bundleID != currentBundleIDCycling {
             currentBundleIDCycling = nil
             bundleIDCycleIndex = 0
@@ -1383,12 +1422,22 @@ class SimpleWindowManager: WindowManaging {
                             if let setIndex = windowSets.firstIndex(where: { $0.id == windowSet.id }) {
                                 bundleIDCycleIndex = setIndex
                                 
-                                // Find the window index within the WindowSet
-                                if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == axWindow.cgID() }) {
+                                // Find the window index within the bundle's windows in this WindowSet
+                                let bundleWindowsInSet = windowSet.windows.filter { win in
+                                    guard let app = NSRunningApplication(processIdentifier: win.pid()) else { return false }
+                                    return app.bundleIdentifier == bundleID
+                                }
+                                
+                                if let windowIndex = bundleWindowsInSet.firstIndex(where: { $0.cgID() == axWindow.cgID() }) {
+                                    currentWindowIndexInActiveSet = windowIndex
                                     windowIndexWithinSet = windowIndex
                                 } else {
+                                    currentWindowIndexInActiveSet = 0
                                     windowIndexWithinSet = 0
                                 }
+                                
+                                // Update the focused WindowSet ID
+                                currentFocusedWindowSetID = windowSet.id
                             }
                         }
                         
@@ -1438,7 +1487,7 @@ class SimpleWindowManager: WindowManaging {
 
         for screenWS in workspace.screens {
             for set in screenWS.windowSets {
-                // Filter windows in this set to only those belonging to the requested bundle
+                // Check if this WindowSet contains any windows from the requested bundle
                 let bundleWindows = set.windows.filter { win in
                     guard let app = NSRunningApplication(processIdentifier: win.pid()) else {
                         return false
@@ -1446,33 +1495,24 @@ class SimpleWindowManager: WindowManaging {
                     return app.bundleIdentifier == bundleID
                 }
 
-                // Only include WindowSets that have windows from this bundle that we haven't seen before
-                let uniqueBundleWindows = bundleWindows.filter { window in
-                    let windowID = window.cgID()
-                    if seenWindowIDs.contains(windowID) {
-                        return false // Skip duplicate window
+                if !bundleWindows.isEmpty {
+                    // Check if this WindowSet contains any new windows we haven't seen
+                    let hasNewWindows = bundleWindows.contains { window in
+                        let windowID = window.cgID()
+                        return !seenWindowIDs.contains(windowID)
                     }
-                    seenWindowIDs.insert(windowID)
-                    return true
-                }
-
-                if !uniqueBundleWindows.isEmpty {
-                    matchingSets.append(set)
+                    
+                    if hasNewWindows {
+                        matchingSets.append(set)
+                        // Track the window IDs we've seen
+                        for window in bundleWindows {
+                            seenWindowIDs.insert(window.cgID())
+                        }
+                    }
                 }
             }
         }
 
-        log("🔍 Found \(matchingSets.count) WindowSets containing windows for \(bundleID)")
-        
-        // Debug: Show details of each WindowSet found
-        for (index, set) in matchingSets.enumerated() {
-            let bundleWindows = set.windows.filter { win in
-                guard let app = NSRunningApplication(processIdentifier: win.pid()) else { return false }
-                return app.bundleIdentifier == bundleID
-            }
-            let windowTitles = bundleWindows.map { $0.title() ?? "<untitled>" }.joined(separator: ", ")
-            log("  WindowSet \(index): \(bundleWindows.count) \(bundleID) windows - [\(windowTitles)]")
-        }
         
         return matchingSets
     }
