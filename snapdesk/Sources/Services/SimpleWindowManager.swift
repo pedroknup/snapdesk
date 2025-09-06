@@ -35,6 +35,7 @@ class SimpleWindowManager: WindowManaging {
         let discovered = scanWindows()
         let defaultLayout = getDefaultLayoutMode()
         
+        
         for (win, screen) in discovered {
             if let idx = workspace.screens.firstIndex(where: { $0.screen == screen }) {
                 // Create a fresh WindowSet with the default layout
@@ -114,8 +115,9 @@ class SimpleWindowManager: WindowManaging {
             moveCursorToCenter(of: targetWindow)
         }
         
-        // Reset the flag after a short delay to allow the focus events to fire
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        // Reset the flag after a longer delay to allow the focus events to fire,
+        // especially important for cross-screen window transitions which take longer
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.appLifecycleManager.setProgrammaticFocus(false)
         }
     }
@@ -558,12 +560,11 @@ extension SimpleWindowManager: AppLifecycleDelegate {
     
     func windowDidCreate(_ window: AXWindow, for app: NSRunningApplication) {
         // Find the appropriate screen for this window
-        guard let nsScreen: NSScreen = window.screen() else {
+        guard let amScreen: AMScreen = window.snapScreen() else {
             log("❌ Could not determine screen for new window")
             return
         }
         
-        let amScreen = AMScreen(screen: nsScreen)
         
         // Find or create screen workspace
         var screenWS: ScreenWorkspace

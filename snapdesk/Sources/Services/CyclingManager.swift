@@ -39,8 +39,10 @@ class CyclingManager {
         let windowSets = windowSets(for: bundleID, in: delegate.workspace)
         
         guard !windowSets.isEmpty else {
+            log("❌ No WindowSets found for bundle ID: \(bundleID)")
             return nil
         }
+        
         
         // Check if we're cycling through the same app
         if currentBundleIDCycling != bundleID {
@@ -136,6 +138,7 @@ class CyclingManager {
         // Store the current WindowSet for potential use in addWindowToLayout
         currentWindowSet = currentSet
         
+        
         return (currentSet, targetWindow)
     }
     
@@ -148,6 +151,7 @@ class CyclingManager {
         for screenWS in workspace.screens {
             for windowSet in screenWS.windowSets {
                 if windowSet.windows.contains(where: { $0.cgID() == window.cgID() }) {
+                                
                     // Update currentWindowSet if it's different
                     if currentWindowSet?.id != windowSet.id {
                         currentWindowSet = windowSet
@@ -228,8 +232,8 @@ class CyclingManager {
         var matchingSets: [WindowSet] = []
         var seenWindowIDs: Set<CGWindowID> = []
 
-        for screenWS in workspace.screens {
-            for set in screenWS.windowSets {
+        for (screenIndex, screenWS) in workspace.screens.enumerated() {
+            for (setIndex, set) in screenWS.windowSets.enumerated() {
                 // Check if this WindowSet contains any windows from the requested bundle
                 let bundleWindows = set.windows.filter { win in
                     guard let app = NSRunningApplication(processIdentifier: win.pid()) else {
