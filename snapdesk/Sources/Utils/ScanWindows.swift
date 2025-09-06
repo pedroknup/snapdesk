@@ -16,8 +16,10 @@ func scanWindows() -> [(window: AXWindow, screen: AMScreen)] {
 
     let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
     guard let cgWindows = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: AnyObject]] else {
+        log("❌ Failed to get window list from CGWindowListCopyWindowInfo")
         return results
     }
+    
 
     for info in cgWindows {
         guard
@@ -37,11 +39,35 @@ func scanWindows() -> [(window: AXWindow, screen: AMScreen)] {
         let siWindows = app.snapWindows()
 
         for siWin in siWindows {
-            if let axWin = AXWindow(element: siWin),
-               axWin.shouldBeManaged(),
-               axWin.frame().intersects(bounds),
-               let screen = AMScreen.availableScreens.first(where: { $0.frame().intersects(bounds) }) {
-                results.append((axWin, screen))
+            if let axWin = AXWindow(element: siWin) {
+                let windowFrame = axWin.frame()
+                let shouldManage = axWin.shouldBeManaged()
+                let frameIntersects = windowFrame.intersects(bounds)
+                // Try to find screen by bounds intersection first
+                var screen = AMScreen.availableScreens.first(where: { $0.frame().intersects(bounds) })
+                
+                // If no screen found by intersection, try to find the closest screen by center point
+                if screen == nil {
+                    let windowCenter = CGPoint(x: bounds.midX, y: bounds.midY)
+                    var closestScreen: AMScreen?
+                    var closestDistance: CGFloat = .greatestFiniteMagnitude
+                    
+                    for candidateScreen in AMScreen.availableScreens {
+                        let screenFrame = candidateScreen.frame()
+                        let screenCenter = CGPoint(x: screenFrame.midX, y: screenFrame.midY)
+                        let distance = sqrt(pow(windowCenter.x - screenCenter.x, 2) + pow(windowCenter.y - screenCenter.y, 2))
+                        
+                        if distance < closestDistance {
+                            closestDistance = distance
+                            closestScreen = candidateScreen
+                        }
+                    }
+                    screen = closestScreen
+                }
+                
+                if shouldManage && frameIntersects, let screen = screen {
+                    results.append((axWin, screen))
+                }
             }
         }
 
