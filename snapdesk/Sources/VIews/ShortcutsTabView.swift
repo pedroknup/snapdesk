@@ -100,6 +100,7 @@ struct ShortcutsTabView: View {
             .cornerRadius(8)
             .padding(.horizontal)
             .padding(.top, 8)
+            .padding(.bottom, 8)
             
             // Main content
             List {

@@ -8,12 +8,16 @@
 import Foundation
 import AppKit
 
+protocol LayoutManagerDelegate: AnyObject {
+    var workspace: WorkspaceModel { get set }
+}
+
 class LayoutManager {
     
-    private weak var workspace: WorkspaceModel?
+    private weak var delegate: LayoutManagerDelegate?
     
-    init(workspace: WorkspaceModel) {
-        self.workspace = workspace
+    init(delegate: LayoutManagerDelegate) {
+        self.delegate = delegate
     }
     
     // MARK: - Layout Management
@@ -134,7 +138,6 @@ class LayoutManager {
     /// Adds a window to the current layout from other WindowSets of the same app
     func addWindowToLayout(currentWindowSet: WindowSet, bundleID: String) {
         log("➕ Adding window to layout for bundleID: \(bundleID)")
-        guard let workspace = workspace else { return }
         
         // Find all WindowSets that contain windows from this bundle
         let allWindowSets = windowSets(for: bundleID)
@@ -202,7 +205,6 @@ class LayoutManager {
     /// Removes the current window from its layout
     func removeCurrentWindowFromLayout(currentWindow: AXWindow) -> AXWindow? {
         log("🗑️ Removing current window from layout")
-        guard let workspace = workspace else { return nil }
         
         log("🎯 Removing window from layout: \(currentWindow.title() ?? "<untitled>")")
         
@@ -239,8 +241,9 @@ class LayoutManager {
         let newWindowSet = WindowSet(layout: defaultLayout, windows: [currentWindow], screenID: screen.screenID())
         
         // Add the new WindowSet to the appropriate screen workspace
-        if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == screen }) {
-            workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+        guard let delegate = delegate else { return nil }
+        if let screenWSIndex = delegate.workspace.screens.firstIndex(where: { $0.screen == screen }) {
+            delegate.workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
         }
         
         // Expand the original WindowSet (now with one less window) and focus the previous window
@@ -255,7 +258,6 @@ class LayoutManager {
     
     /// Positions a single window to the specified position
     func positionSingleWindow(_ window: AXWindow, to position: String) {
-        guard let workspace = workspace else { return }
         
         // Find the WindowSet containing this window
         guard let (windowSet, _, _) = findWindowSetContaining(window) else {
@@ -320,7 +322,6 @@ class LayoutManager {
     
     /// Throws a window to the specified screen
     func throwWindow(_ window: AXWindow, toScreen screenNumber: Int) {
-        guard let workspace = workspace else { return }
         
         // Get available screens (sorted consistently)
         let screens = AMScreen.availableScreens
@@ -364,12 +365,13 @@ class LayoutManager {
         log("📐 Target screen frame: \(NSStringFromRect(targetScreen.adjustedFrame()))")
         
         // Add the new WindowSet to the target screen's workspace
-        if let screenWSIndex = workspace.screens.firstIndex(where: { $0.screen == targetScreen }) {
-            workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
+        guard let delegate = delegate else { return }
+        if let screenWSIndex = delegate.workspace.screens.firstIndex(where: { $0.screen == targetScreen }) {
+            delegate.workspace.screens[screenWSIndex].windowSets.append(newWindowSet)
         } else {
             // Create new screen workspace if it doesn't exist
             let newScreenWS = ScreenWorkspace(screen: targetScreen, sets: [newWindowSet])
-            workspace.screens.append(newScreenWS)
+            delegate.workspace.screens.append(newScreenWS)
         }
         
         // Expand the window on the new screen if auto-expand is enabled
@@ -537,9 +539,9 @@ class LayoutManager {
     
     /// Finds the WindowSet containing the given window and returns the WindowSet, window index, and screen index
     private func findWindowSetContaining(_ window: AXWindow) -> (WindowSet, Int, Int)? {
-        guard let workspace = workspace else { return nil }
+        guard let delegate = delegate else { return nil }
         
-        for (screenIndex, screenWS) in workspace.screens.enumerated() {
+        for (screenIndex, screenWS) in delegate.workspace.screens.enumerated() {
             for windowSet in screenWS.windowSets {
                 if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
                     return (windowSet, windowIndex, screenIndex)
@@ -551,11 +553,11 @@ class LayoutManager {
     
     /// Removes an empty WindowSet from the workspace
     private func removeEmptyWindowSet(_ windowSet: WindowSet) {
-        guard let workspace = workspace else { return }
+        guard let delegate = delegate else { return }
         
-        for screenIndex in workspace.screens.indices {
-            if let setIndex = workspace.screens[screenIndex].windowSets.firstIndex(where: { $0.id == windowSet.id }) {
-                workspace.screens[screenIndex].windowSets.remove(at: setIndex)
+        for screenIndex in delegate.workspace.screens.indices {
+            if let setIndex = delegate.workspace.screens[screenIndex].windowSets.firstIndex(where: { $0.id == windowSet.id }) {
+                delegate.workspace.screens[screenIndex].windowSets.remove(at: setIndex)
                 log("🧹 Removed empty WindowSet from screen \(screenIndex)")
                 break
             }
@@ -564,11 +566,11 @@ class LayoutManager {
     
     /// Removes a window from its original WindowSet and cleans up empty WindowSets
     private func removeWindowFromOriginalWindowSet(_ window: AXWindow, bundleID: String) {
-        guard let workspace = workspace else { return }
+        guard let delegate = delegate else { return }
         
-        for screenIndex in workspace.screens.indices {
-            for windowSetIndex in workspace.screens[screenIndex].windowSets.indices.reversed() {
-                let windowSet = workspace.screens[screenIndex].windowSets[windowSetIndex]
+        for screenIndex in delegate.workspace.screens.indices {
+            for windowSetIndex in delegate.workspace.screens[screenIndex].windowSets.indices.reversed() {
+                let windowSet = delegate.workspace.screens[screenIndex].windowSets[windowSetIndex]
                 
                 // Check if this WindowSet contains the window and belongs to the same app
                 if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
@@ -578,7 +580,7 @@ class LayoutManager {
                     
                     // If the WindowSet is now empty, remove it entirely
                     if windowSet.windows.isEmpty {
-                        workspace.screens[screenIndex].windowSets.remove(at: windowSetIndex)
+                        delegate.workspace.screens[screenIndex].windowSets.remove(at: windowSetIndex)
                         log("🧹 Removed empty WindowSet")
                     }
                     return
@@ -589,12 +591,12 @@ class LayoutManager {
     
     /// Returns all WindowSets that contain at least one window belonging to the given bundle ID, sorted consistently.
     private func windowSets(for bundleID: String) -> [WindowSet] {
-        guard let workspace = workspace else { return [] }
+        guard let delegate = delegate else { return [] }
         
         var matchingSets: [WindowSet] = []
         var seenWindowIDs: Set<CGWindowID> = []
 
-        for screenWS in workspace.screens {
+        for screenWS in delegate.workspace.screens {
             for set in screenWS.windowSets {
                 // Check if this WindowSet contains any windows from the requested bundle
                 let bundleWindows = set.windows.filter { win in

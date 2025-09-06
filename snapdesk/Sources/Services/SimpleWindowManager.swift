@@ -10,11 +10,11 @@ import AppKit
 
 class SimpleWindowManager: WindowManaging {
     
-    private var workspace: WorkspaceModel
+    var workspace: WorkspaceModel
     
     // Managers
-    private var cyclingManager: CyclingManager
-    private var layoutManager: LayoutManager
+    private var cyclingManager: CyclingManager!
+    private var layoutManager: LayoutManager!
     private var appLifecycleManager: AppLifecycleManager
     
     init() {
@@ -22,10 +22,12 @@ class SimpleWindowManager: WindowManaging {
         var ws = snapdesk.WorkspaceModel()
         self.workspace = ws
         
-        // Initialize managers
-        self.cyclingManager = CyclingManager(workspace: ws)
-        self.layoutManager = LayoutManager(workspace: ws)
+        // Initialize app lifecycle manager first since it doesn't depend on delegates
         self.appLifecycleManager = AppLifecycleManager()
+        
+        // Now that self is initialized, create the managers with delegate pattern
+        self.cyclingManager = CyclingManager(delegate: self)
+        self.layoutManager = LayoutManager(delegate: self)
         
         // Set ourselves as the delegate for app lifecycle events
         self.appLifecycleManager.delegate = self
@@ -521,6 +523,12 @@ class SimpleWindowManager: WindowManaging {
     }
 }
 
+// MARK: - Delegate Conformances
+
+extension SimpleWindowManager: CyclingManagerDelegate, LayoutManagerDelegate {
+    // Both protocols require workspace property which is already implemented
+}
+
 // MARK: - AppLifecycleDelegate Implementation
 
 extension SimpleWindowManager: AppLifecycleDelegate {
@@ -676,6 +684,6 @@ extension SimpleWindowManager: AppLifecycleDelegate {
         guard let focusedWindow = frontmostWindow() else { return }
         let axWindow = AXWindow(axElement: focusedWindow)
         
-        cyclingManager.updateCyclingStateFromFocus(window: axWindow, in: workspace)
+        cyclingManager.updateCyclingStateFromFocus(window: axWindow)
     }
 }
