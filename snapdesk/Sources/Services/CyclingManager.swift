@@ -8,6 +8,10 @@
 import Foundation
 import AppKit
 
+protocol CyclingManagerDelegate: AnyObject {
+    var workspace: WorkspaceModel { get }
+}
+
 class CyclingManager {
     
     private var currentBundleIDCycling: String?
@@ -19,10 +23,10 @@ class CyclingManager {
     private var currentFocusedWindowSetID: UUID?
     private var currentWindowIndexInActiveSet: Int = 0
     
-    private weak var workspace: WorkspaceModel?
+    private weak var delegate: CyclingManagerDelegate?
     
-    init(workspace: WorkspaceModel) {
-        self.workspace = workspace
+    init(delegate: CyclingManagerDelegate) {
+        self.delegate = delegate
     }
     
     // MARK: - Public Interface
@@ -31,8 +35,8 @@ class CyclingManager {
     /// - Parameter bundleID: The bundle identifier of the app
     /// - Returns: A tuple containing the WindowSet to focus and the target window, or nil if no windows exist
     func getNextWindowSetToFocus(for bundleID: String) -> (WindowSet, AXWindow?)? {
-        guard let workspace = workspace else { return nil }
-        let windowSets = windowSets(for: bundleID, in: workspace)
+        guard let delegate = delegate else { return nil }
+        let windowSets = windowSets(for: bundleID, in: delegate.workspace)
         
         guard !windowSets.isEmpty else {
             return nil
@@ -136,7 +140,10 @@ class CyclingManager {
     }
     
     /// Updates cycling state when focus changes externally (not via cycling)
-    func updateCyclingStateFromFocus(window: AXWindow, in workspace: WorkspaceModel) {
+    func updateCyclingStateFromFocus(window: AXWindow) {
+        guard let delegate = delegate else { return }
+        let workspace = delegate.workspace
+        
         // Find which WindowSet contains this focused window
         for screenWS in workspace.screens {
             for windowSet in screenWS.windowSets {
