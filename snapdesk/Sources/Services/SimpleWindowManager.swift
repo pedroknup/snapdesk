@@ -128,6 +128,7 @@ class SimpleWindowManager: WindowManaging {
         // Try to use the current WindowSet from cycling first
         if let currentWindowSet = cyclingManager.getCurrentWindowSet {
             log("🎯 Using current WindowSet from cycling manager")
+            log("📊 Current WindowSet info: \(currentWindowSet.windows.count) windows on screen \(currentWindowSet.screenID ?? "nil")")
             layoutManager.addWindowToLayout(currentWindowSet: currentWindowSet, bundleID: bundleID)
             return
         }
@@ -139,6 +140,7 @@ class SimpleWindowManager: WindowManaging {
         }
         
         let focusedWindow = AXWindow(axElement: focusedWindowElement)
+        log("🎯 Found focused window: '\(focusedWindow.title() ?? "untitled")'")
         
         // Find the WindowSet containing the focused window
         guard let (targetWindowSet, _, _) = findWindowSetContaining(focusedWindow) else {
@@ -147,6 +149,7 @@ class SimpleWindowManager: WindowManaging {
         }
         
         log("🎯 Using WindowSet containing focused window as target")
+        log("📊 Target WindowSet info: \(targetWindowSet.windows.count) windows on screen \(targetWindowSet.screenID ?? "nil")")
         layoutManager.addWindowToLayout(currentWindowSet: targetWindowSet, bundleID: bundleID)
     }
     
