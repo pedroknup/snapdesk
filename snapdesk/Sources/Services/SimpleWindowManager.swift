@@ -125,13 +125,29 @@ class SimpleWindowManager: WindowManaging {
     func addWindowToLayout(_ bundleID: String) {
         log("➕ addWindowToLayout called for bundleID: \(bundleID)")
         
-        // Use the current WindowSet if it exists
-        guard let currentWindowSet = cyclingManager.getCurrentWindowSet else {
-            log("❌ No current WindowSet - focus an app first")
+        // Try to use the current WindowSet from cycling first
+        if let currentWindowSet = cyclingManager.getCurrentWindowSet {
+            log("🎯 Using current WindowSet from cycling manager")
+            layoutManager.addWindowToLayout(currentWindowSet: currentWindowSet, bundleID: bundleID)
             return
         }
         
-        layoutManager.addWindowToLayout(currentWindowSet: currentWindowSet, bundleID: bundleID)
+        // If no current WindowSet from cycling, find the focused window and use its WindowSet as target
+        guard let focusedWindowElement = frontmostWindow() else {
+            log("❌ No focused window found - cannot determine target WindowSet")
+            return
+        }
+        
+        let focusedWindow = AXWindow(axElement: focusedWindowElement)
+        
+        // Find the WindowSet containing the focused window
+        guard let (targetWindowSet, _, _) = findWindowSetContaining(focusedWindow) else {
+            log("❌ Focused window not found in any WindowSet")
+            return
+        }
+        
+        log("🎯 Using WindowSet containing focused window as target")
+        layoutManager.addWindowToLayout(currentWindowSet: targetWindowSet, bundleID: bundleID)
     }
     
     // MARK: - Screen Management
