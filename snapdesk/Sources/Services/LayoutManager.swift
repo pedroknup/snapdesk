@@ -196,7 +196,7 @@ class LayoutManager {
         // Log detailed info about the cross-screen transfer
         let windowCurrentFrame = windowToAdd.frame()
         let windowCurrentScreen = windowToAdd.snapScreen()
-        log("📍 Window current position: \(NSStringFromRect(windowCurrentFrame)) on screen: \(windowCurrentScreen?.screen.screenID() ?? "unknown")")
+        log("📍 Window current position: \(NSStringFromRect(windowCurrentFrame)) on screen: \(windowCurrentScreen?.screenID() ?? "unknown")")
         log("🎯 Target WindowSet is on screen: \(currentWindowSet.screenID ?? "nil")")
         
         // Add the window to the current WindowSet
@@ -206,7 +206,7 @@ class LayoutManager {
         removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
         
         // If the window is on a different screen than the target WindowSet, move it immediately
-        if let windowScreen = windowToAdd.snapScreen()?.screen.screenID(),
+        if let windowScreen = windowToAdd.snapScreen()?.screenID(),
            let targetScreenID = currentWindowSet.screenID,
            windowScreen != targetScreenID {
             log("🔄 Window is on different screen (\(windowScreen)) than target (\(targetScreenID)), moving it...")
@@ -218,14 +218,14 @@ class LayoutManager {
                 move(window: windowToAdd.axElementRef, to: targetFrame)
                 
                 // Small delay to ensure the move completed before expanding
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                     log("🔧 Cross-screen move completed, now expanding windows...")
                     currentWindowSet.expandWindows()
                     
                     // Focus the newly added window after the layout is complete
                     windowToAdd.raise()
                     windowToAdd.focus()
-                    moveCursorToCenter(of: windowToAdd)
+                    self?.moveCursorToCenter(of: windowToAdd)
                     
                     log("✅ Cross-screen window addition completed")
                 }
@@ -253,7 +253,7 @@ class LayoutManager {
         // Verify the window was moved to the correct screen
         let windowNewFrame = windowToAdd.frame()
         let windowNewScreen = windowToAdd.snapScreen()
-        log("📍 Window new position: \(NSStringFromRect(windowNewFrame)) on screen: \(windowNewScreen?.screen.screenID() ?? "unknown")")
+        log("📍 Window new position: \(NSStringFromRect(windowNewFrame)) on screen: \(windowNewScreen?.screenID() ?? "unknown")")
         
         if let targetScreen = AMScreen.availableScreens.first(where: { $0.screenID() == currentWindowSet.screenID }),
            !targetScreen.frame().intersects(windowNewFrame) {
