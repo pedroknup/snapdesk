@@ -138,26 +138,42 @@ class LayoutManager {
     /// Adds a window to the current layout from other WindowSets of the same app
     func addWindowToLayout(currentWindowSet: WindowSet, bundleID: String) {
         log("➕ Adding window to layout for bundleID: \(bundleID)")
+        log("🎯 Current WindowSet: \(currentWindowSet.windows.count) window(s) on screen \(currentWindowSet.screenID ?? "nil")")
         
         // Find all WindowSets that contain windows from this bundle
         let allWindowSets = windowSets(for: bundleID)
         log("📊 Found \(allWindowSets.count) WindowSets for \(bundleID)")
+        
+        // Debug: Log each WindowSet and its screen
+        for (index, windowSet) in allWindowSets.enumerated() {
+            let windowTitles = windowSet.windows.compactMap { $0.title() }.joined(separator: ", ")
+            log("   WindowSet \(index): \(windowSet.windows.count) window(s) on screen \(windowSet.screenID ?? "nil") - [\(windowTitles)]")
+        }
         
         // Find a window from this bundle that's NOT in the current WindowSet
         var windowToAdd: AXWindow? = nil
         var sourceWindowSet: WindowSet? = nil
         
         for windowSet in allWindowSets {
+            log("🔍 Checking WindowSet with ID: \(windowSet.id)")
+            
             // Skip the current WindowSet
             if windowSet.id == currentWindowSet.id {
+                log("   ⏭️ Skipping current WindowSet")
                 continue
             }
+            
+            log("   🔍 Searching \(windowSet.windows.count) window(s) for bundle \(bundleID)")
             
             // Find windows in this set that belong to the bundle
             for window in windowSet.windows {
                 guard let app = NSRunningApplication(processIdentifier: window.pid()),
-                      app.bundleIdentifier == bundleID else { continue }
+                      app.bundleIdentifier == bundleID else { 
+                    log("      ❌ Window '\(window.title() ?? "untitled")' doesn't match bundle")
+                    continue 
+                }
                 
+                log("      ✅ Found matching window: '\(window.title() ?? "untitled")'")
                 // Found a window to add
                 windowToAdd = window
                 sourceWindowSet = windowSet
@@ -165,6 +181,7 @@ class LayoutManager {
             }
             
             if windowToAdd != nil {
+                log("🎯 Selected window to add: '\(windowToAdd?.title() ?? "untitled")'")
                 break
             }
         }
