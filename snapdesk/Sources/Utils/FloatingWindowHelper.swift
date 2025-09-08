@@ -298,16 +298,22 @@ class FloatingWindowHelper {
                     .replacingOccurrences(of: "\(numberString). ", with: "")
                     .replacingOccurrences(of: " ◄", with: "")
                 
-                // Create title with subtle styling
+                // Create title with subtle styling and fixed alignment
+                let titleContainer = NSView()
+                titleContainer.frame = NSRect(origin: .zero, size: NSSize(width: 200, height: 30))
+                
                 let titleLabel = NSTextField(labelWithString: cleanTitle)
                 titleLabel.textColor = isActive ? NSColor(calibratedWhite: 1.0, alpha: 1.0) : NSColor(calibratedWhite: 0.8, alpha: 1.0)
                 titleLabel.font = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .medium : .regular)
                 titleLabel.backgroundColor = NSColor.clear
                 titleLabel.isBordered = false
-                titleLabel.cell?.wraps = true
+                titleLabel.cell?.wraps = false
                 titleLabel.cell?.lineBreakMode = .byTruncatingTail
-                titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-                imageRowView.addArrangedSubview(titleLabel)
+                titleLabel.alignment = .left
+                titleLabel.frame = NSRect(x: 0, y: 5, width: 200, height: 20)
+                
+                titleContainer.addSubview(titleLabel)
+                imageRowView.addArrangedSubview(titleContainer)
                 
                 imageStackView.addArrangedSubview(imageRowView)
             }
