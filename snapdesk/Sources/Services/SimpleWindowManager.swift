@@ -568,12 +568,12 @@ class SimpleWindowManager: WindowManaging {
         let newCyclingIndex = max(0, min(currentCyclingOrder.count - 1, cyclingIndex + moveDirection))
         
         if newCyclingIndex == cyclingIndex {
-            let message = direction == .up ? "Window already first in cycling order" : "Window already last in cycling order"
-            FloatingWindowHelper.showFloatingWindow(
-                text: message,
-                position: .center,
-                duration: 1.5,
-                fontSize: 14
+            // Window is already at boundary - show current order without moving
+            showCyclingOrderFeedback(
+                bundleID: bundleID, 
+                appName: app.localizedName ?? bundleID, 
+                windowOrder: currentCyclingOrder, 
+                focusedWindowID: focusedWindowID
             )
             return
         }
@@ -588,14 +588,23 @@ class SimpleWindowManager: WindowManaging {
         }
         
         // Show cycling order feedback with optional previews
+        showCyclingOrderFeedback(
+            bundleID: bundleID,
+            appName: app.localizedName ?? bundleID,
+            windowOrder: newOrder,
+            focusedWindowID: focusedWindowID
+        )
+    }
+    
+    /// Shows cycling order feedback with optional previews
+    private func showCyclingOrderFeedback(bundleID: String, appName: String, windowOrder: [CGWindowID], focusedWindowID: CGWindowID) {
         let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-        let appName = app.localizedName ?? bundleID
         var feedbackText = "\(appName) - Cycling Order\n\n"
         
         var previewImages: [(NSImage, String)] = []
         
-        // Display windows in the new cycling order
-        for (index, windowID) in newOrder.enumerated() {
+        // Display windows in the cycling order
+        for (index, windowID) in windowOrder.enumerated() {
             // Find the window object for this ID
             var windowTitle = "Unknown"
             for screenWorkspace in workspace.screens {

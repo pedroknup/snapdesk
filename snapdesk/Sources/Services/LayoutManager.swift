@@ -409,7 +409,7 @@ class LayoutManager {
             
             // Remove window from current WindowSet
             currentWindowSet.windows.remove(at: windowIndex)
-            
+            ˚
             // Clean up empty WindowSet
             if currentWindowSet.windows.isEmpty {
                 removeEmptyWindowSet(currentWindowSet)
