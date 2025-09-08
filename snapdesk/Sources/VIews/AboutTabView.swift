@@ -8,123 +8,263 @@ import SwiftUI
 
 struct AboutTabView: View {
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            // App Icon
-            Image("snapdesk-logo")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 120, height: 120)
-                .cornerRadius(24)
-                .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
-            
-            // App Name and Version
-            VStack(spacing: 8) {
-                Text("Snapdesk")
-                    .font(.system(size: 32, weight: .bold))
-                
-                Text("Version 0.0.1 (beta)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            Divider()
-                .padding(.horizontal, 100)
-            
-            // App Description
-            Text("Efficient window management for power users on macOS.")
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-                .foregroundColor(.secondary)
-            
-            // GitHub Link
-            Button(action: {
-                if let url = URL(string: "https://github.com/pedroknup/snapdesk") {
-                    NSWorkspace.shared.open(url)
-                }
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 16, weight: .medium))
-                    Text("github.com/pedroknup/snapdesk")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.blue.opacity(0.1))
-                .foregroundColor(.blue)
-                .cornerRadius(8)
-            }
-            .buttonStyle(.plain)
-            
-            // Author and Credits
-            VStack(spacing: 12) {
-                HStack {
-                    Text("**Author**")
-                        .font(.headline)
-                    Spacer()
-                    Text("Pedro Knup")
-                        .foregroundColor(.secondary)
-                }
-                
-                HStack {
-                    Text("**License**")
-                        .font(.headline)
-                    Spacer()
-                    Text("MIT License")
-                        .foregroundColor(.secondary)
-                }
-            }
-            .frame(maxWidth: 400)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-            .background(Color.secondary.opacity(0.1))
-            .cornerRadius(12)
-            
-            // Attribution Section
-            VStack(spacing: 12) {
-                Text("**Acknowledgments**")
-                    .font(.headline)
-                
-                Text("Heavily inspired by and built upon code from **Amethyst** by Ian Ynda-Hummel and contributors. Special thanks to the Amethyst project for pioneering tiling window management on macOS.")
-                    .font(.system(size: 13))
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 16)
-                
-                Button(action: {
-                    if let url = URL(string: "https://github.com/ianyh/Amethyst") {
-                        NSWorkspace.shared.open(url)
+        ScrollView {
+            VStack(spacing: 32) {
+                // Hero Section
+                VStack(spacing: 20) {
+                    // App Icon with Enhanced Shadow
+                    Image("snapdesk-logo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 128, height: 128)
+                        .cornerRadius(26)
+                        .shadow(color: .blue.opacity(0.25), radius: 20, x: 0, y: 8)
+                        .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
+                    
+                    // App Name and Version with Better Typography
+                    VStack(spacing: 6) {
+                        Text("Snapdesk")
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
+                        
+                        HStack(spacing: 8) {
+                            Text("Version 0.0.1")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            Text("BETA")
+                                .font(.system(size: 11, weight: .bold))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(.orange.opacity(0.2))
+                                .foregroundColor(.orange)
+                                .cornerRadius(4)
+                        }
                     }
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "link")
-                            .font(.system(size: 12))
-                        Text("View Amethyst Project")
-                            .font(.system(size: 12, weight: .medium))
+                    
+                    // Enhanced Description with Value Proposition
+                    VStack(spacing: 12) {
+                        Text("Supercharge Your Workflow")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.primary)
+                        
+                        Text("The fastest way to organize windows on macOS. Built for developers, designers, and power users who demand efficiency.")
+                            .font(.system(size: 15))
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                            .lineSpacing(2)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.secondary.opacity(0.1))
-                    .foregroundColor(.secondary)
-                    .cornerRadius(6)
+                    .padding(.horizontal, 24)
                 }
-                .buttonStyle(.plain)
+                .padding(.top, 16)
+                
+                // Support Section - Buy Me a Coffee (Strategic Placement)
+                VStack(spacing: 16) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.pink)
+                            .font(.system(size: 16))
+                        Text("Love Snapdesk?")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.primary)
+                    }
+                    
+                    Text("Help keep this project alive and support future features")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button(action: {
+                        if let url = URL(string: "https://buymeacoffee.com/pedroknup") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "cup.and.saucer.fill")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Buy me a coffee")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [.orange, .pink],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(25)
+                        .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
+                    }
+                    .buttonStyle(.plain)
+                    .scaleEffect(1.0)
+                    .animation(.easeInOut(duration: 0.1), value: false)
+                }
+                .padding(20)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(.quaternary, lineWidth: 1)
+                )
+                
+                // Action Buttons Row
+                HStack(spacing: 16) {
+                    // GitHub Button
+                    Button(action: {
+                        if let url = URL(string: "https://github.com/pedroknup/snapdesk") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "chevron.left.forwardslash.chevron.right")
+                                .font(.system(size: 14, weight: .medium))
+                            Text("Source Code")
+                                .font(.system(size: 14, weight: .medium))
+                        }
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.blue.opacity(0.1))
+                        .cornerRadius(10)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    // Documentation Button (placeholder)
+                    Button(action: {
+                        // Could link to docs when available
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 14, weight: .medium))
+                            Text("Docs")
+                                .font(.system(size: 14, weight: .medium))
+                        }
+                        .foregroundColor(.green)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.green.opacity(0.1))
+                        .cornerRadius(10)
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+                // Info Cards
+                VStack(spacing: 16) {
+                    // Author Card
+                    InfoCard(
+                        icon: "person.crop.circle.fill",
+                        title: "Author",
+                        value: "Pedro Knup",
+                        iconColor: .blue
+                    )
+                    
+                    // License Card
+                    InfoCard(
+                        icon: "doc.text.fill",
+                        title: "License",
+                        value: "MIT License",
+                        iconColor: .green
+                    )
+                    
+                    // Platform Card
+                    InfoCard(
+                        icon: "desktopcomputer",
+                        title: "Platform",
+                        value: "macOS 13.0+",
+                        iconColor: .purple
+                    )
+                }
+                
+                // Attribution Section with Better Design
+                VStack(spacing: 16) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                            .font(.system(size: 16))
+                        Text("Acknowledgments")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.primary)
+                    }
+                    
+                    Text("Built upon the foundation of **Amethyst** by Ian Ynda-Hummel and contributors. Special recognition to the Amethyst project for pioneering tiling window management on macOS.")
+                        .font(.system(size: 14))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .lineSpacing(2)
+                        .padding(.horizontal, 8)
+                    
+                    Button(action: {
+                        if let url = URL(string: "https://github.com/ianyh/Amethyst") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.up.right.square.fill")
+                                .font(.system(size: 14))
+                            Text("Visit Amethyst Project")
+                                .font(.system(size: 14, weight: .medium))
+                        }
+                        .foregroundColor(.purple)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.purple.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(20)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(.quaternary, lineWidth: 1)
+                )
+                
+                // Footer
+                Text("Made with ❤️ for the macOS community")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.tertiary)
+                    .padding(.bottom, 16)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-            .padding(.horizontal, 16)
-            .background(Color.secondary.opacity(0.05))
-            .cornerRadius(12)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// Helper View for Info Cards
+struct InfoCard: View {
+    let icon: String
+    let title: String
+    let value: String
+    let iconColor: Color
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(iconColor)
+                .frame(width: 20)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
+                Text(value)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.primary)
+            }
             
             Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .padding(16)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(.quaternary, lineWidth: 1)
+        )
     }
 }
 
