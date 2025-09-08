@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Cocoa
 import Yams
 
 public struct ShortcutConfig: Codable {
@@ -52,15 +53,46 @@ public struct WindowPreviewConfig: Codable {
     }
 }
 
+public struct ThemeConfig: Codable {
+    public var accentColorRed: CGFloat
+    public var accentColorGreen: CGFloat
+    public var accentColorBlue: CGFloat
+    public var accentColorAlpha: CGFloat
+    public var activeWindowBorderWidth: CGFloat
+    public var inactiveWindowOpacity: CGFloat
+    
+    public init(
+        accentColorRed: CGFloat = 0.0,
+        accentColorGreen: CGFloat = 0.5,
+        accentColorBlue: CGFloat = 1.0,
+        accentColorAlpha: CGFloat = 1.0,
+        activeWindowBorderWidth: CGFloat = 3.0,
+        inactiveWindowOpacity: CGFloat = 0.7
+    ) {
+        self.accentColorRed = accentColorRed
+        self.accentColorGreen = accentColorGreen
+        self.accentColorBlue = accentColorBlue
+        self.accentColorAlpha = accentColorAlpha
+        self.activeWindowBorderWidth = activeWindowBorderWidth
+        self.inactiveWindowOpacity = inactiveWindowOpacity
+    }
+    
+    public var accentColor: NSColor {
+        return NSColor(red: accentColorRed, green: accentColorGreen, blue: accentColorBlue, alpha: accentColorAlpha)
+    }
+}
+
 public struct Config: Codable {
     public var appShortcuts: [AppShortcutConfig]
     public var generalShortcuts: [GeneralShortcutConfig]
     public var windowPreview: WindowPreviewConfig
+    public var theme: ThemeConfig
     
-    public init(appShortcuts: [AppShortcutConfig], generalShortcuts: [GeneralShortcutConfig], windowPreview: WindowPreviewConfig = WindowPreviewConfig()) {
+    public init(appShortcuts: [AppShortcutConfig], generalShortcuts: [GeneralShortcutConfig], windowPreview: WindowPreviewConfig = WindowPreviewConfig(), theme: ThemeConfig = ThemeConfig()) {
         self.appShortcuts = appShortcuts
         self.generalShortcuts = generalShortcuts
         self.windowPreview = windowPreview
+        self.theme = theme
     }
 }
 
