@@ -62,12 +62,12 @@ public struct ThemeConfig: Codable {
     public var inactiveWindowOpacity: CGFloat
     
     public init(
-        accentColorRed: CGFloat = 0.0,
-        accentColorGreen: CGFloat = 0.5,
+        accentColorRed: CGFloat = 0.007,
+        accentColorGreen: CGFloat = 0.478,
         accentColorBlue: CGFloat = 1.0,
         accentColorAlpha: CGFloat = 1.0,
-        activeWindowBorderWidth: CGFloat = 3.0,
-        inactiveWindowOpacity: CGFloat = 0.7
+        activeWindowBorderWidth: CGFloat = 2.0,
+        inactiveWindowOpacity: CGFloat = 0.85
     ) {
         self.accentColorRed = accentColorRed
         self.accentColorGreen = accentColorGreen
