@@ -595,38 +595,34 @@ class SimpleWindowManager: WindowManaging {
         
         log("🔍 Current window is at index \(currentIndex) out of \(appWindows.count)")
         
-        let newIndex: Int
-        switch direction {
-        case .up:
-            // Moving up in list means earlier in cycling order
-            newIndex = max(0, currentIndex - 1)
-            if newIndex == currentIndex {
-                FloatingWindowHelper.showFloatingWindow(
-                    text: "Window already first in cycling order",
-                    position: .center,
-                    duration: 1.5,
-                    fontSize: 14
-                )
-                return
-            }
-        case .down:
-            // Moving down in list means later in cycling order
-            newIndex = min(appWindows.count - 1, currentIndex + 1)
-            if newIndex == currentIndex {
-                FloatingWindowHelper.showFloatingWindow(
-                    text: "Window already last in cycling order",
-                    position: .center,
-                    duration: 1.5,
-                    fontSize: 14
-                )
-                return
-            }
+        // Get the current cycling order to check boundaries correctly
+        let currentCyclingOrder = cyclingManager.getWindowCyclingOrder(for: bundleID)
+        guard let cyclingIndex = currentCyclingOrder.firstIndex(of: focusedWindowID) else {
+            log("❌ Could not find focused window in cycling order")
+            return
+        }
+        
+        log("🔍 Current window is at cycling index \(cyclingIndex) out of \(currentCyclingOrder.count)")
+        log("🔍 Current cycling order: \(currentCyclingOrder)")
+        
+        // Check boundaries using cycling order, not visual order
+        let moveDirection = direction == .up ? -1 : 1
+        let newCyclingIndex = max(0, min(currentCyclingOrder.count - 1, cyclingIndex + moveDirection))
+        
+        if newCyclingIndex == cyclingIndex {
+            let message = direction == .up ? "Window already first in cycling order" : "Window already last in cycling order"
+            FloatingWindowHelper.showFloatingWindow(
+                text: message,
+                position: .center,
+                duration: 1.5,
+                fontSize: 14
+            )
+            return
         }
         
         log("🔄 Using CyclingManager to reorder windows")
         
-        // Use the new cycling manager approach
-        let moveDirection = direction == .up ? -1 : 1
+        // Use the cycling manager to reorder
         guard let newOrder = cyclingManager.moveWindowInCyclingOrder(
             for: bundleID, 
             windowID: focusedWindowID, 
@@ -657,7 +653,16 @@ class SimpleWindowManager: WindowManaging {
                     if let window = windowSet.windows.first(where: { $0.cgID() == windowID }) {
                         let title = window.title() ?? "untitled"
                         let cleanTitle = title.replacingOccurrences(of: "✳", with: "").trimmingCharacters(in: .whitespaces)
-                        windowTitle = cleanTitle.isEmpty ? "untitled" : cleanTitle
+                        let appName = NSRunningApplication(processIdentifier: window.pid())?.localizedName ?? "App"
+                        
+                        // Create a more descriptive title
+                        if cleanTitle.isEmpty || cleanTitle == "Order Change" || cleanTitle == appName {
+                            // If title is empty, generic, or same as app name, show app name with window ID for distinction
+                            windowTitle = "\(appName) (\(String(windowID).suffix(4)))"
+                        } else {
+                            // Show the actual window title
+                            windowTitle = cleanTitle
+                        }
                         break
                     }
                 }
