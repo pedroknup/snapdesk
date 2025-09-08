@@ -156,6 +156,7 @@ public enum LayoutKind: String, Codable {
     case floating
 }
 
+
 /// One logical collection of windows + how to arrange them
 final class WindowSet: Identifiable {
 
@@ -198,156 +199,31 @@ final class WindowSet: Identifiable {
         
         let availableFrame = screen.adjustedFrame()
         
-        switch layout {
-        case .wide:
-            expandWindowsWide(in: availableFrame, bringToFront: bringToFront)
-        case .tall:
-            expandWindowsTall(in: availableFrame, bringToFront: bringToFront)
-        case .fullscreen:
-            expandWindowsFullscreen(in: availableFrame, bringToFront: bringToFront)
-        case .floating:
-            // Floating windows maintain their current positions/sizes
-            break
-        }
-    }
-    
-    private func expandWindowsWide(in frame: CGRect, bringToFront: Bool = true) {
-        let windowCount = windows.count
-        
-        // Get window gap and margin from settings
-        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 0)
-        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 0)
-        
-        // Calculate available width after accounting for gaps
-        let totalGapWidth = windowGap * CGFloat(windowCount - 1)
-        let availableWidth = frame.width - totalGapWidth
-        
-        // Calculate window widths with main panel adjustment
-        var windowWidths: [CGFloat] = []
-        if windowCount == 1 {
-            windowWidths = [availableWidth]
-        } else {
-            // Adjust the main panel size if there are multiple windows
-            let baseWidth = availableWidth / CGFloat(windowCount)
-            let adjustment = mainPanelSizeAdjustment
-            let adjustmentPerOther = adjustment / CGFloat(windowCount - 1)
-            
-            // First window gets the adjustment
-            windowWidths.append(baseWidth + adjustment)
-            
-            // Other windows share the inverse adjustment
-            for _ in 1..<windowCount {
-                windowWidths.append(baseWidth - adjustmentPerOther)
-            }
+        // Use the plugin system
+        guard let layoutEngine = LayoutRegistry.shared.layout(for: layout.rawValue) else {
+            print("Warning: Layout engine not found for \(layout.rawValue)")
+            return
         }
         
-        // First, move all windows to their positions
-        var currentX: CGFloat = frame.origin.x
-        for (index, window) in windows.enumerated() {
-            let windowWidth = windowWidths[index]
-            
-            // Apply margin to shrink window inward from all sides
-            let windowFrame = CGRect(
-                x: currentX + windowMargin,
-                y: frame.origin.y + windowMargin,
-                width: windowWidth - (windowMargin * 2),
-                height: frame.height - (windowMargin * 2)
-            )
-            
-            move(window: window.axElementRef, to: windowFrame)
-            currentX += windowWidth + windowGap
-        }
-        
-        // Optionally bring all windows to front with small delays to ensure they all come up
-        if bringToFront {
-            for (index, window) in windows.enumerated() {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
-                    window.raise()
-                }
-            }
-        }
-    }
-    
-    private func expandWindowsTall(in frame: CGRect, bringToFront: Bool = true) {
-        let windowCount = windows.count
-        
-        // Get window gap and margin from settings
-        let windowGap = CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 0)
-        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 0)
-        
-        // Calculate available height after accounting for gaps
-        let totalGapHeight = windowGap * CGFloat(windowCount - 1)
-        let availableHeight = frame.height - totalGapHeight
-        
-        // Calculate window heights with main panel adjustment
-        var windowHeights: [CGFloat] = []
-        if windowCount == 1 {
-            windowHeights = [availableHeight]
-        } else {
-            // Adjust the main panel size if there are multiple windows
-            let baseHeight = availableHeight / CGFloat(windowCount)
-            let adjustment = mainPanelSizeAdjustment
-            let adjustmentPerOther = adjustment / CGFloat(windowCount - 1)
-            
-            // First window gets the adjustment
-            windowHeights.append(baseHeight + adjustment)
-            
-            // Other windows share the inverse adjustment
-            for _ in 1..<windowCount {
-                windowHeights.append(baseHeight - adjustmentPerOther)
-            }
-        }
-        
-        // First, move all windows to their positions
-        var currentY: CGFloat = frame.origin.y
-        for (index, window) in windows.enumerated() {
-            let windowHeight = windowHeights[index]
-            
-            // Apply margin to shrink window inward from all sides
-            let windowFrame = CGRect(
-                x: frame.origin.x + windowMargin,
-                y: currentY + windowMargin,
-                width: frame.width - (windowMargin * 2),
-                height: windowHeight - (windowMargin * 2)
-            )
-            
-            move(window: window.axElementRef, to: windowFrame)
-            currentY += windowHeight + windowGap
-        }
-        
-        // Optionally bring all windows to front with small delays to ensure they all come up
-        if bringToFront {
-            for (index, window) in windows.enumerated() {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
-                    window.raise()
-                }
-            }
-        }
-    }
-    
-    private func expandWindowsFullscreen(in frame: CGRect, bringToFront: Bool = true) {
-        // In fullscreen mode, all windows take up the entire screen (minus margin)
-        // Only the focused window should be visible
-        
-        // Get window margin from settings
-        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
-        
-        // Apply margin to fullscreen frame
-        let fullscreenFrame = CGRect(
-            x: frame.origin.x + windowMargin,
-            y: frame.origin.y + windowMargin,
-            width: frame.width - (windowMargin * 2),
-            height: frame.height - (windowMargin * 2)
+        // Create settings from current configuration
+        let settings = LayoutSettings(
+            windowGap: CGFloat(UserDefaults.standard.object(forKey: "windowGap") as? Double ?? 0),
+            windowMargin: CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 0),
+            mainPanelSizeAdjustment: mainPanelSizeAdjustment
         )
         
+        // Get frame assignments from the layout engine
+        let assignments = layoutEngine.expandWindows(windows, in: availableFrame, with: settings, bringToFront: bringToFront)
         
-        // First, move all windows to fullscreen
-        for window in windows {
-            move(window: window.axElementRef, to: fullscreenFrame)
+        // Apply the frame assignments using the existing move function
+        for assignment in assignments {
+            if let window = windows.first(where: { $0.id() == assignment.windowID }) {
+                move(window: window.axElementRef, to: assignment.finalFrame)
+            }
         }
         
-        // Optionally bring all windows to front with small delays
-        if bringToFront {
+        // Handle bringing windows to front for layouts that support it
+        if bringToFront && !assignments.isEmpty {
             for (index, window) in windows.enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.1) {
                     window.raise()

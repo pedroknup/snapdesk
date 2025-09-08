@@ -3,7 +3,8 @@
     "allow": [
       "Read(/Users/pedroknup/Library/Logs/**)",
       "Bash(swift build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
