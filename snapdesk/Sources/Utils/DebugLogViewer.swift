@@ -115,8 +115,6 @@ class DebugLogViewer {
         let timestamp = DateFormatter.logFormatter.string(from: Date())
         let formattedEntry = "[\(timestamp)] \(entry)"
         
-        print("🔧 Formatted entry: \(formattedEntry)")
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { 
                 print("🔧 DebugLogViewer.addLogEntry: self is nil!")
