@@ -17,6 +17,8 @@ enum FloatingPosition {
 
 class FloatingWindowHelper {
     private static var activeWindows: [NSWindow] = []
+    private static var activePopupWindow: NSWindow?
+    private static var popupTimer: Timer?
     
     static func showFloatingWindow(text: String, position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
         showFloatingWindow(attributedText: NSAttributedString(string: text), position: position, duration: duration, fontSize: fontSize)
@@ -26,7 +28,7 @@ class FloatingWindowHelper {
         showFloatingWindow(attributedText: attributedText, images: [], position: position, duration: duration, fontSize: fontSize)
     }
     
-    /// Shows a floating window with text and optional images
+    /// Shows a floating window with text and optional images, reusing active popup if available
     static func showFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
         // Read settings for notification position and duration
         let settingsDuration = UserDefaults.standard.object(forKey: "notificationDuration") as? Double ?? duration
@@ -42,16 +44,195 @@ class FloatingWindowHelper {
         default: actualPosition = .center
         }
         
-        let window = createTerminalStyleFloatingWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
-        activeWindows.append(window)
-        
-        window.makeKeyAndOrderFront(nil)
-        window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
-        
-        // Auto-hide after duration (use settings duration)
-        DispatchQueue.main.asyncAfter(deadline: .now() + settingsDuration) {
-            hideWindow(window)
+        // Check if we have an active popup to reuse
+        if let activePopup = activePopupWindow, activePopup.isVisible {
+            // Reuse existing popup - update content, reset timer and opacity
+            reuseActivePopup(window: activePopup, attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize, duration: settingsDuration)
+        } else {
+            // Create new popup
+            let window = createTerminalStyleFloatingWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
+            activeWindows.append(window)
+            activePopupWindow = window
+            
+            window.makeKeyAndOrderFront(nil)
+            window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
+            
+            // Schedule close timer
+            schedulePopupClose(window: window, duration: settingsDuration)
         }
+    }
+    
+    /// Reuses an active popup window by updating its content, resetting timer and opacity
+    private static func reuseActivePopup(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], position: FloatingPosition, fontSize: CGFloat, duration: TimeInterval) {
+        // Cancel existing timer
+        popupTimer?.invalidate()
+        popupTimer = nil
+        
+        // Reset opacity to full
+        window.alphaValue = 1.0
+        
+        // Update window content
+        updatePopupContent(window: window, attributedText: attributedText, images: images, position: position, fontSize: fontSize)
+        
+        // Schedule new close timer
+        schedulePopupClose(window: window, duration: duration)
+    }
+    
+    /// Updates the content of an existing popup window
+    private static func updatePopupContent(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], position: FloatingPosition, fontSize: CGFloat) {
+        // For terminal-style windows, we need to recreate the content view
+        // Since the layout structure is complex, we'll replace the entire content
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
+        let padding: CGFloat = 24
+        
+        if images.isEmpty {
+            // Update simple text content
+            updateTextOnlyContent(window: window, attributedText: attributedText, fontSize: fontSize, padding: padding)
+        } else {
+            // Update complex content with images
+            updateContentWithImages(window: window, attributedText: attributedText, images: images, fontSize: fontSize, padding: padding, maxWidth: maxWidth, maxHeight: maxHeight)
+        }
+    }
+    
+    /// Updates text-only content in the popup window
+    private static func updateTextOnlyContent(window: NSWindow, attributedText: NSAttributedString, fontSize: CGFloat, padding: CGFloat) {
+        guard let contentView = window.contentView,
+              let textView = findTextView(in: contentView) else { return }
+        
+        // Create updated terminal text content
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let terminalText = createTerminalTextContent(attributedText: attributedText, fontSize: fontSize, maxWidth: maxWidth)
+        textView.textStorage?.setAttributedString(terminalText)
+    }
+    
+    /// Updates content with images in the popup window
+    private static func updateContentWithImages(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], fontSize: CGFloat, padding: CGFloat, maxWidth: CGFloat, maxHeight: CGFloat) {
+        // For complex layouts with images, it's easier to recreate the entire content view
+        // This ensures proper layout and sizing
+        let windowSize = window.frame.size
+        let windowOrigin = window.frame.origin
+        
+        // Create new content
+        let containerView = NSView()
+        containerView.wantsLayer = true
+        containerView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
+        containerView.layer?.cornerRadius = 6
+        
+        // Create content stack view
+        let stackView = NSStackView()
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add header text
+        let textView = NSTextView()
+        textView.textStorage?.setAttributedString(attributedText)
+        textView.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
+        textView.textColor = NSColor.white
+        textView.backgroundColor = NSColor.clear
+        textView.isEditable = false
+        textView.isSelectable = false
+        textView.alignment = .left
+        textView.isRichText = true
+        textView.allowsUndo = false
+        textView.isVerticallyResizable = false
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.widthTracksTextView = true
+        
+        let textSize = attributedText.boundingRect(
+            with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        ).size
+        
+        textView.frame = NSRect(origin: .zero, size: textSize)
+        stackView.addArrangedSubview(textView)
+        
+        // Add images
+        if !images.isEmpty {
+            let imageStackView = NSStackView()
+            imageStackView.orientation = .vertical
+            imageStackView.alignment = .leading
+            imageStackView.spacing = 8
+            
+            for (image, title) in images {
+                let imageRowView = NSStackView()
+                imageRowView.orientation = .horizontal
+                imageRowView.alignment = .top
+                imageRowView.spacing = 12
+                
+                let imageView = NSImageView()
+                imageView.image = image
+                imageView.imageScaling = .scaleProportionallyUpOrDown
+                imageView.wantsLayer = true
+                imageView.layer?.cornerRadius = 4
+                
+                let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
+                imageView.frame = NSRect(origin: .zero, size: NSSize(width: config.maxWidth, height: config.maxHeight))
+                imageRowView.addArrangedSubview(imageView)
+                
+                let titleLabel = NSTextField(labelWithString: title)
+                titleLabel.textColor = NSColor.white
+                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: .medium)
+                titleLabel.backgroundColor = NSColor.clear
+                titleLabel.cell?.wraps = true
+                titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                imageRowView.addArrangedSubview(titleLabel)
+                
+                imageStackView.addArrangedSubview(imageRowView)
+            }
+            
+            stackView.addArrangedSubview(imageStackView)
+        }
+        
+        // Setup container view
+        containerView.frame = NSRect(origin: .zero, size: windowSize)
+        containerView.addSubview(stackView)
+        
+        // Setup constraints for stack view
+        stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: padding).isActive = true
+        stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: padding).isActive = true
+        stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
+        stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        
+        // Replace the content view
+        window.contentView = containerView
+    }
+    
+    /// Schedules the popup window to close after the specified duration
+    private static func schedulePopupClose(window: NSWindow, duration: TimeInterval) {
+        popupTimer?.invalidate()
+        popupTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
+            closePopup(window)
+        }
+    }
+    
+    /// Closes the popup window and cleans up references
+    private static func closePopup(_ window: NSWindow) {
+        popupTimer?.invalidate()
+        popupTimer = nil
+        
+        if activePopupWindow == window {
+            activePopupWindow = nil
+        }
+        
+        hideWindow(window)
+    }
+    
+    /// Helper to find the text view in a view hierarchy
+    private static func findTextView(in view: NSView) -> NSTextView? {
+        if let textView = view as? NSTextView {
+            return textView
+        }
+        
+        for subview in view.subviews {
+            if let textView = findTextView(in: subview) {
+                return textView
+            }
+        }
+        
+        return nil
     }
     
     /// Creates a terminal-style floating window with ASCII borders and monospace styling
