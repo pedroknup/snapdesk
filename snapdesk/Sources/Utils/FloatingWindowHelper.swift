@@ -154,9 +154,9 @@ class FloatingWindowHelper {
         
         backgroundView.addSubview(textView)
         
-        // Update window content and frame
+        // Update window content and frame instantly
         window.contentView = backgroundView
-        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: true)
+        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: false)
     }
     
     /// Updates window to image layout and repositions it
@@ -249,9 +249,9 @@ class FloatingWindowHelper {
         stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
         stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
         
-        // Update window content and frame
+        // Update window content and frame instantly
         window.contentView = containerView
-        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: true)
+        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: false)
     }
     
     /// Schedules the popup window to close after the specified duration
