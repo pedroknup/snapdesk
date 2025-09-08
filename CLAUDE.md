@@ -146,3 +146,5 @@ Treat these rules as invariants for cycling, focus, and layout behavior.
 ---
 
 **Remember:** **NO file creation or deletion** — request these operations via comments instead.
+
+I must manually test it before you commit. Dont ever commit without having me giving you the green light.
