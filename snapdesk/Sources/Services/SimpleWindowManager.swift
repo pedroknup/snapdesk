@@ -599,7 +599,9 @@ class SimpleWindowManager: WindowManaging {
     /// Shows cycling order feedback with optional previews
     private func showCyclingOrderFeedback(bundleID: String, appName: String, windowOrder: [CGWindowID], focusedWindowID: CGWindowID) {
         let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-        var feedbackText = "\(appName) - Cycling Order\n\n"
+        let totalWindows = windowOrder.count
+        let currentPosition = windowOrder.firstIndex(of: focusedWindowID).map { $0 + 1 } ?? 0
+        var feedbackText = "Window Order: \(appName)\nCurrent: \(currentPosition) of \(totalWindows)\n"
         
         var previewImages: [(NSImage, String)] = []
         
