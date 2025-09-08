@@ -561,17 +561,30 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        // Find all WindowSets containing windows from this app
+        // Find all unique windows for this app (deduplicated by window ID)
+        var seenWindowIDs: Set<CGWindowID> = []
         var appWindows: [AXWindow] = []
         for screenWorkspace in workspace.screens {
             for windowSet in screenWorkspace.windowSets {
                 for window in windowSet.windows {
                     if let windowApp = NSRunningApplication(processIdentifier: window.pid()),
                        windowApp.bundleIdentifier == bundleID {
-                        appWindows.append(window)
+                        let windowID = window.cgID()
+                        if !seenWindowIDs.contains(windowID) {
+                            seenWindowIDs.insert(windowID)
+                            appWindows.append(window)
+                        }
                     }
                 }
             }
+        }
+        
+        log("🔍 Found \(appWindows.count) unique windows for \(bundleID)")
+        for (index, window) in appWindows.enumerated() {
+            let title = window.title() ?? "untitled"
+            let windowID = window.cgID()
+            let isFocused = windowID == focusedWindowID
+            log("🔍   \(index): [\(windowID)] \(title) \(isFocused ? "← FOCUSED" : "")")
         }
         
         // Find current position in the app's window list
@@ -579,6 +592,8 @@ class SimpleWindowManager: WindowManaging {
             log("❌ Could not find focused window in app's window list")
             return
         }
+        
+        log("🔍 Current window is at index \(currentIndex) out of \(appWindows.count)")
         
         let newIndex: Int
         switch direction {
@@ -608,133 +623,53 @@ class SimpleWindowManager: WindowManaging {
             }
         }
         
-        // We need to reorder windows across all WindowSets for this app
-        // First, collect all WindowSets and their windows for this app
-        let windowToMove = appWindows[currentIndex]
-        let windowToSwapWith = appWindows[newIndex]
+        log("🔄 Using CyclingManager to reorder windows")
         
-        // Create a mapping of windows to their WindowSets
-        var windowSetMap: [CGWindowID: (screenIndex: Int, setIndex: Int, windowIndex: Int)] = [:]
-        
-        for (screenIndex, screenWorkspace) in workspace.screens.enumerated() {
-            for (setIndex, windowSet) in screenWorkspace.windowSets.enumerated() {
-                for (windowIndex, window) in windowSet.windows.enumerated() {
-                    if let windowApp = NSRunningApplication(processIdentifier: window.pid()),
-                       windowApp.bundleIdentifier == bundleID {
-                        windowSetMap[window.cgID()] = (screenIndex, setIndex, windowIndex)
-                    }
-                }
-            }
-        }
-        
-        // Find the locations of both windows
-        guard let moveLocation = windowSetMap[windowToMove.cgID()],
-              let swapLocation = windowSetMap[windowToSwapWith.cgID()] else {
-            log("❌ Could not find windows in WindowSets")
+        // Use the new cycling manager approach
+        let moveDirection = direction == .up ? -1 : 1
+        guard let newOrder = cyclingManager.moveWindowInCyclingOrder(
+            for: bundleID, 
+            windowID: focusedWindowID, 
+            direction: moveDirection
+        ) else {
+            log("❌ Failed to update cycling order")
             return
         }
         
-        // Now perform the swap
-        if moveLocation.screenIndex == swapLocation.screenIndex && 
-           moveLocation.setIndex == swapLocation.setIndex {
-            // Both windows are in the same WindowSet - simple swap
-            var updatedWindows = workspace.screens[moveLocation.screenIndex].windowSets[moveLocation.setIndex].windows
-            updatedWindows.swapAt(moveLocation.windowIndex, swapLocation.windowIndex)
-            
-            let windowSet = workspace.screens[moveLocation.screenIndex].windowSets[moveLocation.setIndex]
-            let updatedWindowSet = WindowSet(
-                layout: windowSet.layout,
-                windows: updatedWindows,
-                screenID: windowSet.screenID
-            )
-            updatedWindowSet.mainPanelSizeAdjustment = windowSet.mainPanelSizeAdjustment
-            workspace.screens[moveLocation.screenIndex].windowSets[moveLocation.setIndex] = updatedWindowSet
-            
-            log("✅ Swapped windows within same WindowSet")
-        } else {
-            // Windows are in different WindowSets - need to swap them between sets
-            var moveSetWindows = workspace.screens[moveLocation.screenIndex].windowSets[moveLocation.setIndex].windows
-            var swapSetWindows = workspace.screens[swapLocation.screenIndex].windowSets[swapLocation.setIndex].windows
-            
-            // Remove windows from their current positions
-            let moveWindow = moveSetWindows.remove(at: moveLocation.windowIndex)
-            let swapWindow = swapSetWindows.remove(at: swapLocation.windowIndex)
-            
-            // Insert them in swapped positions
-            moveSetWindows.insert(swapWindow, at: moveLocation.windowIndex)
-            swapSetWindows.insert(moveWindow, at: swapLocation.windowIndex)
-            
-            // Update the first WindowSet
-            let moveSet = workspace.screens[moveLocation.screenIndex].windowSets[moveLocation.setIndex]
-            let updatedMoveSet = WindowSet(
-                layout: moveSet.layout,
-                windows: moveSetWindows,
-                screenID: moveSet.screenID
-            )
-            updatedMoveSet.mainPanelSizeAdjustment = moveSet.mainPanelSizeAdjustment
-            workspace.screens[moveLocation.screenIndex].windowSets[moveLocation.setIndex] = updatedMoveSet
-            
-            // Update the second WindowSet
-            let swapSet = workspace.screens[swapLocation.screenIndex].windowSets[swapLocation.setIndex]
-            let updatedSwapSet = WindowSet(
-                layout: swapSet.layout,
-                windows: swapSetWindows,
-                screenID: swapSet.screenID
-            )
-            updatedSwapSet.mainPanelSizeAdjustment = swapSet.mainPanelSizeAdjustment
-            workspace.screens[swapLocation.screenIndex].windowSets[swapLocation.setIndex] = updatedSwapSet
-            
-            log("✅ Swapped windows between different WindowSets")
-        }
-        
-        // Get the actual new position after the swap by finding the window in the updated workspace
-        var actualNewPosition = 0
-        var updatedAppWindows: [AXWindow] = []
-        for screenWorkspace in workspace.screens {
-            for windowSet in screenWorkspace.windowSets {
-                for window in windowSet.windows {
-                    if let windowApp = NSRunningApplication(processIdentifier: window.pid()),
-                       windowApp.bundleIdentifier == bundleID {
-                        updatedAppWindows.append(window)
-                        if window.cgID() == focusedWindowID {
-                            actualNewPosition = updatedAppWindows.count - 1
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Update the cycling manager's window order for this app
-        cyclingManager.updateWindowOrder(for: bundleID, windowID: focusedWindowID, newPosition: actualNewPosition)
-        
+        // Find the new position
+        let newPosition = newOrder.firstIndex(of: focusedWindowID) ?? 0
         let directionText = direction == .up ? "earlier" : "later"
-        let positionText = "\(actualNewPosition + 1) of \(updatedAppWindows.count)"
+        let positionText = "\(newPosition + 1) of \(newOrder.count)"
         
         log("✅ Moved window \(directionText) in cycling order to position \(positionText)")
         
-        // Show feedback with the app's window list
+        // Show feedback with the app's window list in the new order
         let appName = app.localizedName ?? bundleID
         var feedbackText = "\(appName) - Cycling Order:\n"
         feedbackText += "────────────────────\n"
         
-        // Use the already collected updatedAppWindows for display
-        for (index, window) in updatedAppWindows.enumerated() {
-            let windowTitle = window.title() ?? "untitled"
-            // Clean up the window title to avoid confusing characters
-            let cleanTitle = windowTitle.replacingOccurrences(of: "✳", with: "").trimmingCharacters(in: .whitespaces)
-            let displayTitle = cleanTitle.isEmpty ? "untitled" : cleanTitle
-            let truncatedTitle = truncateString(displayTitle, maxLength: 30)
-            let isCurrent = window.cgID() == focusedWindowID
+        // Display windows in the new cycling order
+        for (index, windowID) in newOrder.enumerated() {
+            // Find the window object for this ID
+            var windowTitle = "Unknown"
+            for screenWorkspace in workspace.screens {
+                for windowSet in screenWorkspace.windowSets {
+                    if let window = windowSet.windows.first(where: { $0.cgID() == windowID }) {
+                        let title = window.title() ?? "untitled"
+                        let cleanTitle = title.replacingOccurrences(of: "✳", with: "").trimmingCharacters(in: .whitespaces)
+                        windowTitle = cleanTitle.isEmpty ? "untitled" : cleanTitle
+                        break
+                    }
+                }
+            }
+            
+            let truncatedTitle = truncateString(windowTitle, maxLength: 30)
+            let isCurrent = windowID == focusedWindowID
             let marker = isCurrent ? " ◀" : ""
             feedbackText += "\(index + 1). \(truncatedTitle)\(marker)\n"
         }
         
-        let windowTitles = updatedAppWindows.compactMap { window in
-            let title = window.title() ?? "untitled"
-            let cleanTitle = title.replacingOccurrences(of: "✳", with: "").trimmingCharacters(in: .whitespaces)
-            return cleanTitle.isEmpty ? "untitled" : cleanTitle
-        }.joined(separator: ", ")
-        log("📋 New window order for \(bundleID): \(windowTitles)")
+        log("📋 New cycling order for \(bundleID): \(newOrder)")
         
         FloatingWindowHelper.showFloatingWindow(
             text: feedbackText,

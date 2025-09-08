@@ -23,6 +23,9 @@ class CyclingManager {
     private var currentFocusedWindowSetID: UUID?
     private var currentWindowIndexInActiveSet: Int = 0
     
+    // Custom cycling order for apps (independent of WindowSets)
+    private var customWindowOrder: [String: [CGWindowID]] = [:]
+    
     private weak var delegate: CyclingManagerDelegate?
     
     init(delegate: CyclingManagerDelegate) {
@@ -35,15 +38,69 @@ class CyclingManager {
     /// - Parameters:
     ///   - bundleID: The bundle identifier of the app
     ///   - windowID: The window ID being moved
-    ///   - newPosition: The new position in the cycling order
-    func updateWindowOrder(for bundleID: String, windowID: CGWindowID, newPosition: Int) {
-        log("📝 Updating window order for \(bundleID): window \(windowID) to position \(newPosition)")
+    ///   - direction: The direction to move (up = -1, down = +1)
+    func moveWindowInCyclingOrder(for bundleID: String, windowID: CGWindowID, direction: Int) -> [CGWindowID]? {
+        log("📝 Moving window \(windowID) in cycling order for \(bundleID) (direction: \(direction))")
         
-        // If we're currently cycling this app, update the index to match the new position
-        if currentBundleIDCycling == bundleID {
-            bundleIDCycleIndex = newPosition
-            log("📝 Updated cycling index to \(newPosition) for current app")
+        // Get current window order or create it from workspace
+        var windowOrder = getOrCreateWindowOrder(for: bundleID)
+        
+        guard let currentIndex = windowOrder.firstIndex(of: windowID) else {
+            log("❌ Window \(windowID) not found in cycling order")
+            return nil
         }
+        
+        let newIndex = max(0, min(windowOrder.count - 1, currentIndex + direction))
+        if newIndex == currentIndex {
+            log("📝 Window already at boundary, no change needed")
+            return windowOrder
+        }
+        
+        // Move the window to the new position
+        windowOrder.remove(at: currentIndex)
+        windowOrder.insert(windowID, at: newIndex)
+        
+        // Save the new order
+        customWindowOrder[bundleID] = windowOrder
+        
+        log("📝 Updated cycling order for \(bundleID): \(windowOrder)")
+        return windowOrder
+    }
+    
+    /// Gets the custom window order for an app, or creates one from the workspace
+    private func getOrCreateWindowOrder(for bundleID: String) -> [CGWindowID] {
+        if let existingOrder = customWindowOrder[bundleID] {
+            return existingOrder
+        }
+        
+        // Create order from workspace
+        guard let delegate = delegate else { return [] }
+        var windowIDs: [CGWindowID] = []
+        var seenIDs: Set<CGWindowID> = []
+        
+        for screenWorkspace in delegate.workspace.screens {
+            for windowSet in screenWorkspace.windowSets {
+                for window in windowSet.windows {
+                    if let app = NSRunningApplication(processIdentifier: window.pid()),
+                       app.bundleIdentifier == bundleID {
+                        let windowID = window.cgID()
+                        if !seenIDs.contains(windowID) {
+                            seenIDs.insert(windowID)
+                            windowIDs.append(windowID)
+                        }
+                    }
+                }
+            }
+        }
+        
+        customWindowOrder[bundleID] = windowIDs
+        log("📝 Created initial cycling order for \(bundleID): \(windowIDs)")
+        return windowIDs
+    }
+    
+    /// Gets the current cycling order for an app
+    func getWindowCyclingOrder(for bundleID: String) -> [CGWindowID] {
+        return getOrCreateWindowOrder(for: bundleID)
     }
     
     /// Returns the next WindowSet that should be focused for a given bundle ID and the target window within it
