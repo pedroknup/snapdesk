@@ -145,6 +145,9 @@ class FloatingWindowHelper {
         textView.backgroundColor = NSColor.clear
         textView.isEditable = false
         textView.isSelectable = false
+        textView.alignment = .center
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(width: windowSize.width - padding * 2, height: .greatestFiniteMagnitude)
         textView.frame = NSRect(
             x: padding,
             y: padding,
@@ -704,6 +707,9 @@ class FloatingWindowHelper {
         textView.backgroundColor = NSColor.clear
         textView.isEditable = false
         textView.isSelectable = false
+        textView.alignment = .center
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(width: windowSize.width - padding * 2, height: .greatestFiniteMagnitude)
         textView.frame = NSRect(
             x: padding,
             y: padding,
@@ -733,23 +739,30 @@ class FloatingWindowHelper {
         
         let text = attributedText.string
         
-        // Clean content without borders - just add some spacing
+        // Clean content - centered without extra padding
         let lines = text.components(separatedBy: .newlines)
         for (index, line) in lines.enumerated() {
             let cleanLine = line.trimmingCharacters(in: .whitespaces)
-            var paddedLine = " \(cleanLine) "
             
-            // Add extra spacing between sections
+            // Add line breaks between sections but don't add extra spaces
             if index > 0 && !cleanLine.isEmpty {
-                paddedLine = "\n \(cleanLine) "
+                result.append(NSAttributedString(string: "\n", attributes: [
+                    .font: terminalFont,
+                    .foregroundColor: textColor
+                ]))
             }
             
-            paddedLine += "\n"
-            
-            result.append(NSAttributedString(string: paddedLine, attributes: [
-                .font: terminalFont,
-                .foregroundColor: textColor
-            ]))
+            if !cleanLine.isEmpty {
+                result.append(NSAttributedString(string: cleanLine + "\n", attributes: [
+                    .font: terminalFont,
+                    .foregroundColor: textColor,
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.alignment = .center
+                        return style
+                    }()
+                ]))
+            }
         }
         
         return result
