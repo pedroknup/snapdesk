@@ -80,40 +80,91 @@ class FloatingWindowHelper {
     
     /// Updates the content of an existing popup window
     private static func updatePopupContent(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], position: FloatingPosition, fontSize: CGFloat) {
-        // For terminal-style windows, we need to recreate the content view
-        // Since the layout structure is complex, we'll replace the entire content
+        // Always recreate the entire content view to handle switching between different popup types
+        // This ensures we properly switch between text-only and image layouts
         let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
         let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
         let padding: CGFloat = 24
         
+        // Calculate new window size based on content
+        var totalWidth: CGFloat = 0
+        var totalHeight: CGFloat = 0
+        
         if images.isEmpty {
-            // Update simple text content
-            updateTextOnlyContent(window: window, attributedText: attributedText, fontSize: fontSize, padding: padding)
+            // Calculate size for text-only content
+            let terminalText = createTerminalTextContent(attributedText: attributedText, fontSize: fontSize, maxWidth: maxWidth)
+            let textSize = terminalText.boundingRect(
+                with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
+                options: [.usesLineFragmentOrigin, .usesFontLeading]
+            ).size
+            totalWidth = textSize.width
+            totalHeight = textSize.height
+            
+            // Update with text-only content
+            updateToTextOnlyLayout(window: window, attributedText: attributedText, fontSize: fontSize, padding: padding, windowSize: NSSize(width: totalWidth + padding * 2, height: totalHeight + padding * 2), position: position)
         } else {
-            // Update complex content with images
-            updateContentWithImages(window: window, attributedText: attributedText, images: images, fontSize: fontSize, padding: padding, maxWidth: maxWidth, maxHeight: maxHeight)
+            // Calculate size for image content
+            let textSize = attributedText.boundingRect(
+                with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
+                options: [.usesLineFragmentOrigin, .usesFontLeading]
+            ).size
+            
+            let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
+            totalWidth = max(textSize.width, config.maxWidth + 12 + 200)
+            totalHeight = textSize.height + (config.maxHeight + 8) * CGFloat(images.count)
+            
+            // Update with image content
+            updateToImageLayout(window: window, attributedText: attributedText, images: images, fontSize: fontSize, padding: padding, windowSize: NSSize(width: totalWidth + padding * 2, height: totalHeight + padding * 2), position: position)
         }
     }
     
-    /// Updates text-only content in the popup window
-    private static func updateTextOnlyContent(window: NSWindow, attributedText: NSAttributedString, fontSize: CGFloat, padding: CGFloat) {
-        guard let contentView = window.contentView,
-              let textView = findTextView(in: contentView) else { return }
+    /// Updates window to text-only layout and repositions it
+    private static func updateToTextOnlyLayout(window: NSWindow, attributedText: NSAttributedString, fontSize: CGFloat, padding: CGFloat, windowSize: NSSize, position: FloatingPosition) {
+        // Calculate new position
+        let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create updated terminal text content
+        // Create terminal-style background
+        let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
+        backgroundView.wantsLayer = true
+        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
+        backgroundView.layer?.cornerRadius = 6
+        
+        // Subtle shadow effect
+        backgroundView.layer?.shadowColor = NSColor.black.withAlphaComponent(0.3).cgColor
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 2)
+        backgroundView.layer?.shadowRadius = 4
+        backgroundView.layer?.shadowOpacity = 0.5
+        
+        // Create text content
         let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
         let terminalText = createTerminalTextContent(attributedText: attributedText, fontSize: fontSize, maxWidth: maxWidth)
+        
+        // Create text view
+        let textView = NSTextView()
         textView.textStorage?.setAttributedString(terminalText)
+        textView.backgroundColor = NSColor.clear
+        textView.isEditable = false
+        textView.isSelectable = false
+        textView.frame = NSRect(
+            x: padding,
+            y: padding,
+            width: windowSize.width - padding * 2,
+            height: windowSize.height - padding * 2
+        )
+        
+        backgroundView.addSubview(textView)
+        
+        // Update window content and frame
+        window.contentView = backgroundView
+        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: true)
     }
     
-    /// Updates content with images in the popup window
-    private static func updateContentWithImages(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], fontSize: CGFloat, padding: CGFloat, maxWidth: CGFloat, maxHeight: CGFloat) {
-        // For complex layouts with images, it's easier to recreate the entire content view
-        // This ensures proper layout and sizing
-        let windowSize = window.frame.size
-        let windowOrigin = window.frame.origin
+    /// Updates window to image layout and repositions it
+    private static func updateToImageLayout(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], fontSize: CGFloat, padding: CGFloat, windowSize: NSSize, position: FloatingPosition) {
+        // Calculate new position
+        let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create new content
+        // Create container view
         let containerView = NSView()
         containerView.wantsLayer = true
         containerView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
@@ -141,6 +192,8 @@ class FloatingWindowHelper {
         textView.isHorizontallyResizable = false
         textView.textContainer?.widthTracksTextView = true
         
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
         let textSize = attributedText.boundingRect(
             with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
             options: [.usesLineFragmentOrigin, .usesFontLeading]
@@ -196,8 +249,9 @@ class FloatingWindowHelper {
         stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
         stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
         
-        // Replace the content view
+        // Update window content and frame
         window.contentView = containerView
+        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: true)
     }
     
     /// Schedules the popup window to close after the specified duration
