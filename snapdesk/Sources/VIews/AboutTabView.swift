@@ -99,14 +99,19 @@ struct AboutTabView: View {
                         .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .buttonStyle(.plain)
-                    .scaleEffect(1.0)
-                    .animation(.easeInOut(duration: 0.1), value: false)
+                    .onHover { isHovered in
+                        if isHovered {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
                 }
                 .padding(20)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.quaternary, lineWidth: 1)
+                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                 )
                 
                 // Action Buttons Row
@@ -130,6 +135,13 @@ struct AboutTabView: View {
                         .cornerRadius(10)
                     }
                     .buttonStyle(.plain)
+                    .onHover { isHovered in
+                        if isHovered {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
                     
                     // Documentation Button (placeholder)
                     Button(action: {
@@ -148,6 +160,13 @@ struct AboutTabView: View {
                         .cornerRadius(10)
                     }
                     .buttonStyle(.plain)
+                    .onHover { isHovered in
+                        if isHovered {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
                 }
                 
                 // Info Cards
@@ -203,7 +222,7 @@ struct AboutTabView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "arrow.up.right.square.fill")
                                 .font(.system(size: 14))
-                            Text("Visit Amethyst Project")
+                            Text("Visit ˚Amethyst Project")
                                 .font(.system(size: 14, weight: .medium))
                         }
                         .foregroundColor(.purple)
@@ -213,18 +232,25 @@ struct AboutTabView: View {
                         .cornerRadius(8)
                     }
                     .buttonStyle(.plain)
+                    .onHover { isHovered in
+                        if isHovered {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
                 }
                 .padding(20)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.quaternary, lineWidth: 1)
+                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                 )
                 
                 // Footer
                 Text("Made with ❤️ for the macOS community")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.tertiary)
+                    .foregroundColor(.secondary)
                     .padding(.bottom, 16)
             }
             .padding(.horizontal, 24)
@@ -263,7 +289,7 @@ struct InfoCard: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(.quaternary, lineWidth: 1)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
         )
     }
 }
