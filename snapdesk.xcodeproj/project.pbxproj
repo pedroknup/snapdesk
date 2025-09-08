@@ -57,6 +57,12 @@
 		13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */; };
 		13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */; };
 		13A3EEBB2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */; };
+		13A3EEC32E6F481B00DA7702 /* LayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEC02E6F481B00DA7702 /* LayoutEngine.swift */; };
+		13A3EEC42E6F481B00DA7702 /* BaseLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBD2E6F481B00DA7702 /* BaseLayout.swift */; };
+		13A3EEC52E6F481B00DA7702 /* TallLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEC12E6F481B00DA7702 /* TallLayout.swift */; };
+		13A3EEC62E6F481B00DA7702 /* WideLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEC22E6F481B00DA7702 /* WideLayout.swift */; };
+		13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBF2E6F481B00DA7702 /* FullscreenLayout.swift */; };
+		13A3EEC82E6F481B00DA7702 /* FloatingLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBE2E6F481B00DA7702 /* FloatingLayout.swift */; };
 		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
 		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
@@ -123,6 +129,12 @@
 		13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclingManager.swift; sourceTree = "<group>"; };
 		13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
 		13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutVisualizationRenderer.swift; sourceTree = "<group>"; };
+		13A3EEBD2E6F481B00DA7702 /* BaseLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseLayout.swift; sourceTree = "<group>"; };
+		13A3EEBE2E6F481B00DA7702 /* FloatingLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingLayout.swift; sourceTree = "<group>"; };
+		13A3EEBF2E6F481B00DA7702 /* FullscreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullscreenLayout.swift; sourceTree = "<group>"; };
+		13A3EEC02E6F481B00DA7702 /* LayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEngine.swift; sourceTree = "<group>"; };
+		13A3EEC12E6F481B00DA7702 /* TallLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallLayout.swift; sourceTree = "<group>"; };
+		13A3EEC22E6F481B00DA7702 /* WideLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WideLayout.swift; sourceTree = "<group>"; };
 		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
@@ -269,6 +281,7 @@
 		135B55192DB6596D00EC05FF /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				13A3EEBC2E6F480400DA7702 /* Layouts2 */,
 				13858B1F2E5F4AEB00FD0DB8 /* Utils */,
 				13F42D5B2E5F0791001F7A25 /* Categories */,
 				13972B422E5F001500588D1B /* Preferences */,
@@ -323,6 +336,19 @@
 				13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */,
 			);
 			path = Preferences;
+			sourceTree = "<group>";
+		};
+		13A3EEBC2E6F480400DA7702 /* Layouts2 */ = {
+			isa = PBXGroup;
+			children = (
+				13A3EEBD2E6F481B00DA7702 /* BaseLayout.swift */,
+				13A3EEBE2E6F481B00DA7702 /* FloatingLayout.swift */,
+				13A3EEBF2E6F481B00DA7702 /* FullscreenLayout.swift */,
+				13A3EEC02E6F481B00DA7702 /* LayoutEngine.swift */,
+				13A3EEC12E6F481B00DA7702 /* TallLayout.swift */,
+				13A3EEC22E6F481B00DA7702 /* WideLayout.swift */,
+			);
+			path = Layouts2;
 			sourceTree = "<group>";
 		};
 		13F42D5B2E5F0791001F7A25 /* Categories */ = {
@@ -467,6 +493,12 @@
 				13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */,
 				13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */,
 				13F42D6F2E5F1CAF001F7A25 /* Screen.swift in Sources */,
+				13A3EEC32E6F481B00DA7702 /* LayoutEngine.swift in Sources */,
+				13A3EEC42E6F481B00DA7702 /* BaseLayout.swift in Sources */,
+				13A3EEC52E6F481B00DA7702 /* TallLayout.swift in Sources */,
+				13A3EEC62E6F481B00DA7702 /* WideLayout.swift in Sources */,
+				13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */,
+				13A3EEC82E6F481B00DA7702 /* FloatingLayout.swift in Sources */,
 				135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */,
 				135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */,
 			);
