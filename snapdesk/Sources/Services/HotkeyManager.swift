@@ -209,12 +209,20 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         
         // Window reordering shortcuts
         constructCommandWithCommandKey("move-window-up-in-layout") { [weak self] in
-            guard !(self?.isRecordingShortcut ?? false) else { return }
+            log("🔥 HOTKEY TRIGGERED: move-window-up-in-layout")
+            guard !(self?.isRecordingShortcut ?? false) else { 
+                log("❌ Recording shortcut, ignoring move-window-up-in-layout")
+                return 
+            }
             self?.windowManager.moveWindowUpInLayout()
         }
         
         constructCommandWithCommandKey("move-window-down-in-layout") { [weak self] in
-            guard !(self?.isRecordingShortcut ?? false) else { return }
+            log("🔥 HOTKEY TRIGGERED: move-window-down-in-layout")
+            guard !(self?.isRecordingShortcut ?? false) else { 
+                log("❌ Recording shortcut, ignoring move-window-down-in-layout")
+                return 
+            }
             self?.windowManager.moveWindowDownInLayout()
         }
         

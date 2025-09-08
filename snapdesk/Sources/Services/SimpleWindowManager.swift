@@ -509,12 +509,14 @@ class SimpleWindowManager: WindowManaging {
     // MARK: - Window Reordering
     
     func moveWindowUpInLayout() {
-        log("⬆️ moveWindowUpInLayout() called")
+        log("⬆️ moveWindowUpInLayout() called - SHORTCUT TRIGGERED!")
+        
         moveWindowInLayout(direction: .up)
     }
     
     func moveWindowDownInLayout() {
-        log("⬇️ moveWindowDownInLayout() called")
+        log("⬇️ moveWindowDownInLayout() called - SHORTCUT TRIGGERED!")
+        
         moveWindowInLayout(direction: .down)
     }
     
@@ -538,37 +540,20 @@ class SimpleWindowManager: WindowManaging {
                 return
             }
             
-            self.performWindowMove(direction: direction, focusedWindow: focusedWindow)
+            self.performWindowCyclingOrderChange(direction: direction, focusedWindow: focusedWindow)
         }
     }
     
-    private func performWindowMove(direction: MoveDirection, focusedWindow: AXUIElement) {
+    private func performWindowCyclingOrderChange(direction: MoveDirection, focusedWindow: AXUIElement) {
         let axWindow = AXWindow(axElement: focusedWindow)
         let focusedWindowID = axWindow.cgID()
         
-        // Find the WindowSet containing the focused window
-        var targetScreenWorkspace: ScreenWorkspace?
-        var targetWindowSet: WindowSet?
-        var windowSetIndex: Int?
-        
-        for (screenIndex, screenWorkspace) in workspace.screens.enumerated() {
-            for (setIndex, windowSet) in screenWorkspace.windowSets.enumerated() {
-                if windowSet.windows.contains(where: { $0.cgID() == focusedWindowID }) {
-                    targetScreenWorkspace = screenWorkspace
-                    targetWindowSet = windowSet
-                    windowSetIndex = setIndex
-                    break
-                }
-            }
-            if targetWindowSet != nil { break }
-        }
-        
-        guard let screenWS = targetScreenWorkspace,
-              let windowSet = targetWindowSet,
-              let setIndex = windowSetIndex else {
-            log("❌ Could not find WindowSet containing focused window")
+        // Get the app for this window
+        guard let app = NSRunningApplication(processIdentifier: axWindow.pid()),
+              let bundleID = app.bundleIdentifier else {
+            log("❌ Could not find app for focused window")
             FloatingWindowHelper.showFloatingWindow(
-                text: "Window not in a layout",
+                text: "Could not identify app",
                 position: .center,
                 duration: 1.5,
                 fontSize: 14
@@ -576,19 +561,33 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        // Find current position of the focused window
-        guard let currentIndex = windowSet.windows.firstIndex(where: { $0.cgID() == focusedWindowID }) else {
-            log("❌ Could not find focused window in WindowSet")
+        // Find all WindowSets containing windows from this app
+        var appWindows: [AXWindow] = []
+        for screenWorkspace in workspace.screens {
+            for windowSet in screenWorkspace.windowSets {
+                for window in windowSet.windows {
+                    if let windowApp = NSRunningApplication(processIdentifier: window.pid()),
+                       windowApp.bundleIdentifier == bundleID {
+                        appWindows.append(window)
+                    }
+                }
+            }
+        }
+        
+        // Find current position in the app's window list
+        guard let currentIndex = appWindows.firstIndex(where: { $0.cgID() == focusedWindowID }) else {
+            log("❌ Could not find focused window in app's window list")
             return
         }
         
         let newIndex: Int
         switch direction {
         case .up:
+            // Moving up in list means earlier in cycling order
             newIndex = max(0, currentIndex - 1)
             if newIndex == currentIndex {
                 FloatingWindowHelper.showFloatingWindow(
-                    text: "Window already at top of layout",
+                    text: "Window already first in cycling order",
                     position: .center,
                     duration: 1.5,
                     fontSize: 14
@@ -596,10 +595,11 @@ class SimpleWindowManager: WindowManaging {
                 return
             }
         case .down:
-            newIndex = min(windowSet.windows.count - 1, currentIndex + 1)
+            // Moving down in list means later in cycling order
+            newIndex = min(appWindows.count - 1, currentIndex + 1)
             if newIndex == currentIndex {
                 FloatingWindowHelper.showFloatingWindow(
-                    text: "Window already at bottom of layout",
+                    text: "Window already last in cycling order",
                     position: .center,
                     duration: 1.5,
                     fontSize: 14
@@ -608,48 +608,85 @@ class SimpleWindowManager: WindowManaging {
             }
         }
         
-        // Find the screen workspace index
-        guard let screenIndex = workspace.screens.firstIndex(where: { $0.id == screenWS.id }) else {
-            log("❌ Could not find screen workspace")
-            return
+        // Swap the windows in the cycling order
+        // This is done by swapping their positions in their respective WindowSets
+        let windowToMove = appWindows[currentIndex]
+        let windowToSwapWith = appWindows[newIndex]
+        
+        // Find and update both windows in their WindowSets
+        for (screenIndex, screenWorkspace) in workspace.screens.enumerated() {
+            for (setIndex, windowSet) in screenWorkspace.windowSets.enumerated() {
+                var modified = false
+                var updatedWindows = windowSet.windows
+                
+                // Check if this WindowSet contains either window
+                if let moveIndex = updatedWindows.firstIndex(where: { $0.cgID() == windowToMove.cgID() }),
+                   let swapIndex = updatedWindows.firstIndex(where: { $0.cgID() == windowToSwapWith.cgID() }) {
+                    // Both windows are in the same WindowSet - swap them
+                    updatedWindows.swapAt(moveIndex, swapIndex)
+                    modified = true
+                } else if let moveIndex = updatedWindows.firstIndex(where: { $0.cgID() == windowToMove.cgID() }) {
+                    // Only the moving window is in this set - we might need to move it to another set
+                    // For now, just track that we found it
+                    modified = false
+                } else if let swapIndex = updatedWindows.firstIndex(where: { $0.cgID() == windowToSwapWith.cgID() }) {
+                    // Only the swap window is in this set
+                    modified = false
+                }
+                
+                if modified {
+                    // Update the WindowSet with swapped windows
+                    let updatedWindowSet = WindowSet(
+                        layout: windowSet.layout,
+                        windows: updatedWindows,
+                        screenID: windowSet.screenID
+                    )
+                    updatedWindowSet.mainPanelSizeAdjustment = windowSet.mainPanelSizeAdjustment
+                    workspace.screens[screenIndex].windowSets[setIndex] = updatedWindowSet
+                }
+            }
         }
         
-        // Move the window in the array
-        var updatedWindows = windowSet.windows
-        let windowToMove = updatedWindows.remove(at: currentIndex)
-        updatedWindows.insert(windowToMove, at: newIndex)
+        // Update the cycling manager's window order for this app
+        cyclingManager.updateWindowOrder(for: bundleID, windowID: focusedWindowID, newPosition: newIndex)
         
-        // Update the WindowSet
-        let updatedWindowSet = WindowSet(
-            layout: windowSet.layout,
-            windows: updatedWindows,
-            screenID: windowSet.screenID
-        )
-        updatedWindowSet.mainPanelSizeAdjustment = windowSet.mainPanelSizeAdjustment
+        let directionText = direction == .up ? "earlier" : "later"
+        let positionText = "\(newIndex + 1) of \(appWindows.count)"
         
-        // Update the workspace
-        workspace.screens[screenIndex].windowSets[setIndex] = updatedWindowSet
+        log("✅ Moved window \(directionText) in cycling order to position \(positionText)")
         
-        // Refresh the layout to reflect the new order
-        updatedWindowSet.expandWindows()
+        // Show feedback with the app's window list
+        let appName = app.localizedName ?? bundleID
+        var feedbackText = "\(appName) - Cycling Order:\n"
+        feedbackText += "────────────────────\n"
         
-        let directionText = direction == .up ? "up" : "down"
-        let positionText = "\(newIndex + 1) of \(updatedWindows.count)"
+        // Create updated order for display
+        var displayWindows = appWindows
+        displayWindows.remove(at: currentIndex)
+        displayWindows.insert(windowToMove, at: newIndex)
         
-        log("✅ Moved window \(directionText) to position \(positionText)")
+        for (index, window) in displayWindows.enumerated() {
+            let windowTitle = window.title() ?? "untitled"
+            let truncatedTitle = truncateString(windowTitle, maxLength: 30)
+            let isCurrent = window.cgID() == focusedWindowID
+            let marker = isCurrent ? " ◀" : ""
+            feedbackText += "\(index + 1). \(truncatedTitle)\(marker)\n"
+        }
         
-        // Show feedback with updated layout visualization
         FloatingWindowHelper.showFloatingWindow(
-            text: "Moved window \(directionText)\nPosition: \(positionText)",
+            text: feedbackText,
             position: .center,
-            duration: 1.5,
+            duration: 2.5,
             fontSize: 14
         )
-        
-        // Show layout visualization after a brief delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.showAutomaticLayoutVisualization()
+    }
+    
+    private func truncateString(_ string: String, maxLength: Int) -> String {
+        if string.count <= maxLength {
+            return string
         }
+        let endIndex = string.index(string.startIndex, offsetBy: maxLength - 3)
+        return String(string[..<endIndex]) + "..."
     }
     
     // MARK: - Dead Window Handling
