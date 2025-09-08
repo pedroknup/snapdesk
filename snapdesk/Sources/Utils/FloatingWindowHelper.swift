@@ -124,13 +124,13 @@ class FloatingWindowHelper {
         // Calculate new position
         let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create native macOS dark background with vibrancy
+        // Create darker background for better contrast
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
         backgroundView.layer?.cornerRadius = 10
         backgroundView.layer?.borderWidth = 0.5
-        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
         
         // macOS-style shadow
         backgroundView.layer?.shadowColor = NSColor.black.cgColor
@@ -170,13 +170,13 @@ class FloatingWindowHelper {
         // Calculate new position
         let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create native macOS dark container
+        // Create darker container for better contrast
         let containerView = NSView()
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
         containerView.layer?.cornerRadius = 10
         containerView.layer?.borderWidth = 0.5
-        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
+        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
         
         // Create content stack view
         let stackView = NSStackView()
@@ -185,11 +185,22 @@ class FloatingWindowHelper {
         stackView.spacing = 10
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Add header text
+        // Add header text with styled content
         let textView = NSTextView()
-        textView.textStorage?.setAttributedString(attributedText)
-        textView.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
-        textView.textColor = NSColor.white
+        
+        // Create styled header with proper formatting
+        let styledText = NSMutableAttributedString(attributedString: attributedText)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .left
+        paragraphStyle.lineSpacing = 4
+        
+        styledText.addAttributes([
+            .font: NSFont.systemFont(ofSize: fontSize, weight: .semibold),
+            .foregroundColor: NSColor(calibratedWhite: 0.95, alpha: 1.0),
+            .paragraphStyle: paragraphStyle
+        ], range: NSRange(location: 0, length: styledText.length))
+        
+        textView.textStorage?.setAttributedString(styledText)
         textView.backgroundColor = NSColor.clear
         textView.isEditable = false
         textView.isSelectable = false
@@ -365,13 +376,13 @@ class FloatingWindowHelper {
             return createTerminalTextWindow(attributedText: attributedText, position: position, fontSize: fontSize)
         }
         
-        // Create native macOS dark container for images layout
+        // Create darker container for images layout
         let containerView = NSView()
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
         containerView.layer?.cornerRadius = 10
         containerView.layer?.borderWidth = 0.5
-        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
+        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
         
         // Create content stack view
         let stackView = NSStackView()
@@ -380,11 +391,22 @@ class FloatingWindowHelper {
         stackView.spacing = 10
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Add header text
+        // Add header text with styled content
         let textView = NSTextView()
-        textView.textStorage?.setAttributedString(attributedText)
-        textView.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
-        textView.textColor = NSColor.white
+        
+        // Create styled header with proper formatting
+        let styledText = NSMutableAttributedString(attributedString: attributedText)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .left
+        paragraphStyle.lineSpacing = 4
+        
+        styledText.addAttributes([
+            .font: NSFont.systemFont(ofSize: fontSize, weight: .semibold),
+            .foregroundColor: NSColor(calibratedWhite: 0.95, alpha: 1.0),
+            .paragraphStyle: paragraphStyle
+        ], range: NSRange(location: 0, length: styledText.length))
+        
+        textView.textStorage?.setAttributedString(styledText)
         textView.backgroundColor = NSColor.clear
         textView.isEditable = false
         textView.isSelectable = false
@@ -784,13 +806,13 @@ class FloatingWindowHelper {
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
         
-        // Create native macOS dark background for text-only popup
+        // Create darker background for text-only popup
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
         backgroundView.layer?.cornerRadius = 10
         backgroundView.layer?.borderWidth = 0.5
-        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
         
         // macOS-style shadow
         backgroundView.layer?.shadowColor = NSColor.black.cgColor
