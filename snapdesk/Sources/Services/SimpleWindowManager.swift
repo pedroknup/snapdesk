@@ -111,8 +111,23 @@ class SimpleWindowManager: WindowManaging {
             // when cycling between windows of the same app in a split layout
             targetWindow.raise()
             // Then focus it
-            targetWindow.focus()
-            moveCursorToCenter(of: targetWindow)
+            let focusSucceeded = targetWindow.focus()
+            
+            if !focusSucceeded {
+                log("⚠️ Failed to focus target window - likely no longer exists. Removing from layout and trying next window.")
+                
+                // Remove the dead window from its WindowSet
+                removeDeadWindow(targetWindow, from: windowSet, bundleID: bundleID)
+                
+                // Try to find and focus the next available window of the same app
+                await focusNextAvailableWindow(for: bundleID, excluding: targetWindow)
+                
+                // Reset the programmatic focus flag and return early
+                appLifecycleManager.setProgrammaticFocus(false)
+                return
+            } else {
+                moveCursorToCenter(of: targetWindow)
+            }
         }
         
         // Reset the flag after a longer delay to allow the focus events to fire,
@@ -425,6 +440,77 @@ class SimpleWindowManager: WindowManaging {
         positionSingleWindow(to: "center")
     }
     
+    // MARK: - Dead Window Handling
+    
+    /// Removes a dead window from its WindowSet and cleans up empty WindowSets
+    private func removeDeadWindow(_ deadWindow: AXWindow, from windowSet: WindowSet, bundleID: String) {
+        log("🗑️ Removing dead window '\(deadWindow.title() ?? "untitled")' from WindowSet")
+        
+        // Remove the window from the WindowSet
+        if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == deadWindow.cgID() }) {
+            windowSet.windows.remove(at: windowIndex)
+            log("✅ Removed dead window from WindowSet. WindowSet now has \(windowSet.windows.count) windows")
+            
+            // If the WindowSet is now empty, remove it from the workspace
+            if windowSet.windows.isEmpty {
+                removeEmptyWindowSet(windowSet)
+            }
+        } else {
+            log("⚠️ Dead window not found in expected WindowSet")
+        }
+    }
+    
+    /// Attempts to focus the next available window of the same app
+    private func focusNextAvailableWindow(for bundleID: String, excluding excludedWindow: AXWindow) async {
+        log("🔄 Looking for next available window for bundle: \(bundleID)")
+        
+        // Get the next WindowSet and window from the cycling manager
+        guard let (nextWindowSet, nextTargetWindow) = cyclingManager.getNextWindowSetToFocus(for: bundleID) else {
+            log("❌ No more windows available for bundle: \(bundleID)")
+            return
+        }
+        
+        // Make sure we're not trying to focus the same dead window again
+        if let nextWindow = nextTargetWindow, nextWindow.cgID() == excludedWindow.cgID() {
+            log("⚠️ Next window is the same as excluded window, skipping")
+            return
+        }
+        
+        // Expand the windows in the WindowSet
+        if shouldAutoExpandNewWindows() {
+            nextWindowSet.expandWindows()
+        }
+        
+        // Try to raise all windows except the target
+        await nextWindowSet.raiseAllWindows(excluding: nextTargetWindow)
+        
+        // Focus the next available window
+        if let nextWindow = nextTargetWindow {
+            log("🎯 Attempting to focus next window: '\(nextWindow.title() ?? "untitled")'")
+            nextWindow.raise()
+            let focusSucceeded = nextWindow.focus()
+            
+            if focusSucceeded {
+                log("✅ Successfully focused next window")
+                moveCursorToCenter(of: nextWindow)
+            } else {
+                log("❌ Failed to focus next window - it may also be dead")
+                // Could recursively call this method, but let's avoid infinite recursion for now
+            }
+        }
+    }
+    
+    /// Removes an empty WindowSet from the workspace
+    private func removeEmptyWindowSet(_ windowSet: WindowSet) {
+        for screenIndex in workspace.screens.indices {
+            if let setIndex = workspace.screens[screenIndex].windowSets.firstIndex(where: { $0.id == windowSet.id }) {
+                workspace.screens[screenIndex].windowSets.remove(at: setIndex)
+                log("🧹 Removed empty WindowSet from screen \(screenIndex)")
+                break
+            }
+        }
+    }
+
     // MARK: - Private Helper Methods
     
     private func positionSingleWindow(to position: String) {
