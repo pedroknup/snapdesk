@@ -38,13 +38,29 @@ public struct GeneralShortcutConfig: Codable {
     }
 }
 
+public struct WindowPreviewConfig: Codable {
+    public var enabled: Bool
+    public var maxWidth: CGFloat
+    public var maxHeight: CGFloat
+    public var cacheTimeoutSeconds: TimeInterval
+    
+    public init(enabled: Bool = true, maxWidth: CGFloat = 200, maxHeight: CGFloat = 150, cacheTimeoutSeconds: TimeInterval = 5.0) {
+        self.enabled = enabled
+        self.maxWidth = maxWidth
+        self.maxHeight = maxHeight
+        self.cacheTimeoutSeconds = cacheTimeoutSeconds
+    }
+}
+
 public struct Config: Codable {
     public var appShortcuts: [AppShortcutConfig]
     public var generalShortcuts: [GeneralShortcutConfig]
+    public var windowPreview: WindowPreviewConfig
     
-    public init(appShortcuts: [AppShortcutConfig], generalShortcuts: [GeneralShortcutConfig]) {
+    public init(appShortcuts: [AppShortcutConfig], generalShortcuts: [GeneralShortcutConfig], windowPreview: WindowPreviewConfig = WindowPreviewConfig()) {
         self.appShortcuts = appShortcuts
         self.generalShortcuts = generalShortcuts
+        self.windowPreview = windowPreview
     }
 }
 
