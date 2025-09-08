@@ -31,6 +31,21 @@ class CyclingManager {
     
     // MARK: - Public Interface
     
+    /// Updates the window order for cycling when a window is moved up or down
+    /// - Parameters:
+    ///   - bundleID: The bundle identifier of the app
+    ///   - windowID: The window ID being moved
+    ///   - newPosition: The new position in the cycling order
+    func updateWindowOrder(for bundleID: String, windowID: CGWindowID, newPosition: Int) {
+        log("📝 Updating window order for \(bundleID): window \(windowID) to position \(newPosition)")
+        
+        // If we're currently cycling this app, update the index to match the new position
+        if currentBundleIDCycling == bundleID {
+            bundleIDCycleIndex = newPosition
+            log("📝 Updated cycling index to \(newPosition) for current app")
+        }
+    }
+    
     /// Returns the next WindowSet that should be focused for a given bundle ID and the target window within it
     /// - Parameter bundleID: The bundle identifier of the app
     /// - Returns: A tuple containing the WindowSet to focus and the target window, or nil if no windows exist
