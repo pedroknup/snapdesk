@@ -110,8 +110,9 @@ class FloatingWindowHelper {
             ).size
             
             let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-            totalWidth = max(textSize.width, config.maxWidth + 12 + 200)
-            totalHeight = textSize.height + (config.maxHeight + 8) * CGFloat(images.count)
+            // Account for: number(35) + spacing(12) + image(width) + spacing(12) + title(200)
+            totalWidth = max(textSize.width, 35 + 12 + config.maxWidth + 12 + 200)
+            totalHeight = textSize.height + (config.maxHeight + 12) * CGFloat(images.count)
             
             // Update with image content
             updateToImageLayout(window: window, attributedText: attributedText, images: images, fontSize: fontSize, padding: padding, windowSize: NSSize(width: totalWidth + padding * 2, height: totalHeight + padding * 2), position: position)
@@ -123,17 +124,19 @@ class FloatingWindowHelper {
         // Calculate new position
         let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create terminal-style background
+        // Create native macOS dark background with vibrancy
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
-        backgroundView.layer?.cornerRadius = 6
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        backgroundView.layer?.cornerRadius = 10
+        backgroundView.layer?.borderWidth = 0.5
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
         
-        // Subtle shadow effect
-        backgroundView.layer?.shadowColor = NSColor.black.withAlphaComponent(0.3).cgColor
-        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 2)
-        backgroundView.layer?.shadowRadius = 4
-        backgroundView.layer?.shadowOpacity = 0.5
+        // macOS-style shadow
+        backgroundView.layer?.shadowColor = NSColor.black.cgColor
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: -3)
+        backgroundView.layer?.shadowRadius = 15
+        backgroundView.layer?.shadowOpacity = 0.3
         
         // Create text content
         let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
@@ -167,11 +170,13 @@ class FloatingWindowHelper {
         // Calculate new position
         let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create container view
+        // Create native macOS dark container
         let containerView = NSView()
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
-        containerView.layer?.cornerRadius = 6
+        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        containerView.layer?.cornerRadius = 10
+        containerView.layer?.borderWidth = 0.5
+        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
         
         // Create content stack view
         let stackView = NSStackView()
@@ -210,7 +215,7 @@ class FloatingWindowHelper {
             let imageStackView = NSStackView()
             imageStackView.orientation = .vertical
             imageStackView.alignment = .leading
-            imageStackView.spacing = 8
+            imageStackView.spacing = 10
             
             let config = ConfigurationManager.shared.loadConfig()
             let theme = config?.theme ?? ThemeConfig()
@@ -227,28 +232,50 @@ class FloatingWindowHelper {
                 // Extract the number from the title (e.g., "1. WindowTitle ◄" -> "1")
                 let numberString = title.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) ?? ""
                 
-                // Create number label on the left
-                let numberLabel = NSTextField(labelWithString: numberString)
-                numberLabel.textColor = isActive ? theme.accentColor : NSColor.white
-                numberLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize + 2, weight: isActive ? .bold : .medium)
-                numberLabel.backgroundColor = NSColor.clear
-                numberLabel.alignment = .center
-                let numberWidth: CGFloat = 30
-                numberLabel.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: 30))
-                imageRowView.addArrangedSubview(numberLabel)
+                // Create number badge with subtle background
+                let numberContainer = NSView()
+                numberContainer.wantsLayer = true
+                let numberWidth: CGFloat = 35
+                let numberHeight: CGFloat = 35
+                numberContainer.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: numberHeight))
                 
-                // Create image view with border for active window
+                if isActive {
+                    numberContainer.layer?.backgroundColor = theme.accentColor.withAlphaComponent(0.15).cgColor
+                    numberContainer.layer?.borderWidth = 1
+                    numberContainer.layer?.borderColor = theme.accentColor.withAlphaComponent(0.3).cgColor
+                } else {
+                    numberContainer.layer?.backgroundColor = NSColor(calibratedWhite: 0.3, alpha: 0.2).cgColor
+                }
+                numberContainer.layer?.cornerRadius = 8
+                
+                let numberLabel = NSTextField(labelWithString: numberString)
+                numberLabel.textColor = isActive ? theme.accentColor : NSColor(calibratedWhite: 0.85, alpha: 1.0)
+                numberLabel.font = NSFont.systemFont(ofSize: fontSize, weight: isActive ? .semibold : .regular)
+                numberLabel.backgroundColor = NSColor.clear
+                numberLabel.isBordered = false
+                numberLabel.alignment = .center
+                numberLabel.frame = NSRect(x: 0, y: (numberHeight - 20) / 2, width: numberWidth, height: 20)
+                numberContainer.addSubview(numberLabel)
+                
+                imageRowView.addArrangedSubview(numberContainer)
+                
+                // Create image view with subtle styling
                 let imageView = NSImageView()
                 imageView.image = image
                 imageView.imageScaling = .scaleProportionallyUpOrDown
                 imageView.wantsLayer = true
-                imageView.layer?.cornerRadius = 4
+                imageView.layer?.cornerRadius = 6
+                imageView.layer?.masksToBounds = true
                 
                 if isActive {
+                    // Subtle highlight for active window
                     imageView.layer?.borderWidth = theme.activeWindowBorderWidth
-                    imageView.layer?.borderColor = theme.accentColor.cgColor
+                    imageView.layer?.borderColor = theme.accentColor.withAlphaComponent(0.5).cgColor
+                    imageView.alphaValue = 1.0
                 } else {
                     imageView.alphaValue = theme.inactiveWindowOpacity
+                    imageView.layer?.borderWidth = 0.5
+                    imageView.layer?.borderColor = NSColor(calibratedWhite: 0.5, alpha: 0.2).cgColor
                 }
                 
                 let windowPreviewConfig = config?.windowPreview ?? WindowPreviewConfig()
@@ -260,11 +287,14 @@ class FloatingWindowHelper {
                     .replacingOccurrences(of: "\(numberString). ", with: "")
                     .replacingOccurrences(of: " ◄", with: "")
                 
+                // Create title with subtle styling
                 let titleLabel = NSTextField(labelWithString: cleanTitle)
-                titleLabel.textColor = isActive ? theme.accentColor : NSColor.white
-                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: isActive ? .semibold : .medium)
+                titleLabel.textColor = isActive ? NSColor(calibratedWhite: 1.0, alpha: 1.0) : NSColor(calibratedWhite: 0.8, alpha: 1.0)
+                titleLabel.font = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .medium : .regular)
                 titleLabel.backgroundColor = NSColor.clear
+                titleLabel.isBordered = false
                 titleLabel.cell?.wraps = true
+                titleLabel.cell?.lineBreakMode = .byTruncatingTail
                 titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
                 imageRowView.addArrangedSubview(titleLabel)
                 
@@ -335,11 +365,13 @@ class FloatingWindowHelper {
             return createTerminalTextWindow(attributedText: attributedText, position: position, fontSize: fontSize)
         }
         
-        // Create container view for images layout without outer border
+        // Create native macOS dark container for images layout
         let containerView = NSView()
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
-        containerView.layer?.cornerRadius = 6
+        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        containerView.layer?.cornerRadius = 10
+        containerView.layer?.borderWidth = 0.5
+        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
         
         // Create content stack view
         let stackView = NSStackView()
@@ -441,9 +473,9 @@ class FloatingWindowHelper {
                 
                 imageStackView.addArrangedSubview(imageRowView)
                 
-                // Update total dimensions
-                totalWidth = max(totalWidth, windowPreviewConfig.maxWidth + 12 + 200 + numberWidth)
-                totalHeight += windowPreviewConfig.maxHeight + 8
+                // Update total dimensions (accounting for consistent width)
+                totalWidth = max(totalWidth, 35 + 12 + windowPreviewConfig.maxWidth + 12 + 200)
+                totalHeight += windowPreviewConfig.maxHeight + 12
             }
             
             stackView.addArrangedSubview(imageStackView)
@@ -752,17 +784,19 @@ class FloatingWindowHelper {
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
         
-        // Create subtle terminal background without outer border
+        // Create native macOS dark background for text-only popup
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
-        backgroundView.layer?.cornerRadius = 6
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.15, alpha: 0.95).cgColor
+        backgroundView.layer?.cornerRadius = 10
+        backgroundView.layer?.borderWidth = 0.5
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.1).cgColor
         
-        // Subtle shadow effect
-        backgroundView.layer?.shadowColor = NSColor.black.withAlphaComponent(0.3).cgColor
-        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 2)
-        backgroundView.layer?.shadowRadius = 4
-        backgroundView.layer?.shadowOpacity = 0.5
+        // macOS-style shadow
+        backgroundView.layer?.shadowColor = NSColor.black.cgColor
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: -3)
+        backgroundView.layer?.shadowRadius = 15
+        backgroundView.layer?.shadowOpacity = 0.3
         
         // Create text view
         let textView = NSTextView()
