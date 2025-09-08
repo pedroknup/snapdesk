@@ -393,6 +393,65 @@ class SimpleWindowManager: WindowManaging {
         layoutManager.expandLayout(for: windowSet)
     }
       
+    // MARK: - Layout Visualization
+    
+    func showLayoutVisualization() {
+        showLayoutVisualization(duration: 3.0, isAutomatic: false)
+    }
+    
+    private func showLayoutVisualization(duration: TimeInterval, isAutomatic: Bool) {
+        // Check if automatic layout visualization is enabled (only for automatic triggers)
+        if isAutomatic {
+            let showAutoLayoutViz = UserDefaults.standard.object(forKey: "showAutoLayoutVisualization") as? Bool ?? true
+            if !showAutoLayoutViz {
+                return
+            }
+        }
+        
+        log("🎨 Showing layout visualization (\(isAutomatic ? "automatic" : "manual"))")
+        
+        let attributedText = createLayoutVisualization()
+        
+        // Show the visualization using FloatingWindowHelper with larger font
+        FloatingWindowHelper.showFloatingWindow(
+            attributedText: attributedText,
+            position: .center,
+            duration: duration,
+            fontSize: 14  // Larger, more readable font
+        )
+    }
+    
+    private func showAutomaticLayoutVisualization() {
+        // Use shorter duration for automatic displays
+        showLayoutVisualization(duration: 1.5, isAutomatic: true)
+    }
+    
+    private func createLayoutVisualization() -> NSAttributedString {
+        // Get the currently focused window if any
+        let focusedWindowID: CGWindowID? = {
+            if let focusedElement = frontmostWindow() {
+                let axWindow = AXWindow(axElement: focusedElement)
+                return axWindow.cgID()
+            }
+            return nil
+        }()
+        
+        // Get the current screen (where the focused window is)
+        let currentScreenID: String? = {
+            if let focusedElement = frontmostWindow() {
+                let axWindow = AXWindow(axElement: focusedElement)
+                return axWindow.snapScreen()?.screenID()
+            }
+            return nil
+        }()
+        
+        return LayoutVisualizationRenderer.renderLayoutVisualization(
+            workspace: workspace,
+            focusedWindowID: focusedWindowID,
+            currentScreenID: currentScreenID
+        )
+    }
+
     // MARK: - Window Positioning
       
     func positionWindowLeft() {
@@ -455,6 +514,9 @@ class SimpleWindowManager: WindowManaging {
             if windowSet.windows.isEmpty {
                 removeEmptyWindowSet(windowSet)
             }
+            
+            // Show automatic layout visualization after removal
+            showAutomaticLayoutVisualization()
         } else {
             log("⚠️ Dead window not found in expected WindowSet")
         }
@@ -627,6 +689,9 @@ class SimpleWindowManager: WindowManaging {
         if shouldAutoExpandNewWindows() {
             newSet.expandWindows(on: screenWS.screen, bringToFront: false)
         }
+        
+        // Show automatic layout visualization
+        showAutomaticLayoutVisualization()
     }
 }
 

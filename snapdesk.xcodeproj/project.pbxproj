@@ -56,6 +56,7 @@
 		13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */; };
 		13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */; };
 		13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */; };
+		13A3EEBB2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */; };
 		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
 		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
@@ -121,6 +122,7 @@
 		13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLifecycleManager.swift; sourceTree = "<group>"; };
 		13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclingManager.swift; sourceTree = "<group>"; };
 		13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
+		13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutVisualizationRenderer.swift; sourceTree = "<group>"; };
 		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 		13858B1F2E5F4AEB00FD0DB8 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */,
 				13858B242E5F75B700FD0DB8 /* DebugLogViewer.swift */,
 				13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */,
 				13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */,
@@ -443,6 +446,7 @@
 				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				13858B232E5F680900FD0DB8 /* FloatingWindowHelper.swift in Sources */,
+				13A3EEBB2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift in Sources */,
 				13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */,
 				13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */,
 				13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */,
