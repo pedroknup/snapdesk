@@ -212,25 +212,57 @@ class FloatingWindowHelper {
             imageStackView.alignment = .leading
             imageStackView.spacing = 8
             
+            let config = ConfigurationManager.shared.loadConfig()
+            let theme = config?.theme ?? ThemeConfig()
+            
             for (image, title) in images {
                 let imageRowView = NSStackView()
                 imageRowView.orientation = .horizontal
-                imageRowView.alignment = .top
+                imageRowView.alignment = .centerY
                 imageRowView.spacing = 12
                 
+                // Check if this is the active window (has the ◄ marker)
+                let isActive = title.contains(" ◄")
+                
+                // Extract the number from the title (e.g., "1. WindowTitle ◄" -> "1")
+                let numberString = title.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) ?? ""
+                
+                // Create number label on the left
+                let numberLabel = NSTextField(labelWithString: numberString)
+                numberLabel.textColor = isActive ? theme.accentColor : NSColor.white
+                numberLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize + 2, weight: isActive ? .bold : .medium)
+                numberLabel.backgroundColor = NSColor.clear
+                numberLabel.alignment = .center
+                let numberWidth: CGFloat = 30
+                numberLabel.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: 30))
+                imageRowView.addArrangedSubview(numberLabel)
+                
+                // Create image view with border for active window
                 let imageView = NSImageView()
                 imageView.image = image
                 imageView.imageScaling = .scaleProportionallyUpOrDown
                 imageView.wantsLayer = true
                 imageView.layer?.cornerRadius = 4
                 
-                let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-                imageView.frame = NSRect(origin: .zero, size: NSSize(width: config.maxWidth, height: config.maxHeight))
+                if isActive {
+                    imageView.layer?.borderWidth = theme.activeWindowBorderWidth
+                    imageView.layer?.borderColor = theme.accentColor.cgColor
+                } else {
+                    imageView.alphaValue = theme.inactiveWindowOpacity
+                }
+                
+                let windowPreviewConfig = config?.windowPreview ?? WindowPreviewConfig()
+                imageView.frame = NSRect(origin: .zero, size: NSSize(width: windowPreviewConfig.maxWidth, height: windowPreviewConfig.maxHeight))
                 imageRowView.addArrangedSubview(imageView)
                 
-                let titleLabel = NSTextField(labelWithString: title)
-                titleLabel.textColor = NSColor.white
-                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: .medium)
+                // Extract title without number and marker
+                let cleanTitle = title
+                    .replacingOccurrences(of: "\(numberString). ", with: "")
+                    .replacingOccurrences(of: " ◄", with: "")
+                
+                let titleLabel = NSTextField(labelWithString: cleanTitle)
+                titleLabel.textColor = isActive ? theme.accentColor : NSColor.white
+                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: isActive ? .semibold : .medium)
                 titleLabel.backgroundColor = NSColor.clear
                 titleLabel.cell?.wraps = true
                 titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -349,28 +381,59 @@ class FloatingWindowHelper {
             imageStackView.alignment = .leading
             imageStackView.spacing = 8
             
+            let config = ConfigurationManager.shared.loadConfig()
+            let theme = config?.theme ?? ThemeConfig()
+            let windowPreviewConfig = config?.windowPreview ?? WindowPreviewConfig()
+            
             for (image, title) in images {
-                // Create horizontal container for image + text
+                // Check if this is the active window (has the ◄ marker)
+                let isActive = title.contains(" ◄")
+                
+                // Extract the number from the title (e.g., "1. WindowTitle ◄" -> "1")
+                let numberString = title.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) ?? ""
+                
+                // Create horizontal container for number + image + text
                 let imageRowView = NSStackView()
                 imageRowView.orientation = .horizontal
-                imageRowView.alignment = .top
+                imageRowView.alignment = .centerY
                 imageRowView.spacing = 12
                 
-                // Add image
+                // Add number label on the left
+                let numberLabel = NSTextField(labelWithString: numberString)
+                numberLabel.textColor = isActive ? theme.accentColor : NSColor.white
+                numberLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize + 2, weight: isActive ? .bold : .medium)
+                numberLabel.backgroundColor = NSColor.clear
+                numberLabel.alignment = .center
+                let numberWidth: CGFloat = 30
+                numberLabel.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: 30))
+                imageRowView.addArrangedSubview(numberLabel)
+                
+                // Add image with border for active window
                 let imageView = NSImageView()
                 imageView.image = image
                 imageView.imageScaling = .scaleProportionallyUpOrDown
                 imageView.wantsLayer = true
                 imageView.layer?.cornerRadius = 4
                 
-                let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-                imageView.frame = NSRect(origin: .zero, size: NSSize(width: config.maxWidth, height: config.maxHeight))
+                if isActive {
+                    imageView.layer?.borderWidth = theme.activeWindowBorderWidth
+                    imageView.layer?.borderColor = theme.accentColor.cgColor
+                } else {
+                    imageView.alphaValue = theme.inactiveWindowOpacity
+                }
+                
+                imageView.frame = NSRect(origin: .zero, size: NSSize(width: windowPreviewConfig.maxWidth, height: windowPreviewConfig.maxHeight))
                 imageRowView.addArrangedSubview(imageView)
                 
+                // Extract title without number and marker
+                let cleanTitle = title
+                    .replacingOccurrences(of: "\(numberString). ", with: "")
+                    .replacingOccurrences(of: " ◄", with: "")
+                
                 // Add title
-                let titleLabel = NSTextField(labelWithString: title)
-                titleLabel.textColor = NSColor.white
-                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: .medium)
+                let titleLabel = NSTextField(labelWithString: cleanTitle)
+                titleLabel.textColor = isActive ? theme.accentColor : NSColor.white
+                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: isActive ? .semibold : .medium)
                 titleLabel.backgroundColor = NSColor.clear
                 titleLabel.cell?.wraps = true
                 titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -379,8 +442,8 @@ class FloatingWindowHelper {
                 imageStackView.addArrangedSubview(imageRowView)
                 
                 // Update total dimensions
-                totalWidth = max(totalWidth, config.maxWidth + 12 + 200)
-                totalHeight += config.maxHeight + 8
+                totalWidth = max(totalWidth, windowPreviewConfig.maxWidth + 12 + 200 + numberWidth)
+                totalHeight += windowPreviewConfig.maxHeight + 8
             }
             
             stackView.addArrangedSubview(imageStackView)
