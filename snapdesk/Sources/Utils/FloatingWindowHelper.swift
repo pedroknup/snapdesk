@@ -18,7 +18,11 @@ enum FloatingPosition {
 class FloatingWindowHelper {
     private static var activeWindows: [NSWindow] = []
     
-    static func showFloatingWindow(text: String, position: FloatingPosition = .center, duration: TimeInterval = 2.0) {
+    static func showFloatingWindow(text: String, position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
+        showFloatingWindow(attributedText: NSAttributedString(string: text), position: position, duration: duration, fontSize: fontSize)
+    }
+    
+    static func showFloatingWindow(attributedText: NSAttributedString, position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
         // Read settings for notification position and duration
         let settingsDuration = UserDefaults.standard.object(forKey: "notificationDuration") as? Double ?? duration
         let settingsPosition = UserDefaults.standard.string(forKey: "notificationPosition") ?? "center"
@@ -33,7 +37,7 @@ class FloatingWindowHelper {
         default: actualPosition = .center
         }
         
-        let window = createFloatingWindow(text: text, position: actualPosition)
+        let window = createFloatingWindow(attributedText: attributedText, position: actualPosition, fontSize: fontSize)
         activeWindows.append(window)
         
         window.makeKeyAndOrderFront(nil)
@@ -45,23 +49,34 @@ class FloatingWindowHelper {
         }
     }
     
-    private static func createFloatingWindow(text: String, position: FloatingPosition) -> NSWindow {
-        // Create text field to measure content size
-        let textField = NSTextField()
-        textField.stringValue = text
-        textField.font = NSFont.systemFont(ofSize: 16, weight: .medium)
-        textField.textColor = NSColor.white
-        textField.backgroundColor = NSColor.clear
-        textField.isBezeled = false
-        textField.isEditable = false
-        textField.isSelectable = false
-        textField.alignment = .center
+    private static func createFloatingWindow(attributedText: NSAttributedString, position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
+        // Create text view to display attributed text
+        let textView = NSTextView()
+        textView.textStorage?.setAttributedString(attributedText)
+        textView.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        textView.textColor = NSColor.white
+        textView.backgroundColor = NSColor.clear
+        textView.isEditable = false
+        textView.isSelectable = false
+        textView.alignment = .left
+        textView.isRichText = true
+        textView.allowsUndo = false
         
-        // Calculate required size
-        textField.sizeToFit()
-        let textSize = textField.frame.size
-        let padding: CGFloat = 20
-        let windowSize = NSSize(width: textSize.width + padding * 2, height: textSize.height + padding * 2)
+        // Calculate required size by measuring the attributed text
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
+        let constraintSize = NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8)
+        
+        let textSize = attributedText.boundingRect(
+            with: constraintSize,
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        ).size
+        let padding: CGFloat = 30  // Increased padding for better readability
+        
+        let windowSize = NSSize(
+            width: min(textSize.width + padding * 2, maxWidth),
+            height: min(textSize.height + padding * 2, maxHeight)
+        )
         
         // Calculate position based on enum
         let screenFrame = NSScreen.main?.visibleFrame ?? NSRect.zero
@@ -114,18 +129,18 @@ class FloatingWindowHelper {
         // Create background view with rounded corners and transparency
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.8).cgColor
-        backgroundView.layer?.cornerRadius = 10
+        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor  // Slightly more opaque
+        backgroundView.layer?.cornerRadius = 12
         
-        // Position text field in the center of the background view
-        textField.frame = NSRect(
+        // Position text view to fill the available space with padding
+        textView.frame = NSRect(
             x: padding,
             y: padding,
-            width: textSize.width,
-            height: textSize.height
+            width: windowSize.width - padding * 2,
+            height: windowSize.height - padding * 2
         )
         
-        backgroundView.addSubview(textField)
+        backgroundView.addSubview(textView)
         window.contentView = backgroundView
         
         // Add fade-in animation

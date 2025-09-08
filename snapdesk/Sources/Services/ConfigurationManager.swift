@@ -72,26 +72,20 @@ public class ConfigurationManager {
             return nil
         }
         
-        // Define the only supported general shortcuts
+        // Define the only supported general shortcuts (in logical order)
         let defaultGeneralShortcuts = [
-            "Remove current window from layout",
+            // Layout management
             "Toggle layout for current WindowSet",
-            "Focus Screen 1",
-            "Focus Screen 2",
-            "Focus Screen 3",
-            "Focus Screen 4",
-            "Focus Screen 5",
-            "Focus Screen 6",
-            "Throw to Screen 1",
-            "Throw to Screen 2",
-            "Throw to Screen 3",
-            "Throw to Screen 4",
-            "Throw to Screen 5",
-            "Throw to Screen 6",
+            "Show layout visualization",
+            "Expand Windows",
+            "Remove current window from layout",
             "Throw app to current layout modifier",
+            
+            // Panel size management
             "Increase main panel size",
             "Decrease main panel size",
-            "Expand Windows",
+            
+            // Window positioning
             "Position Window Left",
             "Position Window Right", 
             "Position Window Top",
@@ -100,7 +94,23 @@ public class ConfigurationManager {
             "Position Window Top Right",
             "Position Window Bottom Left",
             "Position Window Bottom Right",
-            "Position Window Center"
+            "Position Window Center",
+            
+            // Screen focus
+            "Focus Screen 1",
+            "Focus Screen 2",
+            "Focus Screen 3",
+            "Focus Screen 4",
+            "Focus Screen 5",
+            "Focus Screen 6",
+            
+            // Throw to screen
+            "Throw to Screen 1",
+            "Throw to Screen 2",
+            "Throw to Screen 3",
+            "Throw to Screen 4",
+            "Throw to Screen 5",
+            "Throw to Screen 6"
         ]
         
         // Convert to Set for efficient lookup
@@ -126,26 +136,20 @@ public class ConfigurationManager {
         // Create a new config that includes all general shortcuts, even those with nil values
         var configToSave = config
         
-        // Define the only supported general shortcuts
+        // Define the only supported general shortcuts (in logical order)
         let defaultGeneralShortcuts = [
-            "Remove current window from layout",
+            // Layout management
             "Toggle layout for current WindowSet",
-            "Focus Screen 1",
-            "Focus Screen 2",
-            "Focus Screen 3",
-            "Focus Screen 4",
-            "Focus Screen 5",
-            "Focus Screen 6",
-            "Throw to Screen 1",
-            "Throw to Screen 2",
-            "Throw to Screen 3",
-            "Throw to Screen 4",
-            "Throw to Screen 5",
-            "Throw to Screen 6",
+            "Show layout visualization",
+            "Expand Windows",
+            "Remove current window from layout",
             "Throw app to current layout modifier",
+            
+            // Panel size management
             "Increase main panel size",
             "Decrease main panel size",
-            "Expand Windows",
+            
+            // Window positioning
             "Position Window Left",
             "Position Window Right", 
             "Position Window Top",
@@ -154,7 +158,23 @@ public class ConfigurationManager {
             "Position Window Top Right",
             "Position Window Bottom Left",
             "Position Window Bottom Right",
-            "Position Window Center"
+            "Position Window Center",
+            
+            // Screen focus
+            "Focus Screen 1",
+            "Focus Screen 2",
+            "Focus Screen 3",
+            "Focus Screen 4",
+            "Focus Screen 5",
+            "Focus Screen 6",
+            
+            // Throw to screen
+            "Throw to Screen 1",
+            "Throw to Screen 2",
+            "Throw to Screen 3",
+            "Throw to Screen 4",
+            "Throw to Screen 5",
+            "Throw to Screen 6"
         ]
         
         // Convert to Set for efficient lookup
@@ -190,10 +210,6 @@ public class ConfigurationManager {
                 AppShortcutConfig(
                     bundleIdentifier: "com.googlecode.iterm2",
                     shortcut: ShortcutConfig(key: "6", modifiers: ["command", "option"])
-                ),
-                AppShortcutConfig(
-                    bundleIdentifier: "com.googlecode.iterm2",
-                    shortcut: ShortcutConfig(key: "5", modifiers: ["command", "option"])
                 ),
                 AppShortcutConfig(
                     bundleIdentifier: "notion.id",

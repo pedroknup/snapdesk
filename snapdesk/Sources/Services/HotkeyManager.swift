@@ -40,6 +40,7 @@ protocol WindowManaging: AnyObject {
     func expandCurrentLayout()
     func focusApp(_ bundleID: String) async
     func addWindowToLayout(_ bundleID: String)
+    func showLayoutVisualization()
     
     // Window positioning commands
     func positionWindowLeft()
@@ -108,6 +109,12 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         constructCommandWithCommandKey("toggle-layout-current-windowset") { [weak self] in
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.toggleLayoutForCurrentWindowSet()
+        }
+        
+        // Show layout visualization
+        constructCommandWithCommandKey("show-layout-visualization") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.showLayoutVisualization()
         }
         
         // Focus Screen shortcuts (1-6)
@@ -360,24 +367,18 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     
     static func commandKeyToDisplayName() -> [String: String] {
         return [
-            "remove-current-window-from-layout": "Remove current window from layout",
+            // Layout management
             "toggle-layout-current-windowset": "Toggle layout for current WindowSet",
-            "focus-screen-1": "Focus Screen 1",
-            "focus-screen-2": "Focus Screen 2",
-            "focus-screen-3": "Focus Screen 3",
-            "focus-screen-4": "Focus Screen 4",
-            "focus-screen-5": "Focus Screen 5",
-            "focus-screen-6": "Focus Screen 6",
-            "throw-screen-1": "Throw to Screen 1",
-            "throw-screen-2": "Throw to Screen 2",
-            "throw-screen-3": "Throw to Screen 3",
-            "throw-screen-4": "Throw to Screen 4",
-            "throw-screen-5": "Throw to Screen 5",
-            "throw-screen-6": "Throw to Screen 6",
+            "show-layout-visualization": "Show layout visualization",
+            "expand-current-layout": "Expand Windows",
+            "remove-current-window-from-layout": "Remove current window from layout",
             "throw-to-current-layout": "Throw app to current layout modifier",
+            
+            // Panel size management
             "increase-main-panel-size": "Increase main panel size",
             "decrease-main-panel-size": "Decrease main panel size",
-            "expand-current-layout": "Expand Windows",
+            
+            // Window positioning
             "position-window-left": "Position Window Left",
             "position-window-right": "Position Window Right",
             "position-window-top": "Position Window Top",
@@ -386,7 +387,23 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             "position-window-top-right": "Position Window Top Right",
             "position-window-bottom-left": "Position Window Bottom Left",
             "position-window-bottom-right": "Position Window Bottom Right",
-            "position-window-center": "Position Window Center"
+            "position-window-center": "Position Window Center",
+            
+            // Screen focus
+            "focus-screen-1": "Focus Screen 1",
+            "focus-screen-2": "Focus Screen 2",
+            "focus-screen-3": "Focus Screen 3",
+            "focus-screen-4": "Focus Screen 4",
+            "focus-screen-5": "Focus Screen 5",
+            "focus-screen-6": "Focus Screen 6",
+            
+            // Throw to screen
+            "throw-screen-1": "Throw to Screen 1",
+            "throw-screen-2": "Throw to Screen 2",
+            "throw-screen-3": "Throw to Screen 3",
+            "throw-screen-4": "Throw to Screen 4",
+            "throw-screen-5": "Throw to Screen 5",
+            "throw-screen-6": "Throw to Screen 6"
         ]
     }
     
