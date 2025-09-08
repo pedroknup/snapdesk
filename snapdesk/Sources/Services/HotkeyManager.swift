@@ -76,7 +76,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         if let activeInstance = HotkeyManagerStorage.activeInstance as? HotkeyManager {
             activeInstance.isRecordingShortcut = true
         }
-        log("⏸ Pausing all hotkeys for shortcut recording")
     }
     
     // Static method to resume all hotkeys
@@ -84,7 +83,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         if let activeInstance = HotkeyManagerStorage.activeInstance as? HotkeyManager {
             activeInstance.isRecordingShortcut = false
         }
-        log("▶️ Resuming all hotkeys after shortcut recording")
     }
 
     private(set) lazy var stringToKeyCodes: [String: [AMKeyCode]] = {
@@ -209,20 +207,12 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         
         // Window reordering shortcuts
         constructCommandWithCommandKey("move-window-up-in-layout") { [weak self] in
-            log("🔥 HOTKEY TRIGGERED: move-window-up-in-layout")
-            guard !(self?.isRecordingShortcut ?? false) else { 
-                log("❌ Recording shortcut, ignoring move-window-up-in-layout")
-                return 
-            }
+            guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.moveWindowUpInLayout()
         }
         
         constructCommandWithCommandKey("move-window-down-in-layout") { [weak self] in
-            log("🔥 HOTKEY TRIGGERED: move-window-down-in-layout")
-            guard !(self?.isRecordingShortcut ?? false) else { 
-                log("❌ Recording shortcut, ignoring move-window-down-in-layout")
-                return 
-            }
+            guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.moveWindowDownInLayout()
         }
         
@@ -256,7 +246,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             let throwHotKey = HotKey(key: key, modifiers: throwModifiers)
             throwHotKey.keyDownHandler = { [weak self] in
                 guard !(self?.isRecordingShortcut ?? false) else { return }
-                log("Throw shortcut triggered for \(appShortcut.bundleIdentifier)")
                 self?.windowManager.addWindowToLayout(appShortcut.bundleIdentifier)
             }
             hotKeys.append(throwHotKey)
@@ -350,7 +339,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         
         // Convert string to HotKey Key enum
         guard let hotKeyKey = Key(string: keyString) else {
-            log("Could not convert key string '\(keyString)' to HotKey.Key")
             return
         }
         
@@ -362,7 +350,6 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         }
         
         hotKeys.append(hotKey)
-//        log("Registered hotkey: \(keyString) with modifiers: \(modifiers)")
     }
     
     private func parseModifiers(_ modifierStrings: [String]) -> NSEvent.ModifierFlags {
