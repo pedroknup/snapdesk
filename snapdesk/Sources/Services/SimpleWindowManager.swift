@@ -609,7 +609,7 @@ class SimpleWindowManager: WindowManaging {
         }
         
         // Find the screen workspace index
-        guard let screenIndex = workspace.screens.firstIndex(where: { $0 === screenWS }) else {
+        guard let screenIndex = workspace.screens.firstIndex(where: { $0.id == screenWS.id }) else {
             log("❌ Could not find screen workspace")
             return
         }
@@ -621,16 +621,17 @@ class SimpleWindowManager: WindowManaging {
         
         // Update the WindowSet
         let updatedWindowSet = WindowSet(
-            windows: updatedWindows,
             layout: windowSet.layout,
-            mainPanelSizeAdjustment: windowSet.mainPanelSizeAdjustment
+            windows: updatedWindows,
+            screenID: windowSet.screenID
         )
+        updatedWindowSet.mainPanelSizeAdjustment = windowSet.mainPanelSizeAdjustment
         
         // Update the workspace
         workspace.screens[screenIndex].windowSets[setIndex] = updatedWindowSet
         
         // Refresh the layout to reflect the new order
-        layoutManager.expandWindowSet(updatedWindowSet, on: screenWS.screen)
+        updatedWindowSet.expandWindows()
         
         let directionText = direction == .up ? "up" : "down"
         let positionText = "\(newIndex + 1) of \(updatedWindows.count)"
