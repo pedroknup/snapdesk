@@ -509,14 +509,10 @@ class SimpleWindowManager: WindowManaging {
     // MARK: - Window Reordering
     
     func moveWindowUpInLayout() {
-        log("⬆️ moveWindowUpInLayout() called - SHORTCUT TRIGGERED!")
-        
         moveWindowInLayout(direction: .up)
     }
     
     func moveWindowDownInLayout() {
-        log("⬇️ moveWindowDownInLayout() called - SHORTCUT TRIGGERED!")
-        
         moveWindowInLayout(direction: .down)
     }
     
@@ -561,51 +557,13 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        // Find all unique windows for this app (deduplicated by window ID)
-        var seenWindowIDs: Set<CGWindowID> = []
-        var appWindows: [AXWindow] = []
-        for screenWorkspace in workspace.screens {
-            for windowSet in screenWorkspace.windowSets {
-                for window in windowSet.windows {
-                    if let windowApp = NSRunningApplication(processIdentifier: window.pid()),
-                       windowApp.bundleIdentifier == bundleID {
-                        let windowID = window.cgID()
-                        if !seenWindowIDs.contains(windowID) {
-                            seenWindowIDs.insert(windowID)
-                            appWindows.append(window)
-                        }
-                    }
-                }
-            }
-        }
-        
-        log("🔍 Found \(appWindows.count) unique windows for \(bundleID)")
-        for (index, window) in appWindows.enumerated() {
-            let title = window.title() ?? "untitled"
-            let windowID = window.cgID()
-            let isFocused = windowID == focusedWindowID
-            log("🔍   \(index): [\(windowID)] \(title) \(isFocused ? "← FOCUSED" : "")")
-        }
-        
-        // Find current position in the app's window list
-        guard let currentIndex = appWindows.firstIndex(where: { $0.cgID() == focusedWindowID }) else {
-            log("❌ Could not find focused window in app's window list")
-            return
-        }
-        
-        log("🔍 Current window is at index \(currentIndex) out of \(appWindows.count)")
-        
-        // Get the current cycling order to check boundaries correctly
+        // Get current cycling order and check boundaries
         let currentCyclingOrder = cyclingManager.getWindowCyclingOrder(for: bundleID)
         guard let cyclingIndex = currentCyclingOrder.firstIndex(of: focusedWindowID) else {
-            log("❌ Could not find focused window in cycling order")
             return
         }
         
-        log("🔍 Current window is at cycling index \(cyclingIndex) out of \(currentCyclingOrder.count)")
-        log("🔍 Current cycling order: \(currentCyclingOrder)")
-        
-        // Check boundaries using cycling order, not visual order
+        // Check boundaries using cycling order
         let moveDirection = direction == .up ? -1 : 1
         let newCyclingIndex = max(0, min(currentCyclingOrder.count - 1, cyclingIndex + moveDirection))
         
@@ -620,29 +578,22 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        log("🔄 Using CyclingManager to reorder windows")
-        
-        // Use the cycling manager to reorder
+        // Reorder via cycling manager
         guard let newOrder = cyclingManager.moveWindowInCyclingOrder(
             for: bundleID, 
             windowID: focusedWindowID, 
             direction: moveDirection
         ) else {
-            log("❌ Failed to update cycling order")
             return
         }
         
-        // Find the new position
-        let newPosition = newOrder.firstIndex(of: focusedWindowID) ?? 0
-        let directionText = direction == .up ? "earlier" : "later"
-        let positionText = "\(newPosition + 1) of \(newOrder.count)"
-        
-        log("✅ Moved window \(directionText) in cycling order to position \(positionText)")
-        
-        // Show feedback with the app's window list in the new order
+        // Show cycling order feedback with optional previews
+        let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
         let appName = app.localizedName ?? bundleID
         var feedbackText = "\(appName) - Cycling Order:\n"
         feedbackText += "────────────────────\n"
+        
+        var previewImages: [(NSImage, String)] = []
         
         // Display windows in the new cycling order
         for (index, windowID) in newOrder.enumerated() {
@@ -672,16 +623,33 @@ class SimpleWindowManager: WindowManaging {
             let isCurrent = windowID == focusedWindowID
             let marker = isCurrent ? " ◀" : ""
             feedbackText += "\(index + 1). \(truncatedTitle)\(marker)\n"
+            
+            // Capture screenshot if preview is enabled
+            if config.enabled {
+                let maxSize = NSSize(width: config.maxWidth, height: config.maxHeight)
+                if let screenshot = WindowScreenshotCapture.captureWindow(windowID: windowID, maxSize: maxSize) {
+                    previewImages.append((screenshot, "\(index + 1). \(truncatedTitle)\(marker)"))
+                }
+            }
         }
         
-        log("📋 New cycling order for \(bundleID): \(newOrder)")
-        
-        FloatingWindowHelper.showFloatingWindow(
-            text: feedbackText,
-            position: .center,
-            duration: 2.5,
-            fontSize: 14
-        )
+        // Show feedback with previews if enabled
+        if config.enabled && !previewImages.isEmpty {
+            FloatingWindowHelper.showFloatingWindow(
+                attributedText: NSAttributedString(string: feedbackText),
+                images: previewImages,
+                position: .center,
+                duration: 2.5,
+                fontSize: 14
+            )
+        } else {
+            FloatingWindowHelper.showFloatingWindow(
+                text: feedbackText,
+                position: .center,
+                duration: 2.5,
+                fontSize: 14
+            )
+        }
     }
     
     private func truncateString(_ string: String, maxLength: Int) -> String {
@@ -827,7 +795,6 @@ class SimpleWindowManager: WindowManaging {
             y: windowFrame.midY
         )
         
-        log("🖱️ Moving cursor to center of window at \(NSStringFromPoint(centerPoint))")
         
         // Create and post mouse move event
         if let mouseMoveEvent = CGEvent(

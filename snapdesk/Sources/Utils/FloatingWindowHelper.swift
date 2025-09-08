@@ -23,6 +23,11 @@ class FloatingWindowHelper {
     }
     
     static func showFloatingWindow(attributedText: NSAttributedString, position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
+        showFloatingWindow(attributedText: attributedText, images: [], position: position, duration: duration, fontSize: fontSize)
+    }
+    
+    /// Shows a floating window with text and optional images
+    static func showFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
         // Read settings for notification position and duration
         let settingsDuration = UserDefaults.standard.object(forKey: "notificationDuration") as? Double ?? duration
         let settingsPosition = UserDefaults.standard.string(forKey: "notificationPosition") ?? "center"
@@ -37,7 +42,7 @@ class FloatingWindowHelper {
         default: actualPosition = .center
         }
         
-        let window = createFloatingWindow(attributedText: attributedText, position: actualPosition, fontSize: fontSize)
+        let window = createFloatingWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
         activeWindows.append(window)
         
         window.makeKeyAndOrderFront(nil)
@@ -49,7 +54,179 @@ class FloatingWindowHelper {
         }
     }
     
-    private static func createFloatingWindow(attributedText: NSAttributedString, position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
+    private static func createFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
+        let padding: CGFloat = 20
+        
+        // If no images, use simple text-only layout for better compatibility
+        if images.isEmpty {
+            return createSimpleTextWindow(attributedText: attributedText, position: position, fontSize: fontSize, maxWidth: maxWidth, maxHeight: maxHeight, padding: padding)
+        }
+        
+        // Create container view for complex layout with images
+        let containerView = NSView()
+        containerView.wantsLayer = true
+        containerView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.85).cgColor
+        containerView.layer?.cornerRadius = 8
+        
+        // Create content stack view
+        let stackView = NSStackView()
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add header text
+        let textView = NSTextView()
+        textView.textStorage?.setAttributedString(attributedText)
+        textView.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        textView.textColor = NSColor.white
+        textView.backgroundColor = NSColor.clear
+        textView.isEditable = false
+        textView.isSelectable = false
+        textView.alignment = .left
+        textView.isRichText = true
+        textView.allowsUndo = false
+        textView.isVerticallyResizable = false
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.widthTracksTextView = true
+        
+        let textSize = attributedText.boundingRect(
+            with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        ).size
+        
+        textView.frame = NSRect(origin: .zero, size: textSize)
+        stackView.addArrangedSubview(textView)
+        
+        var totalWidth = textSize.width
+        var totalHeight = textSize.height
+        
+        // Add images if provided
+        if !images.isEmpty {
+            let imageStackView = NSStackView()
+            imageStackView.orientation = .vertical
+            imageStackView.alignment = .leading
+            imageStackView.spacing = 8
+            
+            for (image, title) in images {
+                // Create horizontal container for image + text
+                let imageRowView = NSStackView()
+                imageRowView.orientation = .horizontal
+                imageRowView.alignment = .top
+                imageRowView.spacing = 12
+                
+                // Add image
+                let imageView = NSImageView()
+                imageView.image = image
+                imageView.imageScaling = .scaleProportionallyUpOrDown
+                imageView.wantsLayer = true
+                imageView.layer?.cornerRadius = 4
+                imageView.layer?.borderWidth = 1
+                imageView.layer?.borderColor = NSColor.gray.withAlphaComponent(0.3).cgColor
+                
+                let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
+                imageView.frame = NSRect(origin: .zero, size: NSSize(width: config.maxWidth, height: config.maxHeight))
+                imageRowView.addArrangedSubview(imageView)
+                
+                // Add title
+                let titleLabel = NSTextField(labelWithString: title)
+                titleLabel.textColor = NSColor.white
+                titleLabel.font = NSFont.systemFont(ofSize: fontSize - 2)
+                titleLabel.backgroundColor = NSColor.clear
+                titleLabel.cell?.wraps = true
+                titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                imageRowView.addArrangedSubview(titleLabel)
+                
+                imageStackView.addArrangedSubview(imageRowView)
+                
+                // Update total dimensions
+                totalWidth = max(totalWidth, config.maxWidth + 12 + 200) // image + spacing + estimated text width
+                totalHeight += config.maxHeight + 8 // image height + spacing
+            }
+            
+            stackView.addArrangedSubview(imageStackView)
+        }
+        
+        // Calculate final window size
+        let windowSize = NSSize(
+            width: min(totalWidth + padding * 2, maxWidth),
+            height: min(totalHeight + padding * 2, maxHeight)
+        )
+        
+        // Calculate position based on enum
+        let screenFrame = NSScreen.main?.visibleFrame ?? NSRect.zero
+        let windowOrigin: NSPoint
+        
+        switch position {
+        case .center:
+            windowOrigin = NSPoint(
+                x: screenFrame.midX - windowSize.width / 2,
+                y: screenFrame.midY - windowSize.height / 2
+            )
+        case .topLeft:
+            windowOrigin = NSPoint(
+                x: screenFrame.minX + 20,
+                y: screenFrame.maxY - windowSize.height - 20
+            )
+        case .topRight:
+            windowOrigin = NSPoint(
+                x: screenFrame.maxX - windowSize.width - 20,
+                y: screenFrame.maxY - windowSize.height - 20
+            )
+        case .bottomLeft:
+            windowOrigin = NSPoint(
+                x: screenFrame.minX + 20,
+                y: screenFrame.minY + 20
+            )
+        case .bottomRight:
+            windowOrigin = NSPoint(
+                x: screenFrame.maxX - windowSize.width - 20,
+                y: screenFrame.minY + 20
+            )
+        }
+        
+        let windowRect = NSRect(origin: windowOrigin, size: windowSize)
+        
+        let window = NSWindow(
+            contentRect: windowRect,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        
+        // Window styling
+        window.backgroundColor = NSColor.clear
+        window.isOpaque = false
+        window.hasShadow = false
+        window.ignoresMouseEvents = true
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        
+        // Setup container view
+        containerView.frame = NSRect(origin: .zero, size: windowSize)
+        containerView.addSubview(stackView)
+        
+        // Setup constraints for stack view
+        stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: padding).isActive = true
+        stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: padding).isActive = true
+        stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
+        stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        
+        window.contentView = containerView
+        
+        // Add fade-in animation
+        window.alphaValue = 0.0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            window.animator().alphaValue = 1.0
+        }
+        
+        return window
+    }
+    
+    /// Creates a simple text-only floating window (original implementation)
+    private static func createSimpleTextWindow(attributedText: NSAttributedString, position: FloatingPosition, fontSize: CGFloat, maxWidth: CGFloat, maxHeight: CGFloat, padding: CGFloat) -> NSWindow {
         // Create text view to display attributed text
         let textView = NSTextView()
         textView.textStorage?.setAttributedString(attributedText)
@@ -63,15 +240,12 @@ class FloatingWindowHelper {
         textView.allowsUndo = false
         
         // Calculate required size by measuring the attributed text
-        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
-        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
         let constraintSize = NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8)
         
         let textSize = attributedText.boundingRect(
             with: constraintSize,
             options: [.usesLineFragmentOrigin, .usesFontLeading]
         ).size
-        let padding: CGFloat = 30  // Increased padding for better readability
         
         let windowSize = NSSize(
             width: min(textSize.width + padding * 2, maxWidth),
@@ -129,7 +303,7 @@ class FloatingWindowHelper {
         // Create background view with rounded corners and transparency
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor  // Slightly more opaque
+        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
         backgroundView.layer?.cornerRadius = 12
         
         // Position text view to fill the available space with padding
@@ -183,5 +357,80 @@ class FloatingWindowHelper {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             showFloatingWindow(text: "Third Window", position: .bottomLeft, duration: 3.0)
         }
+    }
+}
+
+// MARK: - Window Screenshot Utility
+class WindowScreenshotCapture {
+    private static var cache: [CGWindowID: (image: NSImage, timestamp: TimeInterval)] = [:]
+    
+    /// Captures a screenshot of a specific window
+    /// - Parameters:
+    ///   - windowID: The window ID to capture
+    ///   - maxSize: Maximum size for the captured image
+    /// - Returns: NSImage of the window, scaled to maxSize if necessary
+    static func captureWindow(windowID: CGWindowID, maxSize: NSSize = NSSize(width: 200, height: 150)) -> NSImage? {
+        let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
+        
+        // Check cache first
+        if let cached = cache[windowID], 
+           Date().timeIntervalSince1970 - cached.timestamp < config.cacheTimeoutSeconds {
+            return cached.image
+        }
+        
+        // Capture window screenshot
+        guard let cgImage = CGWindowListCreateImage(
+            .null,
+            .optionIncludingWindow,
+            windowID,
+            [.boundsIgnoreFraming, .bestResolution]
+        ) else {
+            return nil
+        }
+        
+        let originalImage = NSImage(cgImage: cgImage, size: .zero)
+        let scaledImage = scaleImage(originalImage, to: maxSize)
+        
+        // Cache the result
+        cache[windowID] = (image: scaledImage, timestamp: Date().timeIntervalSince1970)
+        
+        // Clean up old cache entries
+        cleanupCache(maxAge: config.cacheTimeoutSeconds)
+        
+        return scaledImage
+    }
+    
+    /// Scales an image to fit within the specified size while maintaining aspect ratio
+    private static func scaleImage(_ image: NSImage, to maxSize: NSSize) -> NSImage {
+        let originalSize = image.size
+        let aspectRatio = originalSize.width / originalSize.height
+        
+        var newSize = maxSize
+        
+        if aspectRatio > (maxSize.width / maxSize.height) {
+            // Width is the limiting factor
+            newSize.height = maxSize.width / aspectRatio
+        } else {
+            // Height is the limiting factor  
+            newSize.width = maxSize.height * aspectRatio
+        }
+        
+        let scaledImage = NSImage(size: newSize)
+        scaledImage.lockFocus()
+        image.draw(in: NSRect(origin: .zero, size: newSize))
+        scaledImage.unlockFocus()
+        
+        return scaledImage
+    }
+    
+    /// Removes old entries from cache
+    private static func cleanupCache(maxAge: TimeInterval) {
+        let currentTime = Date().timeIntervalSince1970
+        cache = cache.filter { currentTime - $0.value.timestamp < maxAge }
+    }
+    
+    /// Clears the entire cache
+    static func clearCache() {
+        cache.removeAll()
     }
 }

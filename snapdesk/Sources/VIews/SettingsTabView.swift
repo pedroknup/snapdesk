@@ -7,6 +7,12 @@ struct SettingsTabView: View {
     @AppStorage("notificationDuration") private var notificationDuration: Double = 1.5
     @AppStorage("notificationPosition") private var notificationPosition = "center"
     
+    // Window Preview Settings (from YAML config)
+    @State private var windowPreviewEnabled = true
+    @State private var windowPreviewWidth: Double = 200
+    @State private var windowPreviewHeight: Double = 150
+    @State private var windowPreviewCacheTimeout: Double = 5.0
+    
     // Startup & System
     @AppStorage("launchAtLogin") private var launchAtLogin = true
     @AppStorage("hideMenuBarIcon") private var hideMenuBarIcon = false
@@ -39,6 +45,41 @@ struct SettingsTabView: View {
                     
                     Toggle("Show Window Throw Notifications", isOn: $showThrowNotifications)
                         .help("Display notification when moving windows between screens")
+                    
+                    Toggle("Show Window Preview Screenshots", isOn: $windowPreviewEnabled)
+                        .help("Display window screenshots when cycling through app windows")
+                        .onChange(of: windowPreviewEnabled) { _ in
+                            saveWindowPreviewConfig()
+                        }
+                    
+                    if windowPreviewEnabled {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Preview Width:")
+                                    .foregroundColor(.secondary)
+                                Slider(value: $windowPreviewWidth, in: 100...400, step: 10)
+                                    .onChange(of: windowPreviewWidth) { _ in
+                                        saveWindowPreviewConfig()
+                                    }
+                                Text("\(Int(windowPreviewWidth))px")
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 45, alignment: .trailing)
+                            }
+                            
+                            HStack {
+                                Text("Preview Height:")
+                                    .foregroundColor(.secondary)
+                                Slider(value: $windowPreviewHeight, in: 75...300, step: 10)
+                                    .onChange(of: windowPreviewHeight) { _ in
+                                        saveWindowPreviewConfig()
+                                    }
+                                Text("\(Int(windowPreviewHeight))px")
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 45, alignment: .trailing)
+                            }
+                        }
+                        .padding(.leading, 20)
+                    }
                 }
 
                 // Startup & System
@@ -130,5 +171,37 @@ struct SettingsTabView: View {
             .padding(.top, 32)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            loadWindowPreviewConfig()
+        }
+    }
+    
+    // MARK: - Window Preview Configuration
+    
+    private func loadWindowPreviewConfig() {
+        if let config = ConfigurationManager.shared.loadConfig() {
+            windowPreviewEnabled = config.windowPreview.enabled
+            windowPreviewWidth = Double(config.windowPreview.maxWidth)
+            windowPreviewHeight = Double(config.windowPreview.maxHeight)
+            windowPreviewCacheTimeout = config.windowPreview.cacheTimeoutSeconds
+        }
+    }
+    
+    private func saveWindowPreviewConfig() {
+        guard var config = ConfigurationManager.shared.loadConfig() else { 
+            return 
+        }
+        
+        // Update the window preview settings
+        config.windowPreview.enabled = windowPreviewEnabled
+        config.windowPreview.maxWidth = CGFloat(windowPreviewWidth)
+        config.windowPreview.maxHeight = CGFloat(windowPreviewHeight)
+        config.windowPreview.cacheTimeoutSeconds = windowPreviewCacheTimeout
+        
+        // Save the updated configuration
+        try? ConfigurationManager.shared.saveConfig(config)
+        
+        // Clear screenshot cache when settings change
+        WindowScreenshotCapture.clearCache()
     }
 }
