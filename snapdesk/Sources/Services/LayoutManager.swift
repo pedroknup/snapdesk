@@ -397,14 +397,8 @@ class LayoutManager {
         let screenIndex = screenNumber - 1  // Convert 1-based to 0-based index
         
         guard screenIndex >= 0 && screenIndex < screens.count else {
-            let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
-            if showThrowNotifications {
-                FloatingWindowHelper.showFloatingWindow(
-                    text: "Screen \(screenNumber) not available", 
-                    position: .center, 
-                    duration: 2.0
-                )
-            }
+            log("Screen \(screenNumber) not available")
+
             return
         }
         

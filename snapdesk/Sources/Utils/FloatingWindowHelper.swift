@@ -42,7 +42,7 @@ class FloatingWindowHelper {
         default: actualPosition = .center
         }
         
-        let window = createFloatingWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
+        let window = createTerminalStyleFloatingWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
         activeWindows.append(window)
         
         window.makeKeyAndOrderFront(nil)
@@ -52,6 +52,147 @@ class FloatingWindowHelper {
         DispatchQueue.main.asyncAfter(deadline: .now() + settingsDuration) {
             hideWindow(window)
         }
+    }
+    
+    /// Creates a terminal-style floating window with ASCII borders and monospace styling
+    private static func createTerminalStyleFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
+        let padding: CGFloat = 24
+        
+        // If no images, use simple terminal text layout
+        if images.isEmpty {
+            return createTerminalTextWindow(attributedText: attributedText, position: position, fontSize: fontSize)
+        }
+        
+        // Create container view for images layout without outer border
+        let containerView = NSView()
+        containerView.wantsLayer = true
+        containerView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
+        containerView.layer?.cornerRadius = 6
+        
+        // Create content stack view
+        let stackView = NSStackView()
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add header text
+        let textView = NSTextView()
+        textView.textStorage?.setAttributedString(attributedText)
+        textView.font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
+        textView.textColor = NSColor.white
+        textView.backgroundColor = NSColor.clear
+        textView.isEditable = false
+        textView.isSelectable = false
+        textView.alignment = .left
+        textView.isRichText = true
+        textView.allowsUndo = false
+        textView.isVerticallyResizable = false
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.widthTracksTextView = true
+        
+        let textSize = attributedText.boundingRect(
+            with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        ).size
+        
+        textView.frame = NSRect(origin: .zero, size: textSize)
+        stackView.addArrangedSubview(textView)
+        
+        var totalWidth = textSize.width
+        var totalHeight = textSize.height
+        
+        // Add images if provided
+        if !images.isEmpty {
+            let imageStackView = NSStackView()
+            imageStackView.orientation = .vertical
+            imageStackView.alignment = .leading
+            imageStackView.spacing = 8
+            
+            for (image, title) in images {
+                // Create horizontal container for image + text
+                let imageRowView = NSStackView()
+                imageRowView.orientation = .horizontal
+                imageRowView.alignment = .top
+                imageRowView.spacing = 12
+                
+                // Add image
+                let imageView = NSImageView()
+                imageView.image = image
+                imageView.imageScaling = .scaleProportionallyUpOrDown
+                imageView.wantsLayer = true
+                imageView.layer?.cornerRadius = 4
+                
+                let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
+                imageView.frame = NSRect(origin: .zero, size: NSSize(width: config.maxWidth, height: config.maxHeight))
+                imageRowView.addArrangedSubview(imageView)
+                
+                // Add title
+                let titleLabel = NSTextField(labelWithString: title)
+                titleLabel.textColor = NSColor.white
+                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: .medium)
+                titleLabel.backgroundColor = NSColor.clear
+                titleLabel.cell?.wraps = true
+                titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                imageRowView.addArrangedSubview(titleLabel)
+                
+                imageStackView.addArrangedSubview(imageRowView)
+                
+                // Update total dimensions
+                totalWidth = max(totalWidth, config.maxWidth + 12 + 200)
+                totalHeight += config.maxHeight + 8
+            }
+            
+            stackView.addArrangedSubview(imageStackView)
+        }
+        
+        // Calculate final window size
+        let windowSize = NSSize(
+            width: min(totalWidth + padding * 2, maxWidth),
+            height: min(totalHeight + padding * 2, maxHeight)
+        )
+        
+        // Calculate position
+        let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
+        let windowRect = NSRect(origin: windowOrigin, size: windowSize)
+        
+        let window = NSWindow(
+            contentRect: windowRect,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        
+        // Window styling
+        window.backgroundColor = NSColor.clear
+        window.isOpaque = false
+        window.hasShadow = true
+        window.ignoresMouseEvents = true
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        
+        // Setup container view
+        containerView.frame = NSRect(origin: .zero, size: windowSize)
+        containerView.addSubview(stackView)
+        
+        // Setup constraints for stack view
+        stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: padding).isActive = true
+        stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: padding).isActive = true
+        stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
+        stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        
+        window.contentView = containerView
+        
+        // Add fade-in animation
+        window.alphaValue = 0.0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.2
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().alphaValue = 1.0
+        }
+        
+        return window
     }
     
     private static func createFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
@@ -223,6 +364,193 @@ class FloatingWindowHelper {
         }
         
         return window
+    }
+    
+    /// Creates clean terminal content without borders for images
+    private static func createTerminalContentWithImages(attributedText: NSAttributedString, images: [(NSImage, String)], fontSize: CGFloat, maxWidth: CGFloat) -> NSAttributedString {
+        let result = NSMutableAttributedString()
+        let terminalFont = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
+        let textColor = NSColor.white
+        let secondaryColor = NSColor.systemGray
+        
+        // Add main text without borders
+        let mainTextLines = attributedText.string.components(separatedBy: .newlines)
+        for line in mainTextLines {
+            let cleanLine = line.trimmingCharacters(in: .whitespaces)
+            if !cleanLine.isEmpty {
+                result.append(NSAttributedString(string: " \(cleanLine)\n", attributes: [
+                    .font: terminalFont,
+                    .foregroundColor: textColor
+                ]))
+            }
+        }
+        
+        // Add spacing before images
+        if !images.isEmpty {
+            result.append(NSAttributedString(string: "\n", attributes: [
+                .font: terminalFont,
+                .foregroundColor: textColor
+            ]))
+            
+            // Add image entries with clean formatting
+            for (index, (_, title)) in images.enumerated() {
+                let cleanTitle = title.trimmingCharacters(in: .whitespaces)
+                let imageEntry = " [\(index + 1)] \(cleanTitle)\n"
+                result.append(NSAttributedString(string: imageEntry, attributes: [
+                    .font: terminalFont,
+                    .foregroundColor: secondaryColor
+                ]))
+            }
+        }
+        
+        return result
+    }
+    
+    // Helper function for text truncation
+    private static func truncateString(_ string: String, maxLength: Int) -> String {
+        if string.count <= maxLength {
+            return string
+        } else {
+            return String(string.prefix(maxLength - 3)) + "..."
+        }
+    }
+    
+    /// Creates a simple terminal-style text window
+    private static func createTerminalTextWindow(attributedText: NSAttributedString, position: FloatingPosition, fontSize: CGFloat) -> NSWindow {
+        let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
+        let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
+        let padding: CGFloat = 24
+        
+        // Create terminal-styled text with ASCII border
+        let terminalText = createTerminalTextContent(attributedText: attributedText, fontSize: fontSize, maxWidth: maxWidth)
+        
+        let textSize = terminalText.boundingRect(
+            with: NSSize(width: maxWidth * 0.8, height: maxHeight * 0.8),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        ).size
+        
+        let windowSize = NSSize(
+            width: min(textSize.width + padding * 2, maxWidth),
+            height: min(textSize.height + padding * 2, maxHeight)
+        )
+        
+        let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
+        let windowRect = NSRect(origin: windowOrigin, size: windowSize)
+        
+        let window = NSWindow(
+            contentRect: windowRect,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        
+        // Terminal-style window configuration
+        window.backgroundColor = NSColor.clear
+        window.isOpaque = false
+        window.hasShadow = true
+        window.ignoresMouseEvents = true
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        
+        // Create subtle terminal background without outer border
+        let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
+        backgroundView.wantsLayer = true
+        backgroundView.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.9).cgColor
+        backgroundView.layer?.cornerRadius = 6
+        
+        // Subtle shadow effect
+        backgroundView.layer?.shadowColor = NSColor.black.withAlphaComponent(0.3).cgColor
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 2)
+        backgroundView.layer?.shadowRadius = 4
+        backgroundView.layer?.shadowOpacity = 0.5
+        
+        // Create text view
+        let textView = NSTextView()
+        textView.textStorage?.setAttributedString(terminalText)
+        textView.backgroundColor = NSColor.clear
+        textView.isEditable = false
+        textView.isSelectable = false
+        textView.frame = NSRect(
+            x: padding,
+            y: padding,
+            width: windowSize.width - padding * 2,
+            height: windowSize.height - padding * 2
+        )
+        
+        backgroundView.addSubview(textView)
+        window.contentView = backgroundView
+        
+        // Add fade-in animation
+        window.alphaValue = 0.0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.2
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().alphaValue = 1.0
+        }
+        
+        return window
+    }
+    
+    /// Creates clean terminal-styled text content without borders
+    private static func createTerminalTextContent(attributedText: NSAttributedString, fontSize: CGFloat, maxWidth: CGFloat) -> NSAttributedString {
+        let result = NSMutableAttributedString()
+        let terminalFont = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
+        let textColor = NSColor.white
+        
+        let text = attributedText.string
+        
+        // Clean content without borders - just add some spacing
+        let lines = text.components(separatedBy: .newlines)
+        for (index, line) in lines.enumerated() {
+            let cleanLine = line.trimmingCharacters(in: .whitespaces)
+            var paddedLine = " \(cleanLine) "
+            
+            // Add extra spacing between sections
+            if index > 0 && !cleanLine.isEmpty {
+                paddedLine = "\n \(cleanLine) "
+            }
+            
+            paddedLine += "\n"
+            
+            result.append(NSAttributedString(string: paddedLine, attributes: [
+                .font: terminalFont,
+                .foregroundColor: textColor
+            ]))
+        }
+        
+        return result
+    }
+    
+    /// Helper to calculate window origin based on position
+    private static func calculateWindowOrigin(position: FloatingPosition, windowSize: NSSize) -> NSPoint {
+        let screenFrame = NSScreen.main?.visibleFrame ?? NSRect.zero
+        
+        switch position {
+        case .center:
+            return NSPoint(
+                x: screenFrame.midX - windowSize.width / 2,
+                y: screenFrame.midY - windowSize.height / 2
+            )
+        case .topLeft:
+            return NSPoint(
+                x: screenFrame.minX + 20,
+                y: screenFrame.maxY - windowSize.height - 20
+            )
+        case .topRight:
+            return NSPoint(
+                x: screenFrame.maxX - windowSize.width - 20,
+                y: screenFrame.maxY - windowSize.height - 20
+            )
+        case .bottomLeft:
+            return NSPoint(
+                x: screenFrame.minX + 20,
+                y: screenFrame.minY + 20
+            )
+        case .bottomRight:
+            return NSPoint(
+                x: screenFrame.maxX - windowSize.width - 20,
+                y: screenFrame.minY + 20
+            )
+        }
     }
     
     /// Creates a simple text-only floating window (original implementation)

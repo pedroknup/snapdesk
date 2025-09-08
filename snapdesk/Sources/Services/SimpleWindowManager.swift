@@ -590,8 +590,7 @@ class SimpleWindowManager: WindowManaging {
         // Show cycling order feedback with optional previews
         let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
         let appName = app.localizedName ?? bundleID
-        var feedbackText = "\(appName) - Cycling Order:\n"
-        feedbackText += "────────────────────\n"
+        var feedbackText = "\(appName) - Cycling Order\n\n"
         
         var previewImages: [(NSImage, String)] = []
         
@@ -608,10 +607,8 @@ class SimpleWindowManager: WindowManaging {
                         
                         // Create a more descriptive title
                         if cleanTitle.isEmpty || cleanTitle == "Order Change" || cleanTitle == appName {
-                            // If title is empty, generic, or same as app name, show app name with window ID for distinction
                             windowTitle = "\(appName) (\(String(windowID).suffix(4)))"
                         } else {
-                            // Show the actual window title
                             windowTitle = cleanTitle
                         }
                         break
@@ -619,10 +616,10 @@ class SimpleWindowManager: WindowManaging {
                 }
             }
             
-            let truncatedTitle = truncateString(windowTitle, maxLength: 30)
+            let truncatedTitle = truncateString(windowTitle, maxLength: 35)
             let isCurrent = windowID == focusedWindowID
-            let marker = isCurrent ? " ◀" : ""
-            feedbackText += "\(index + 1). \(truncatedTitle)\(marker)\n"
+            let marker = isCurrent ? " ◄" : ""
+            feedbackText += " \(index + 1). \(truncatedTitle)\(marker)\n"
             
             // Capture screenshot if preview is enabled
             if config.enabled {

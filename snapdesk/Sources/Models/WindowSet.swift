@@ -178,13 +178,10 @@ final class WindowSet: Identifiable {
     
     /// Expands all windows in the WindowSet according to its layout on their assigned screen
     func expandWindows() {
-        log("🔧 expandWindows() called for WindowSet with \(windows.count) windows")
         guard let screenID = screenID,
               let screen = AMScreen.availableScreens.first(where: { $0.screenID() == screenID }) else {
-            log("❌ Cannot expand windows: no screen ID (\(screenID ?? "nil")) or screen not found")
             return
         }
-        log("📐 Found screen with ID \(screenID), calling expandWindows(on:)")
         expandWindows(on: screen)
     }
     
@@ -361,7 +358,6 @@ final class WindowSet: Identifiable {
     
     /// Raises all windows in this WindowSet to bring them to front
     func raiseAllWindows(excluding excludeWindow: AXWindow? = nil) async {
-        log("📤 Raising all \(windows.count) windows in WindowSet")
         for window in windows {
             // Skip the excluded window if specified
             if let exclude = excludeWindow, window.cgID() == exclude.cgID() {
