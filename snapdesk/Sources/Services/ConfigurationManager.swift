@@ -96,6 +96,10 @@ public class ConfigurationManager {
             "Position Window Bottom Right",
             "Position Window Center",
             
+            // Window reordering
+            "Move Window Up in Layout",
+            "Move Window Down in Layout",
+            
             // Screen focus
             "Focus Screen 1",
             "Focus Screen 2",
@@ -159,6 +163,10 @@ public class ConfigurationManager {
             "Position Window Bottom Left",
             "Position Window Bottom Right",
             "Position Window Center",
+            
+            // Window reordering
+            "Move Window Up in Layout",
+            "Move Window Down in Layout",
             
             // Screen focus
             "Focus Screen 1",
@@ -299,6 +307,15 @@ public class ConfigurationManager {
                 GeneralShortcutConfig(
                     name: "Expand Windows",
                     shortcut: nil  // No default shortcut, user can configure it
+                ),
+                // Window reordering shortcuts
+                GeneralShortcutConfig(
+                    name: "Move Window Up in Layout",
+                    shortcut: ShortcutConfig(key: "up", modifiers: ["command", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Move Window Down in Layout",
+                    shortcut: ShortcutConfig(key: "down", modifiers: ["command", "option"])
                 )
             ]
         )
