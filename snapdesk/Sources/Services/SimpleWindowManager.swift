@@ -410,15 +410,20 @@ class SimpleWindowManager: WindowManaging {
         
         log("🎨 Showing layout visualization (\(isAutomatic ? "automatic" : "manual"))")
         
-        let attributedText = createLayoutVisualization()
-        
-        // Show the visualization using FloatingWindowHelper with larger font
-        FloatingWindowHelper.showFloatingWindow(
-            attributedText: attributedText,
-            position: .center,
-            duration: duration,
-            fontSize: 14  // Larger, more readable font
-        )
+        // Ensure UI operations happen on main thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let attributedText = self.createLayoutVisualization()
+            
+            // Show the visualization using FloatingWindowHelper with larger font
+            FloatingWindowHelper.showFloatingWindow(
+                attributedText: attributedText,
+                position: .center,
+                duration: duration,
+                fontSize: 14  // Larger, more readable font
+            )
+        }
     }
     
     private func showAutomaticLayoutVisualization() {
@@ -445,8 +450,10 @@ class SimpleWindowManager: WindowManaging {
             return nil
         }()
         
+        // Ensure workspace access is on main thread to avoid concurrent access issues
+        let workspaceCopy = workspace
         return LayoutVisualizationRenderer.renderLayoutVisualization(
-            workspace: workspace,
+            workspace: workspaceCopy,
             focusedWindowID: focusedWindowID,
             currentScreenID: currentScreenID
         )
@@ -497,6 +504,151 @@ class SimpleWindowManager: WindowManaging {
     func positionWindowCenter() {
         log("🎯 positionWindowCenter() called")
         positionSingleWindow(to: "center")
+    }
+    
+    // MARK: - Window Reordering
+    
+    func moveWindowUpInLayout() {
+        log("⬆️ moveWindowUpInLayout() called")
+        moveWindowInLayout(direction: .up)
+    }
+    
+    func moveWindowDownInLayout() {
+        log("⬇️ moveWindowDownInLayout() called")
+        moveWindowInLayout(direction: .down)
+    }
+    
+    private enum MoveDirection {
+        case up, down
+    }
+    
+    private func moveWindowInLayout(direction: MoveDirection) {
+        // Ensure this runs on main thread for thread safety
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let focusedWindow = frontmostWindow() else {
+                log("❌ No focused window found")
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "No window focused",
+                    position: .center,
+                    duration: 1.5,
+                    fontSize: 14
+                )
+                return
+            }
+            
+            self.performWindowMove(direction: direction, focusedWindow: focusedWindow)
+        }
+    }
+    
+    private func performWindowMove(direction: MoveDirection, focusedWindow: AXUIElement) {
+        let axWindow = AXWindow(axElement: focusedWindow)
+        let focusedWindowID = axWindow.cgID()
+        
+        // Find the WindowSet containing the focused window
+        var targetScreenWorkspace: ScreenWorkspace?
+        var targetWindowSet: WindowSet?
+        var windowSetIndex: Int?
+        
+        for (screenIndex, screenWorkspace) in workspace.screens.enumerated() {
+            for (setIndex, windowSet) in screenWorkspace.windowSets.enumerated() {
+                if windowSet.windows.contains(where: { $0.cgID() == focusedWindowID }) {
+                    targetScreenWorkspace = screenWorkspace
+                    targetWindowSet = windowSet
+                    windowSetIndex = setIndex
+                    break
+                }
+            }
+            if targetWindowSet != nil { break }
+        }
+        
+        guard let screenWS = targetScreenWorkspace,
+              let windowSet = targetWindowSet,
+              let setIndex = windowSetIndex else {
+            log("❌ Could not find WindowSet containing focused window")
+            FloatingWindowHelper.showFloatingWindow(
+                text: "Window not in a layout",
+                position: .center,
+                duration: 1.5,
+                fontSize: 14
+            )
+            return
+        }
+        
+        // Find current position of the focused window
+        guard let currentIndex = windowSet.windows.firstIndex(where: { $0.cgID() == focusedWindowID }) else {
+            log("❌ Could not find focused window in WindowSet")
+            return
+        }
+        
+        let newIndex: Int
+        switch direction {
+        case .up:
+            newIndex = max(0, currentIndex - 1)
+            if newIndex == currentIndex {
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "Window already at top of layout",
+                    position: .center,
+                    duration: 1.5,
+                    fontSize: 14
+                )
+                return
+            }
+        case .down:
+            newIndex = min(windowSet.windows.count - 1, currentIndex + 1)
+            if newIndex == currentIndex {
+                FloatingWindowHelper.showFloatingWindow(
+                    text: "Window already at bottom of layout",
+                    position: .center,
+                    duration: 1.5,
+                    fontSize: 14
+                )
+                return
+            }
+        }
+        
+        // Find the screen workspace index
+        guard let screenIndex = workspace.screens.firstIndex(where: { $0 === screenWS }) else {
+            log("❌ Could not find screen workspace")
+            return
+        }
+        
+        // Move the window in the array
+        var updatedWindows = windowSet.windows
+        let windowToMove = updatedWindows.remove(at: currentIndex)
+        updatedWindows.insert(windowToMove, at: newIndex)
+        
+        // Update the WindowSet
+        let updatedWindowSet = WindowSet(
+            windows: updatedWindows,
+            layout: windowSet.layout,
+            mainPanelSizeAdjustment: windowSet.mainPanelSizeAdjustment
+        )
+        
+        // Update the workspace
+        workspace.screens[screenIndex].windowSets[setIndex] = updatedWindowSet
+        
+        // Refresh the layout to reflect the new order
+        layoutManager.expandWindowSet(updatedWindowSet, on: screenWS.screen)
+        
+        let directionText = direction == .up ? "up" : "down"
+        let positionText = "\(newIndex + 1) of \(updatedWindows.count)"
+        
+        log("✅ Moved window \(directionText) to position \(positionText)")
+        
+        // Show feedback with updated layout visualization
+        FloatingWindowHelper.showFloatingWindow(
+            text: "Moved window \(directionText)\nPosition: \(positionText)",
+            position: .center,
+            duration: 1.5,
+            fontSize: 14
+        )
+        
+        // Show layout visualization after a brief delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.showAutomaticLayoutVisualization()
+        }
     }
     
     // MARK: - Dead Window Handling

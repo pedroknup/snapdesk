@@ -52,6 +52,10 @@ protocol WindowManaging: AnyObject {
     func positionWindowBottomLeft()
     func positionWindowBottomRight()
     func positionWindowCenter()
+    
+    // Window reordering commands
+    func moveWindowUpInLayout()
+    func moveWindowDownInLayout()
 }
 
 // Static storage for the active HotkeyManager instance (outside generic class)
@@ -201,6 +205,17 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         constructCommandWithCommandKey("position-window-center") { [weak self] in
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.positionWindowCenter()
+        }
+        
+        // Window reordering shortcuts
+        constructCommandWithCommandKey("move-window-up-in-layout") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.moveWindowUpInLayout()
+        }
+        
+        constructCommandWithCommandKey("move-window-down-in-layout") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.moveWindowDownInLayout()
         }
         
         // Setup app shortcuts - we'll need to handle these dynamically
@@ -388,6 +403,10 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             "position-window-bottom-left": "Position Window Bottom Left",
             "position-window-bottom-right": "Position Window Bottom Right",
             "position-window-center": "Position Window Center",
+            
+            // Window reordering
+            "move-window-up-in-layout": "Move Window Up in Layout",
+            "move-window-down-in-layout": "Move Window Down in Layout",
             
             // Screen focus
             "focus-screen-1": "Focus Screen 1",
