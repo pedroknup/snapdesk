@@ -44,16 +44,7 @@ class LayoutManager {
         
         log("✅ Windows expanded according to \(windowSet.layout) layout")
         
-        // Show floating notification if enabled
-        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
-        if showLayoutIndicator {
-            let layoutText = "\(windowSet.layout)".capitalized
-            FloatingWindowHelper.showFloatingWindow(
-                text: "Expanded: \(layoutText)",
-                position: .center,
-                duration: 1.5
-            )
-        }
+        // Layout indicator removed
     }
     
     // MARK: - Panel Size Management
@@ -337,14 +328,7 @@ class LayoutManager {
         // Check if WindowSet has only one window
         if windowSet.windows.count > 1 {
             log("⚠️ Cannot position window - WindowSet has \(windowSet.windows.count) windows")
-            let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
-            if showLayoutIndicator {
-                FloatingWindowHelper.showFloatingWindow(
-                    text: "Cannot position: \(windowSet.windows.count) windows in layout",
-                    position: .center,
-                    duration: 2.0
-                )
-            }
+            // Layout indicator removed
             return
         }
         
@@ -378,15 +362,7 @@ class LayoutManager {
         move(window: window.axElementRef, to: adjustedFrame)
         log("📐 Positioned window to \(position): \(NSStringFromRect(adjustedFrame))")
         
-        // Show notification
-        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
-        if showLayoutIndicator {
-            FloatingWindowHelper.showFloatingWindow(
-                text: "Window: \(position.capitalized)",
-                position: .center,
-                duration: 1.0
-            )
-        }
+        // Notification removed
     }
     
     /// Throws a window to the specified screen
@@ -460,15 +436,7 @@ class LayoutManager {
             }
         }
         
-        // Show confirmation if enabled in settings
-        let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
-        if showThrowNotifications {
-            FloatingWindowHelper.showFloatingWindow(
-                text: "Moved to Screen \(screenNumber)", 
-                position: .center, 
-                duration: 1.5
-            )
-        }
+        // Confirmation notification removed
     }
     
     // MARK: - Private Helper Methods
@@ -493,14 +461,7 @@ class LayoutManager {
     }
     
     private func showMainPanelSizeNotification(text: String) {
-        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
-        if showLayoutIndicator {
-            FloatingWindowHelper.showFloatingWindow(
-                text: text,
-                position: .center,
-                duration: 1.5
-            )
-        }
+        // Notification removed
     }
     
     private func calculateTargetFrame(for position: String, on screenFrame: CGRect) -> CGRect {

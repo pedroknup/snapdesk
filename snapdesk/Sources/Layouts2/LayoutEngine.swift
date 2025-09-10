@@ -89,6 +89,8 @@ class LayoutRegistry {
         // Built-in layouts will be registered here
         register(TallLayout())
         register(WideLayout())
+        register(VerticalStackLayout())
+        register(HorizontalStackLayout())
         register(FullscreenLayout())
         register(FloatingLayout())
     }

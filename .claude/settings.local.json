@@ -4,7 +4,10 @@
       "Read(/Users/pedroknup/Library/Logs/**)",
       "Bash(swift build:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git stash pop:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash push:*)"
     ],
     "deny": [],
     "ask": []

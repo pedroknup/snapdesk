@@ -180,14 +180,6 @@ class SimpleWindowManager: WindowManaging {
         // Get the currently focused window
         guard let focusedWindow = frontmostWindow() else {
             log("❌ No focused window found")
-            let showThrowNotifications = UserDefaults.standard.object(forKey: "showThrowNotifications") as? Bool ?? true
-            if showThrowNotifications {
-                FloatingWindowHelper.showFloatingWindow(
-                    text: "No focused window", 
-                    position: .center, 
-                    duration: 2.0
-                )
-            }
             return
         }
         
@@ -413,13 +405,7 @@ class SimpleWindowManager: WindowManaging {
             
             let attributedText = self.createLayoutVisualization()
             
-            // Show the visualization using FloatingWindowHelper with larger font
-            FloatingWindowHelper.showFloatingWindow(
-                attributedText: attributedText,
-                position: .center,
-                duration: duration,
-                fontSize: 14  // Larger, more readable font
-            )
+            // Layout visualization removed
         }
     }
     
@@ -524,12 +510,6 @@ class SimpleWindowManager: WindowManaging {
             
             guard let focusedWindow = frontmostWindow() else {
                 log("❌ No focused window found")
-                FloatingWindowHelper.showFloatingWindow(
-                    text: "No window focused",
-                    position: .center,
-                    duration: 1.5,
-                    fontSize: 14
-                )
                 return
             }
             
@@ -545,12 +525,6 @@ class SimpleWindowManager: WindowManaging {
         guard let app = NSRunningApplication(processIdentifier: axWindow.pid()),
               let bundleID = app.bundleIdentifier else {
             log("❌ Could not find app for focused window")
-            FloatingWindowHelper.showFloatingWindow(
-                text: "Could not identify app",
-                position: .center,
-                duration: 1.5,
-                fontSize: 14
-            )
             return
         }
         
