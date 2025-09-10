@@ -150,8 +150,10 @@ struct FrameAssignment<W: WindowType> {
     }
 }
 public enum LayoutKind: String, Codable {
-    case tall        // vertical split, main + stack
-    case wide        // horizontal split
+    case tall              // main pane on top, secondary pane below
+    case wide              // main pane on left, secondary pane on right  
+    case vertical_stack    // windows stacked vertically with equal height
+    case horizontal_stack  // windows stacked horizontally with equal width
     case fullscreen
     case floating
 }
@@ -250,13 +252,17 @@ final class WindowSet: Identifiable {
         }
     }
     
-    /// Toggle between tall and wide layout types for this WindowSet
+    /// Toggle between layout types for this WindowSet
     func toggleLayout() {
         let nextLayout: LayoutKind
         switch layout {
         case .tall:
             nextLayout = .wide
         case .wide:
+            nextLayout = .vertical_stack
+        case .vertical_stack:
+            nextLayout = .horizontal_stack
+        case .horizontal_stack:
             nextLayout = .tall
         case .fullscreen, .floating:
             // If currently in fullscreen or floating, default to tall
@@ -264,16 +270,6 @@ final class WindowSet: Identifiable {
         }
         
         layout = nextLayout
-        
-        // Show floating notification if enabled in settings (default: true)
-        let showLayoutIndicator = UserDefaults.standard.object(forKey: "showLayoutIndicator") as? Bool ?? true
-        if showLayoutIndicator {
-            FloatingWindowHelper.showFloatingWindow(
-                text: "Layout: \(nextLayout.rawValue.capitalized)", 
-                position: .center, 
-                duration: 1.5
-            )
-        }
         
         // Re-expand windows with the new layout
         expandWindows()

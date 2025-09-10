@@ -166,6 +166,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         // TODO: Add reevaluateWindows method to SimpleWindowManager if needed
     }
     
+    
     @objc func testFloatingWindows() {
         log("🪟 Test floating windows clicked")
         FloatingWindowHelper.showMultipleDemo()

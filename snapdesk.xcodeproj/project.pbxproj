@@ -17,6 +17,8 @@
 		130647452DB38DFA00A63735 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647442DB38DFA00A63735 /* Foundation.framework */; };
 		130647472DB38E0200A63735 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 130647462DB38E0200A63735 /* IOKit.framework */; };
 		1345B2C32DB3C13E00B675E6 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 1345B2C22DB3C13E00B675E6 /* HotKey */; };
+		135A76EA2E717AB9009C1DDD /* VerticalStackLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135A76E92E717AB9009C1DDD /* VerticalStackLayout.swift */; };
+		135A76EB2E717AB9009C1DDD /* HorizontalStackLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135A76E82E717AB9009C1DDD /* HorizontalStackLayout.swift */; };
 		135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */; };
 		135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550D2DB6596D00EC05FF /* HotkeyManager.swift */; };
 		135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */; };
@@ -92,6 +94,8 @@
 		130647422DB38DF100A63735 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		130647442DB38DFA00A63735 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		130647462DB38E0200A63735 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		135A76E82E717AB9009C1DDD /* HorizontalStackLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizontalStackLayout.swift; sourceTree = "<group>"; };
+		135A76E92E717AB9009C1DDD /* VerticalStackLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalStackLayout.swift; sourceTree = "<group>"; };
 		135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
 		135B550D2DB6596D00EC05FF /* HotkeyManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
@@ -341,6 +345,8 @@
 		13A3EEBC2E6F480400DA7702 /* Layouts2 */ = {
 			isa = PBXGroup;
 			children = (
+				135A76E82E717AB9009C1DDD /* HorizontalStackLayout.swift */,
+				135A76E92E717AB9009C1DDD /* VerticalStackLayout.swift */,
 				13A3EEBD2E6F481B00DA7702 /* BaseLayout.swift */,
 				13A3EEBE2E6F481B00DA7702 /* FloatingLayout.swift */,
 				13A3EEBF2E6F481B00DA7702 /* FullscreenLayout.swift */,
@@ -463,6 +469,8 @@
 				13972B352E5EF93000588D1B /* FocusFollowMouseManager.swift in Sources */,
 				13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */,
 				13F42D5F2E5F0819001F7A25 /* Change.swift in Sources */,
+				135A76EA2E717AB9009C1DDD /* VerticalStackLayout.swift in Sources */,
+				135A76EB2E717AB9009C1DDD /* HorizontalStackLayout.swift in Sources */,
 				13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */,
 				13972B282E5EF70500588D1B /* WindowManager.swift in Sources */,
 				13A3EEB32E6B1DB300DA7702 /* Untitled.swift in Sources */,

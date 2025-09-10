@@ -7,13 +7,13 @@
 
 import Foundation
 
-/// Wide layout: Windows arranged horizontally (main window on left, stack on right)
+/// Wide layout: Main pane on left, secondary pane on right (fibonacci-style)
 class WideLayout: BaseLayout {
     init() {
         super.init(
             id: "wide",
-            displayName: "Wide (Horizontal Split)",
-            description: "Main window on left, stack on right"
+            displayName: "Wide",
+            description: "Main pane on left, secondary pane on right"
         )
     }
     
@@ -23,42 +23,87 @@ class WideLayout: BaseLayout {
         with settings: LayoutSettings,
         bringToFront: Bool
     ) -> [FrameAssignment<AXWindow>] {
+        guard !windows.isEmpty else { return [] }
+        
         var assignments: [FrameAssignment<AXWindow>] = []
         
-        let windowCount = windows.count
-        let totalGapWidth = settings.windowGap * CGFloat(windowCount - 1)
-        let availableWidth = frame.width - totalGapWidth
-        
-        // Calculate window widths with main panel adjustment
-        let windowWidths = calculateWindowSizes(
-            count: windowCount,
-            availableSpace: availableWidth,
-            mainPanelAdjustment: settings.mainPanelSizeAdjustment
-        )
-        
-        var currentX = frame.origin.x
-        for (index, window) in windows.enumerated() {
-            let windowWidth = windowWidths[index]
+        if windows.count == 1 {
+            // Single window takes full space
             let windowFrame = CGRect(
-                x: currentX + settings.windowMargin,
+                x: frame.origin.x + settings.windowMargin,
                 y: frame.origin.y + settings.windowMargin,
-                width: windowWidth - (settings.windowMargin * 2),
+                width: frame.width - (settings.windowMargin * 2),
                 height: frame.height - (settings.windowMargin * 2)
             )
             
-            let assignment = FrameAssignment<AXWindow>(
+            assignments.append(FrameAssignment<AXWindow>(
                 frame: windowFrame,
-                windowID: window.id(),
+                windowID: windows[0].id(),
                 screenFrame: frame,
                 resizeRules: ResizeRules(
-                    isMain: index == 0,
+                    isMain: true,
                     unconstrainedDimension: .horizontal,
-                    scaleFactor: windowWidth / availableWidth
+                    scaleFactor: 1.0
                 )
-            )
-            assignments.append(assignment)
+            ))
+        } else {
+            // Main pane on left, secondary pane on right
+            let paneGap = settings.windowGap
+            let availableWidth = frame.width - paneGap
             
-            currentX += windowWidth + settings.windowGap
+            // Main pane gets 50% by default, adjusted by mainPanelSizeAdjustment
+            let baseMainWidth = availableWidth * 0.5
+            let mainWidth = max(100, baseMainWidth + settings.mainPanelSizeAdjustment)
+            let secondaryWidth = availableWidth - mainWidth
+            
+            // Main pane (single window)
+            let mainFrame = CGRect(
+                x: frame.origin.x + settings.windowMargin,
+                y: frame.origin.y + settings.windowMargin,
+                width: mainWidth - (settings.windowMargin * 2),
+                height: frame.height - (settings.windowMargin * 2)
+            )
+            
+            assignments.append(FrameAssignment<AXWindow>(
+                frame: mainFrame,
+                windowID: windows[0].id(),
+                screenFrame: frame,
+                resizeRules: ResizeRules(
+                    isMain: true,
+                    unconstrainedDimension: .horizontal,
+                    scaleFactor: mainWidth / availableWidth
+                )
+            ))
+            
+            // Secondary pane (remaining windows stacked horizontally)
+            let secondaryWindows = Array(windows.dropFirst())
+            let secondaryWindowCount = secondaryWindows.count
+            let secondaryWindowGaps = settings.windowGap * CGFloat(max(0, secondaryWindowCount - 1))
+            let availableSecondaryWidth = secondaryWidth - secondaryWindowGaps
+            let secondaryWindowWidth = availableSecondaryWidth / CGFloat(secondaryWindowCount)
+            
+            let secondaryStartX = frame.origin.x + mainWidth + paneGap
+            
+            for (index, window) in secondaryWindows.enumerated() {
+                let windowX = secondaryStartX + (CGFloat(index) * (secondaryWindowWidth + settings.windowGap))
+                let windowFrame = CGRect(
+                    x: windowX + settings.windowMargin,
+                    y: frame.origin.y + settings.windowMargin,
+                    width: secondaryWindowWidth - (settings.windowMargin * 2),
+                    height: frame.height - (settings.windowMargin * 2)
+                )
+                
+                assignments.append(FrameAssignment<AXWindow>(
+                    frame: windowFrame,
+                    windowID: window.id(),
+                    screenFrame: frame,
+                    resizeRules: ResizeRules(
+                        isMain: false,
+                        unconstrainedDimension: .horizontal,
+                        scaleFactor: secondaryWindowWidth / availableWidth
+                    )
+                ))
+            }
         }
         
         return assignments
