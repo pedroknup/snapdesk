@@ -802,20 +802,60 @@ class SimpleWindowManager: WindowManaging {
     private func refreshWindows() {
         log("🔄 Refreshing windows...")
         
-        // Clear existing window sets
-        for i in workspace.screens.indices {
-            workspace.screens[i].windowSets.removeAll()
-        }
-        
-        // Rescan windows and rebuild window sets
         let discovered = scanWindows()
-        for (win, screen) in discovered {
-            if let idx = workspace.screens.firstIndex(where: { $0.screen == screen }) {
-                addWindow(win, to: &workspace.screens[idx])
+        let discoveredWindowIDs = Set(discovered.map { $0.window.cgID() })
+        var processedWindowIDs: Set<CGWindowID> = Set()
+        
+        // First pass: Remove dead windows from existing WindowSets
+        for screenIndex in workspace.screens.indices {
+            for setIndex in workspace.screens[screenIndex].windowSets.indices.reversed() {
+                let windowSet = workspace.screens[screenIndex].windowSets[setIndex]
+                
+                // Remove windows that no longer exist
+                windowSet.windows.removeAll { window in
+                    let windowID = window.cgID()
+                    let stillExists = discoveredWindowIDs.contains(windowID)
+                    if !stillExists {
+                        log("🗑️ Removing dead window \(windowID) from WindowSet")
+                    }
+                    return !stillExists
+                }
+                
+                // Remove empty WindowSets
+                if windowSet.windows.isEmpty {
+                    log("🧹 Removing empty WindowSet")
+                    workspace.screens[screenIndex].windowSets.remove(at: setIndex)
+                }
             }
         }
         
-        log("✅ Window refresh complete. Total windows: \(discovered.count)")
+        // Second pass: Add new windows while preserving existing WindowSet structure
+        for (window, screen) in discovered {
+            let windowID = window.cgID()
+            
+            // Skip if window already exists in a WindowSet
+            var foundInExistingSet = false
+            for screenWS in workspace.screens {
+                for windowSet in screenWS.windowSets {
+                    if windowSet.windows.contains(where: { $0.cgID() == windowID }) {
+                        foundInExistingSet = true
+                        break
+                    }
+                }
+                if foundInExistingSet { break }
+            }
+            
+            if !foundInExistingSet {
+                log("➕ Adding new window \(windowID) to workspace")
+                if let screenIndex = workspace.screens.firstIndex(where: { $0.screen == screen }) {
+                    addWindow(window, to: &workspace.screens[screenIndex])
+                }
+            }
+            
+            processedWindowIDs.insert(windowID)
+        }
+        
+        log("✅ Window refresh complete. Processed \(processedWindowIDs.count) windows, preserving existing order")
     }
     
     private func addWindow(_ window: AXWindow, to screenWS: inout ScreenWorkspace) {
@@ -845,9 +885,12 @@ extension SimpleWindowManager: CyclingManagerDelegate, LayoutManagerDelegate {
 extension SimpleWindowManager: AppLifecycleDelegate {
     
     func appDidLaunch(_ app: NSRunningApplication) {
-        // Give the app a moment to create windows
+        // Give the app a moment to create windows, then do a targeted refresh
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.refreshWindows()
+            guard let self = self else { return }
+            log("📱 App launched: \(app.localizedName ?? app.bundleIdentifier ?? "Unknown")")
+            // Only refresh if we detect new windows that aren't tracked yet
+            self.refreshWindows()
         }
     }
     
@@ -855,8 +898,10 @@ extension SimpleWindowManager: AppLifecycleDelegate {
         // Reset cycling if the terminated app was being cycled
         if let bundleID = app.bundleIdentifier {
             cyclingManager.resetCycling(for: bundleID)
+            log("📱 App terminated: \(app.localizedName ?? bundleID)")
         }
         
+        // Clean up dead windows without destroying existing order
         refreshWindows()
     }
     

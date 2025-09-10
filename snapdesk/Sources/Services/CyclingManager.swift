@@ -103,12 +103,30 @@ class CyclingManager {
             }
             
             let existingSet = Set(existingOrder)
-            if existingSet == currentWindowIDs {
-                return existingOrder // Order is still valid
+            
+            // Instead of completely recreating on any change, preserve existing order
+            // and only add new windows or remove dead ones
+            if existingSet != currentWindowIDs {
+                var updatedOrder = existingOrder
+                
+                // Remove dead windows from the order
+                updatedOrder.removeAll { windowID in
+                    !currentWindowIDs.contains(windowID)
+                }
+                
+                // Add new windows to the end of the order
+                for windowID in currentWindowIDs {
+                    if !existingSet.contains(windowID) {
+                        updatedOrder.append(windowID)
+                        log("➕ Added new window \(windowID) to custom order for \(bundleID)")
+                    }
+                }
+                
+                customWindowOrder[bundleID] = updatedOrder
+                return updatedOrder
             }
             
-            // Window set changed, recreate
-            customWindowOrder.removeValue(forKey: bundleID)
+            return existingOrder // Order is still valid
         }
         
         // Create new order from workspace
