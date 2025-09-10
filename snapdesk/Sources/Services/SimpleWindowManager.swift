@@ -99,19 +99,16 @@ class SimpleWindowManager: WindowManaging {
             return
         }
         
-        // Expand all windows in the current WindowSet according to its layout (if auto-expand is enabled)
-        if shouldAutoExpandNewWindows() {
-            windowSet.expandWindows()
-        }
-    
-        await windowSet.raiseAllWindows(excluding: targetWindow)
+        // For windows in the same WindowSet with split layout, they're already visible
+        // We only need to change which window has keyboard focus
         
         if let targetWindow = targetWindow {
-            // First raise the window to ensure it's on top, especially important 
-            // when cycling between windows of the same app in a split layout
-            targetWindow.raise()
-            // Then focus it
+            // For split layouts, just focus the target window
+            // All windows are already visible side-by-side
             let focusSucceeded = targetWindow.focus()
+            
+            // Add a small delay to ensure focus takes effect
+            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
             
             if !focusSucceeded {
                 log("⚠️ Failed to focus target window - likely no longer exists. Removing from layout and trying next window.")
