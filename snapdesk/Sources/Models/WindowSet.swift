@@ -232,17 +232,21 @@ final class WindowSet: Identifiable {
         }
     }
     
-    /// Raises all windows in this WindowSet to bring them to front
+    /// Raises all windows in this WindowSet to bring them to front WITHOUT changing focus
+    /// This only changes z-order (visibility), not which window receives keyboard input
     func raiseAllWindows(excluding excludeWindow: AXWindow? = nil) async {
-        for window in windows {
+        // Raise windows in reverse order so the first window ends up on top
+        // This ensures proper stacking order for the windowset
+        for window in windows.reversed() {
             // Skip the excluded window if specified
             if let exclude = excludeWindow, window.cgID() == exclude.cgID() {
-               continue
-                }
+                continue
+            }
+            
+            // Only raise, don't focus - this changes z-order without changing keyboard focus
             window.raise()
-            window.focus()
-            // Add a tiny delay (10ms) between each window raise to prevent race conditions
-            try? await Task.sleep(nanoseconds: 10_000_000) // 10ms = 10 million nanoseconds
+            // Small delay to ensure the raise operation completes
+            try? await Task.sleep(nanoseconds: 5_000_000) // 5ms between raises
         }
     }
     
