@@ -271,7 +271,37 @@ final class WindowSet: Identifiable {
         
         layout = nextLayout
         
+        // Show popup notification for layout change
+        showLayoutChangePopup(for: layout)
+        
         // Re-expand windows with the new layout
         expandWindows()
+    }
+    
+    /// Shows a popup notification indicating the current layout
+    private func showLayoutChangePopup(for layout: LayoutKind) {
+        let layoutDisplayName: String
+        
+        switch layout {
+        case .tall:
+            layoutDisplayName = "Tall"
+        case .wide:
+            layoutDisplayName = "Wide"
+        case .vertical_stack:
+            layoutDisplayName = "Vertical Stack"
+        case .horizontal_stack:
+            layoutDisplayName = "Horizontal Stack"
+        case .fullscreen:
+            layoutDisplayName = "Fullscreen"
+        case .floating:
+            layoutDisplayName = "Floating"
+        }
+        
+        FloatingWindowHelper.showFloatingWindow(
+            text: layoutDisplayName,
+            position: .center,
+            duration: 1.0,
+            fontSize: 16
+        )
     }
 }
