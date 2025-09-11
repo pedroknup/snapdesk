@@ -32,6 +32,11 @@ struct SettingsTabView: View {
     @AppStorage("showLogsView") private var showLogsView = false
     @AppStorage("windowDetectionInterval") private var windowDetectionInterval: Double = 0.5
     @AppStorage("focusFollowsMouse") private var focusFollowsMouse = true
+    
+    // Application Management
+    @State private var appsWithShortcuts: [AppInfo] = []
+    @State private var isRefreshingApps = false
+    @State private var lastAppRefresh: Date?
 
     var body: some View {
         ScrollView {
@@ -149,6 +154,70 @@ struct SettingsTabView: View {
                         .help("Mouse cursor moves to the center of the focused window as the focus changes")
                 }
 
+                // Application Management
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Managed Applications")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: refreshApplicationList) {
+                            HStack {
+                                if isRefreshingApps {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                } else {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                Text("Refresh")
+                            }
+                        }
+                        .disabled(isRefreshingApps)
+                    }
+                    
+                    Text("Only applications with assigned shortcuts will have their windows managed by SnapDesk.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    if !appsWithShortcuts.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack(spacing: 12) {
+                                ForEach(appsWithShortcuts, id: \.bundleIdentifier) { app in
+                                    VStack(spacing: 4) {
+                                        if let icon = app.icon {
+                                            Image(nsImage: icon)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 32, height: 32)
+                                        } else {
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 32, height: 32)
+                                        }
+                                        Text(app.name)
+                                            .font(.caption2)
+                                            .lineLimit(2)
+                                            .multilineTextAlignment(.center)
+                                    }
+                                    .frame(width: 60)
+                                }
+                            }
+                            .padding(.horizontal, 4)
+                        }
+                        .frame(height: 70)
+                        
+                        if let lastRefresh = lastAppRefresh {
+                            Text("Last updated: \(lastRefresh, formatter: dateFormatter)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("No applications with shortcuts found. Add shortcuts in the Shortcuts tab to manage windows.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
+                }
+
                 // Advanced  
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Advanced")
@@ -181,6 +250,7 @@ struct SettingsTabView: View {
         .onAppear {
             loadWindowPreviewConfig()
             loadStartupSettings()
+            refreshApplicationList()
         }
     }
     
@@ -217,5 +287,56 @@ struct SettingsTabView: View {
     
     private func loadStartupSettings() {
         launchAtLogin = UserConfiguration.shared.launchAtLogin()
+    }
+    
+    // MARK: - Application Management
+    
+    private func refreshApplicationList() {
+        isRefreshingApps = true
+        
+        AppCacheManager.shared.getApplications(
+            strategy: .cacheFirst,
+            onUpdate: { allApps in
+                // Filter apps that have shortcuts assigned
+                guard let config = ConfigurationManager.shared.loadConfig() else {
+                    DispatchQueue.main.async {
+                        self.isRefreshingApps = false
+                        log("❌ Configuration unavailable for app filtering")
+                    }
+                    return
+                }
+                
+                // Collect all bundle IDs that have shortcuts
+                let bundleIDsWithShortcuts = Set(
+                    config.appShortcuts
+                        .compactMap { appShortcut in
+                            appShortcut.shortcut != nil ? appShortcut.bundleIdentifier : nil
+                        }
+                )
+                
+                let appsWithShortcuts = allApps.filter { app in
+                    bundleIDsWithShortcuts.contains(app.bundleIdentifier)
+                }
+                
+                DispatchQueue.main.async {
+                    self.appsWithShortcuts = appsWithShortcuts
+                    self.lastAppRefresh = Date()
+                    self.isRefreshingApps = false
+                }
+            },
+            onError: { error in
+                DispatchQueue.main.async {
+                    self.isRefreshingApps = false
+                    log("❌ Failed to refresh managed apps: \(error.localizedDescription)")
+                }
+            }
+        )
+    }
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter
     }
 }

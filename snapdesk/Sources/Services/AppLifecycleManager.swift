@@ -146,7 +146,7 @@ class AppLifecycleManager {
     private func setupApplicationObservers() {
         // Set up observers for all currently running applications
         for app in NSWorkspace.shared.runningApplications {
-            if let bundleID = app.bundleIdentifier, app.isManageable == .manageable {
+            if app.bundleIdentifier != nil, app.isManageable == .manageable {
                 setupObserver(for: app)
             }
         }
@@ -159,10 +159,13 @@ class AppLifecycleManager {
             return
         }
         
-        log("🚀 Application launched: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        // Only log manageable applications
+        if app.isManageable == .manageable {
+            log("🚀 App launched: \(app.localizedName ?? "Unknown")")
+        }
         
         // Set up observer for the new app
-        if let bundleID = app.bundleIdentifier, app.isManageable == .manageable {
+        if app.bundleIdentifier != nil, app.isManageable == .manageable {
             setupObserver(for: app)
         }
         
@@ -177,7 +180,10 @@ class AppLifecycleManager {
             return
         }
         
-        log("❌ Application terminated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
+        // Only log if we were managing this app
+        if applicationObservers[app.processIdentifier] != nil {
+            log("❌ App terminated: \(app.localizedName ?? "Unknown")")
+        }
         
         // Remove observer for the terminated app
         removeObserver(for: app)
@@ -190,11 +196,8 @@ class AppLifecycleManager {
             return
         }
         
-        log("🎯 Application activated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
-        
         // Skip SnapDesk's own activation
         if app.bundleIdentifier == "com.pedroknup.snapdesk" {
-            log("❌ Skipping SnapDesk's own activation")
             return
         }
         
@@ -226,7 +229,7 @@ class AppLifecycleManager {
     // MARK: - Application Window Observers
     
     private func setupObserver(for app: NSRunningApplication) {
-        guard let bundleID = app.bundleIdentifier else { return }
+        guard app.bundleIdentifier != nil else { return }
         
         let pid = app.processIdentifier
         
@@ -250,7 +253,6 @@ class AppLifecycleManager {
         }, &observer)
         
         guard result == .success, let observer = observer else {
-            log("❌ Failed to create AX observer for \(app.localizedName ?? bundleID)")
             return
         }
         
@@ -270,9 +272,6 @@ class AppLifecycleManager {
                 .defaultMode
             )
             applicationObservers[pid] = observer
-            log("✅ Window observer setup successful for \(app.localizedName ?? bundleID)")
-        } else {
-            log("❌ Failed to add window creation observer for \(app.localizedName ?? bundleID)")
         }
     }
     
@@ -285,7 +284,7 @@ class AppLifecycleManager {
                 AXObserverGetRunLoopSource(observer),
                 .defaultMode
             )
-            log("🗑️ Removed window observer for \(app.localizedName ?? app.bundleIdentifier ?? "Unknown")")
+            // Observer removed for terminated app
         }
     }
     
@@ -311,18 +310,14 @@ class AppLifecycleManager {
         
         // Skip SnapDesk's own windows immediately
         if bundleID == "com.pedroknup.snapdesk" {
-            log("❌ Skipping SnapDesk's own window")
             return
         }
-        
-        log("🪟 New window created for \(app.localizedName ?? "Unknown") (\(bundleID))")
         
         // Create AXWindow wrapper
         let axWindow = AXWindow(axElement: windowElement)
         
         // Check if this window should be managed before adding it
         guard axWindow.shouldBeManaged() else {
-            log("❌ Skipping new window - does not meet management criteria")
             return
         }
         
