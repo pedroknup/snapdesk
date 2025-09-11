@@ -192,6 +192,12 @@ class AppLifecycleManager {
         
         log("🎯 Application activated: \(app.localizedName ?? "Unknown") (\(app.bundleIdentifier ?? "no bundle"))")
         
+        // Skip SnapDesk's own activation
+        if app.bundleIdentifier == "com.pedroknup.snapdesk" {
+            log("❌ Skipping SnapDesk's own activation")
+            return
+        }
+        
         // Don't notify delegate if we're programmatically focusing via hotkey
         if !isProgrammaticFocus {
             delegate?.appDidActivate(app)
@@ -300,6 +306,12 @@ class AppLifecycleManager {
         guard AXUIElementGetPid(windowElement, &pid) == .success,
               let app = NSRunningApplication(processIdentifier: pid),
               let bundleID = app.bundleIdentifier else {
+            return
+        }
+        
+        // Skip SnapDesk's own windows immediately
+        if bundleID == "com.pedroknup.snapdesk" {
+            log("❌ Skipping SnapDesk's own window")
             return
         }
         
