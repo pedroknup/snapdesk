@@ -264,6 +264,11 @@ extension AXWindow: WindowType {
             log("❌ Window '\(windowTitle)' rejected: not movable")
             return false
         }
+        
+        guard isResizable() else {
+            log("❌ Window '\(windowTitle)' rejected: not resizable")
+            return false
+        }
 
         guard let subrole = string(forKey: kAXSubroleAttribute as CFString), subrole == kAXStandardWindowSubrole as String else {
             log("❌ Window '\(windowTitle)' rejected: subrole=\(string(forKey: kAXSubroleAttribute as CFString) ?? "nil")")
