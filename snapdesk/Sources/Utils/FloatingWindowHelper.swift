@@ -110,9 +110,43 @@ class FloatingWindowHelper {
             ).size
             
             let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-            // Account for: number(35) + spacing(12) + image(width) + spacing(12) + title(200)
-            totalWidth = max(textSize.width, 35 + 12 + config.maxWidth + 12 + 200)
-            totalHeight = textSize.height + (config.maxHeight + 12) * CGFloat(images.count)
+            // Calculate dynamic width based on actual content sizes
+            var maxRowWidth: CGFloat = textSize.width
+            var totalImageHeight: CGFloat = 0
+            
+            for (image, title) in images {
+                let originalSize = image.size
+                let maxSize = NSSize(width: config.maxWidth, height: config.maxHeight)
+                let aspectRatio = originalSize.width / originalSize.height
+                var imageSize = maxSize
+                
+                if aspectRatio > (maxSize.width / maxSize.height) {
+                    imageSize.height = maxSize.width / aspectRatio
+                } else {
+                    imageSize.width = maxSize.height * aspectRatio
+                }
+                
+                // Calculate actual title width
+                let cleanTitle = title
+                    .replacingOccurrences(of: title.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) ?? "", with: "")
+                    .replacingOccurrences(of: ". ", with: "")
+                    .replacingOccurrences(of: " ◄", with: "")
+                
+                let titleFont = NSFont.systemFont(ofSize: fontSize - 1, weight: .regular)
+                let titleSize = cleanTitle.boundingRect(
+                    with: NSSize(width: CGFloat.greatestFiniteMagnitude, height: 30),
+                    options: [.usesLineFragmentOrigin],
+                    attributes: [.font: titleFont]
+                ).size
+                
+                // Account for: number(35) + spacing(12) + image(actual width) + spacing(12) + title(actual width)
+                let rowWidth = 35 + 12 + imageSize.width + 12 + titleSize.width
+                maxRowWidth = max(maxRowWidth, rowWidth)
+                totalImageHeight += imageSize.height + 12
+            }
+            
+            totalWidth = maxRowWidth
+            totalHeight = textSize.height + totalImageHeight
             
             // Update with image content
             updateToImageLayout(window: window, attributedText: attributedText, images: images, fontSize: fontSize, padding: padding, windowSize: NSSize(width: totalWidth + padding * 2, height: totalHeight + padding * 2), position: position)
@@ -124,19 +158,19 @@ class FloatingWindowHelper {
         // Calculate new position
         let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create darker background for better contrast
+        // Create modern background for better contrast
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
-        backgroundView.layer?.cornerRadius = 10
-        backgroundView.layer?.borderWidth = 0.5
-        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.06, alpha: 0.95).cgColor
+        backgroundView.layer?.cornerRadius = 16
+        backgroundView.layer?.borderWidth = 1.0
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.12).cgColor
         
-        // macOS-style shadow
+        // Enhanced shadow for depth
         backgroundView.layer?.shadowColor = NSColor.black.cgColor
-        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: -3)
-        backgroundView.layer?.shadowRadius = 15
-        backgroundView.layer?.shadowOpacity = 0.3
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 8)
+        backgroundView.layer?.shadowRadius = 24
+        backgroundView.layer?.shadowOpacity = 0.4
         
         // Create text content
         let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
@@ -170,13 +204,19 @@ class FloatingWindowHelper {
         // Calculate new position
         let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
         
-        // Create darker container for better contrast
+        // Create modern container with improved styling
         let containerView = NSView()
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
-        containerView.layer?.cornerRadius = 10
-        containerView.layer?.borderWidth = 0.5
-        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
+        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.06, alpha: 0.95).cgColor
+        containerView.layer?.cornerRadius = 16
+        containerView.layer?.borderWidth = 1.0
+        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.12).cgColor
+        
+        // Enhanced shadow for depth
+        containerView.layer?.shadowColor = NSColor.black.cgColor
+        containerView.layer?.shadowOffset = NSSize(width: 0, height: 8)
+        containerView.layer?.shadowRadius = 24
+        containerView.layer?.shadowOpacity = 0.4
         
         // Create content stack view
         let stackView = NSStackView()
@@ -254,32 +294,53 @@ class FloatingWindowHelper {
                 
                 imageRowView.addArrangedSubview(numberLabel)
                 
-                // Create image view with subtle styling
+                // Create image view sized to content
                 let imageView = NSImageView()
                 imageView.image = image
                 imageView.imageScaling = .scaleProportionallyUpOrDown
                 imageView.wantsLayer = true
-                imageView.layer?.cornerRadius = 6
+                imageView.layer?.cornerRadius = 8
                 imageView.layer?.masksToBounds = false
                 
-                if isActive {
-                    // Prominent highlight for active window
-                    imageView.layer?.borderWidth = 2.5
-                    imageView.layer?.borderColor = theme.accentColor.cgColor
-                    imageView.alphaValue = 1.0
-                    // Add subtle glow effect
-                    imageView.layer?.shadowColor = theme.accentColor.cgColor
-                    imageView.layer?.shadowOffset = NSSize(width: 0, height: 0)
-                    imageView.layer?.shadowRadius = 6
-                    imageView.layer?.shadowOpacity = 0.4
+                // Calculate actual content size with aspect ratio
+                let originalSize = image.size
+                let windowPreviewConfig = config?.windowPreview ?? WindowPreviewConfig()
+                let maxSize = NSSize(width: windowPreviewConfig.maxWidth, height: windowPreviewConfig.maxHeight)
+                
+                let aspectRatio = originalSize.width / originalSize.height
+                var imageSize = maxSize
+                
+                if aspectRatio > (maxSize.width / maxSize.height) {
+                    imageSize.height = maxSize.width / aspectRatio
                 } else {
-                    imageView.alphaValue = 0.7
-                    imageView.layer?.borderWidth = 0.5
-                    imageView.layer?.borderColor = NSColor(calibratedWhite: 0.5, alpha: 0.2).cgColor
+                    imageSize.width = maxSize.height * aspectRatio
                 }
                 
-                let windowPreviewConfig = config?.windowPreview ?? WindowPreviewConfig()
-                imageView.frame = NSRect(origin: .zero, size: NSSize(width: windowPreviewConfig.maxWidth, height: windowPreviewConfig.maxHeight))
+                // Improved styling with better visual hierarchy
+                if isActive {
+                    // Prominent highlight for active window
+                    imageView.layer?.borderWidth = 3.0
+                    imageView.layer?.borderColor = theme.accentColor.cgColor
+                    imageView.alphaValue = 1.0
+                    // Enhanced glow effect
+                    imageView.layer?.shadowColor = theme.accentColor.cgColor
+                    imageView.layer?.shadowOffset = NSSize(width: 0, height: 0)
+                    imageView.layer?.shadowRadius = 8
+                    imageView.layer?.shadowOpacity = 0.6
+                    // Add inner glow
+                    imageView.layer?.backgroundColor = theme.accentColor.withAlphaComponent(0.1).cgColor
+                } else {
+                    imageView.alphaValue = 0.75
+                    imageView.layer?.borderWidth = 1.0
+                    imageView.layer?.borderColor = NSColor(calibratedWhite: 0.4, alpha: 0.4).cgColor
+                    // Subtle shadow for inactive windows
+                    imageView.layer?.shadowColor = NSColor.black.cgColor
+                    imageView.layer?.shadowOffset = NSSize(width: 0, height: 2)
+                    imageView.layer?.shadowRadius = 4
+                    imageView.layer?.shadowOpacity = 0.2
+                }
+                
+                imageView.frame = NSRect(origin: .zero, size: imageSize)
                 imageRowView.addArrangedSubview(imageView)
                 
                 // Extract title without number and marker
@@ -287,10 +348,7 @@ class FloatingWindowHelper {
                     .replacingOccurrences(of: "\(numberString). ", with: "")
                     .replacingOccurrences(of: " ◄", with: "")
                 
-                // Create title with improved styling and fixed alignment
-                let titleContainer = NSView()
-                titleContainer.frame = NSRect(origin: .zero, size: NSSize(width: 200, height: 30))
-                
+                // Create title with dynamic sizing
                 let titleLabel = NSTextField(labelWithString: cleanTitle)
                 titleLabel.textColor = isActive ? theme.accentColor : NSColor(calibratedWhite: 0.8, alpha: 1.0)
                 titleLabel.font = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .semibold : .regular)
@@ -299,10 +357,9 @@ class FloatingWindowHelper {
                 titleLabel.cell?.wraps = false
                 titleLabel.cell?.lineBreakMode = .byTruncatingTail
                 titleLabel.alignment = .left
-                titleLabel.frame = NSRect(x: 0, y: 5, width: 200, height: 20)
+                titleLabel.sizeToFit()
                 
-                titleContainer.addSubview(titleLabel)
-                imageRowView.addArrangedSubview(titleContainer)
+                imageRowView.addArrangedSubview(titleLabel)
                 
                 imageStackView.addArrangedSubview(imageRowView)
             }
@@ -314,11 +371,15 @@ class FloatingWindowHelper {
         containerView.frame = NSRect(origin: .zero, size: windowSize)
         containerView.addSubview(stackView)
         
-        // Setup constraints for stack view
+        // Setup constraints for stack view to hug content
         stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: padding).isActive = true
         stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: padding).isActive = true
-        stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
-        stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -padding).isActive = true
+        stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        
+        // Set content hugging priority to prevent unnecessary expansion
+        stackView.setHuggingPriority(.defaultHigh, for: .horizontal)
+        stackView.setHuggingPriority(.defaultHigh, for: .vertical)
         
         // Update window content and frame instantly
         window.contentView = containerView
@@ -371,13 +432,19 @@ class FloatingWindowHelper {
             return createTerminalTextWindow(attributedText: attributedText, position: position, fontSize: fontSize)
         }
         
-        // Create darker container for images layout
+        // Create modern container for images layout
         let containerView = NSView()
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
-        containerView.layer?.cornerRadius = 10
-        containerView.layer?.borderWidth = 0.5
-        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
+        containerView.layer?.backgroundColor = NSColor(calibratedWhite: 0.06, alpha: 0.95).cgColor
+        containerView.layer?.cornerRadius = 16
+        containerView.layer?.borderWidth = 1.0
+        containerView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.12).cgColor
+        
+        // Enhanced shadow for depth
+        containerView.layer?.shadowColor = NSColor.black.cgColor
+        containerView.layer?.shadowOffset = NSSize(width: 0, height: 8)
+        containerView.layer?.shadowRadius = 24
+        containerView.layer?.shadowOpacity = 0.4
         
         // Create content stack view
         let stackView = NSStackView()
@@ -450,28 +517,53 @@ class FloatingWindowHelper {
                 // Add number label on the left
                 let numberLabel = NSTextField(labelWithString: numberString)
                 numberLabel.textColor = isActive ? theme.accentColor : NSColor.white
-                numberLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize + 2, weight: isActive ? .bold : .medium)
+                numberLabel.font = NSFont.systemFont(ofSize: fontSize + 2, weight: isActive ? .bold : .regular)
                 numberLabel.backgroundColor = NSColor.clear
                 numberLabel.alignment = .center
-                let numberWidth: CGFloat = 30
-                numberLabel.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: 30))
+                let numberWidth: CGFloat = 35
+                numberLabel.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: 35))
                 imageRowView.addArrangedSubview(numberLabel)
                 
-                // Add image with border for active window
+                // Calculate actual content size with aspect ratio
+                let originalSize = image.size
+                let maxSize = NSSize(width: windowPreviewConfig.maxWidth, height: windowPreviewConfig.maxHeight)
+                let aspectRatio = originalSize.width / originalSize.height
+                var imageSize = maxSize
+                
+                if aspectRatio > (maxSize.width / maxSize.height) {
+                    imageSize.height = maxSize.width / aspectRatio
+                } else {
+                    imageSize.width = maxSize.height * aspectRatio
+                }
+                
+                // Add image with improved styling
                 let imageView = NSImageView()
                 imageView.image = image
                 imageView.imageScaling = .scaleProportionallyUpOrDown
                 imageView.wantsLayer = true
-                imageView.layer?.cornerRadius = 4
+                imageView.layer?.cornerRadius = 8
+                imageView.layer?.masksToBounds = false
                 
                 if isActive {
-                    imageView.layer?.borderWidth = theme.activeWindowBorderWidth
+                    imageView.layer?.borderWidth = 3.0
                     imageView.layer?.borderColor = theme.accentColor.cgColor
+                    imageView.alphaValue = 1.0
+                    imageView.layer?.shadowColor = theme.accentColor.cgColor
+                    imageView.layer?.shadowOffset = NSSize(width: 0, height: 0)
+                    imageView.layer?.shadowRadius = 8
+                    imageView.layer?.shadowOpacity = 0.6
+                    imageView.layer?.backgroundColor = theme.accentColor.withAlphaComponent(0.1).cgColor
                 } else {
-                    imageView.alphaValue = theme.inactiveWindowOpacity
+                    imageView.alphaValue = 0.75
+                    imageView.layer?.borderWidth = 1.0
+                    imageView.layer?.borderColor = NSColor(calibratedWhite: 0.4, alpha: 0.4).cgColor
+                    imageView.layer?.shadowColor = NSColor.black.cgColor
+                    imageView.layer?.shadowOffset = NSSize(width: 0, height: 2)
+                    imageView.layer?.shadowRadius = 4
+                    imageView.layer?.shadowOpacity = 0.2
                 }
                 
-                imageView.frame = NSRect(origin: .zero, size: NSSize(width: windowPreviewConfig.maxWidth, height: windowPreviewConfig.maxHeight))
+                imageView.frame = NSRect(origin: .zero, size: imageSize)
                 imageRowView.addArrangedSubview(imageView)
                 
                 // Extract title without number and marker
@@ -479,20 +571,30 @@ class FloatingWindowHelper {
                     .replacingOccurrences(of: "\(numberString). ", with: "")
                     .replacingOccurrences(of: " ◄", with: "")
                 
-                // Add title
+                // Add title with dynamic sizing
                 let titleLabel = NSTextField(labelWithString: cleanTitle)
                 titleLabel.textColor = isActive ? theme.accentColor : NSColor.white
-                titleLabel.font = NSFont.monospacedSystemFont(ofSize: fontSize - 2, weight: isActive ? .semibold : .medium)
+                titleLabel.font = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .semibold : .regular)
                 titleLabel.backgroundColor = NSColor.clear
-                titleLabel.cell?.wraps = true
-                titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+                titleLabel.cell?.wraps = false
+                titleLabel.cell?.lineBreakMode = .byTruncatingTail
+                titleLabel.sizeToFit()
                 imageRowView.addArrangedSubview(titleLabel)
                 
                 imageStackView.addArrangedSubview(imageRowView)
                 
-                // Update total dimensions (accounting for consistent width)
-                totalWidth = max(totalWidth, 35 + 12 + windowPreviewConfig.maxWidth + 12 + 200)
-                totalHeight += windowPreviewConfig.maxHeight + 12
+                // Calculate actual title width for accurate sizing
+                let titleFont = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .semibold : .regular)
+                let titleSize = cleanTitle.boundingRect(
+                    with: NSSize(width: CGFloat.greatestFiniteMagnitude, height: 30),
+                    options: [.usesLineFragmentOrigin],
+                    attributes: [.font: titleFont]
+                ).size
+                
+                // Update total dimensions with actual content sizes
+                let rowWidth = 35 + 12 + imageSize.width + 12 + titleSize.width
+                totalWidth = max(totalWidth, rowWidth)
+                totalHeight += imageSize.height + 12
             }
             
             stackView.addArrangedSubview(imageStackView)
@@ -526,11 +628,15 @@ class FloatingWindowHelper {
         containerView.frame = NSRect(origin: .zero, size: windowSize)
         containerView.addSubview(stackView)
         
-        // Setup constraints for stack view
+        // Setup constraints for stack view to hug content
         stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: padding).isActive = true
         stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: padding).isActive = true
-        stackView.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor, constant: -padding).isActive = true
-        stackView.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -padding).isActive = true
+        stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -padding).isActive = true
+        
+        // Set content hugging priority to prevent unnecessary expansion
+        stackView.setHuggingPriority(.defaultHigh, for: .horizontal)
+        stackView.setHuggingPriority(.defaultHigh, for: .vertical)
         
         window.contentView = containerView
         
@@ -801,19 +907,19 @@ class FloatingWindowHelper {
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
         
-        // Create darker background for text-only popup
+        // Create modern background for text-only popup
         let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.08, alpha: 0.98).cgColor
-        backgroundView.layer?.cornerRadius = 10
-        backgroundView.layer?.borderWidth = 0.5
-        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.15).cgColor
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.06, alpha: 0.95).cgColor
+        backgroundView.layer?.cornerRadius = 16
+        backgroundView.layer?.borderWidth = 1.0
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.12).cgColor
         
-        // macOS-style shadow
+        // Enhanced shadow for depth
         backgroundView.layer?.shadowColor = NSColor.black.cgColor
-        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: -3)
-        backgroundView.layer?.shadowRadius = 15
-        backgroundView.layer?.shadowOpacity = 0.3
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 8)
+        backgroundView.layer?.shadowRadius = 24
+        backgroundView.layer?.shadowOpacity = 0.4
         
         // Create text view
         let textView = NSTextView()
