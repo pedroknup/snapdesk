@@ -10,6 +10,8 @@ import Cocoa
 import Foundation
 import SwiftyJSON
 import Yams
+import ServiceManagement
+import SwiftyBeaver
 
 enum DefaultFloat: Equatable {
     case floating
@@ -97,6 +99,7 @@ enum ConfigurationKey: String {
     case restoreLayoutsOnLaunch = "restore-layouts-on-launch"
     case disablePaddingOnBuiltinDisplay = "disable-padding-on-builtin-display"
     case hideMenuBarIcon = "hide-menu-bar-icon"
+    case launchAtLogin = "launchAtLogin"
 }
 
 extension ConfigurationKey: CaseIterable {}
@@ -774,5 +777,57 @@ extension UserConfiguration {
             defaultsKey: commandKey,
             override: false
         )
+    }
+    
+    // MARK: - Login Item Management
+    
+    func launchAtLogin() -> Bool {
+        return storage.bool(forKey: .launchAtLogin)
+    }
+    
+    func setLaunchAtLogin(_ enabled: Bool) {
+        storage.set(enabled, forKey: .launchAtLogin)
+        applyLaunchAtLoginSetting(enabled)
+    }
+    
+    private func applyLaunchAtLoginSetting(_ enabled: Bool) {
+        guard let bundleIdentifier = Bundle.main.bundleIdentifier else {
+            log("❌ Failed to get bundle identifier for login item")
+            return
+        }
+        
+        if #available(macOS 13.0, *) {
+            // Use modern SMAppService API
+            let service = SMAppService.mainApp
+            do {
+                if enabled {
+                    if service.status == .notRegistered {
+                        try service.register()
+                        log("✅ Successfully registered login item using SMAppService")
+                    }
+                } else {
+                    if service.status == .enabled {
+                        try service.unregister()
+                        log("✅ Successfully unregistered login item using SMAppService")
+                    }
+                }
+            } catch {
+                log("❌ Failed to manage login item using SMAppService: \(error.localizedDescription)")
+                // Fallback to legacy method
+                useLegacyLoginItemMethod(enabled: enabled, bundleIdentifier: bundleIdentifier)
+            }
+        } else {
+            // Use legacy method for older macOS versions
+            useLegacyLoginItemMethod(enabled: enabled, bundleIdentifier: bundleIdentifier)
+        }
+    }
+    
+    private func useLegacyLoginItemMethod(enabled: Bool, bundleIdentifier: String) {
+        let result = SMLoginItemSetEnabled(bundleIdentifier as CFString, enabled)
+        if result {
+            log("✅ Successfully \(enabled ? "enabled" : "disabled") login item using legacy method")
+        } else {
+            log("❌ Failed to \(enabled ? "enable" : "disable") login item using legacy method")
+        }
     }
 }
