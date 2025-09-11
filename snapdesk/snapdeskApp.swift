@@ -49,6 +49,11 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         // Initialize UserConfiguration
         userConfiguration = UserConfiguration.shared
         
+        // Apply launch at login setting if it's enabled
+        if userConfiguration.launchAtLogin() {
+            userConfiguration.setLaunchAtLogin(true)
+        }
+        
         // Initialize WindowManager (simplified approach without Silica dependency)
         windowManager = SimpleWindowManager()
         

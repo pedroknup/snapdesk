@@ -89,6 +89,9 @@ struct SettingsTabView: View {
 
                     Toggle("Launch at Login", isOn: $launchAtLogin)
                         .help("Start Snapdesk automatically when you log in to your Mac")
+                        .onChange(of: launchAtLogin) { newValue in
+                            UserConfiguration.shared.setLaunchAtLogin(newValue)
+                        }
                     
                     Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
                         .help("Hide the Snapdesk icon from the menu bar (access via shortcuts only)")
@@ -173,6 +176,7 @@ struct SettingsTabView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             loadWindowPreviewConfig()
+            loadStartupSettings()
         }
     }
     
@@ -203,5 +207,11 @@ struct SettingsTabView: View {
         
         // Clear screenshot cache when settings change
         WindowScreenshotCapture.clearCache()
+    }
+    
+    // MARK: - Startup Settings
+    
+    private func loadStartupSettings() {
+        launchAtLogin = UserConfiguration.shared.launchAtLogin()
     }
 }
