@@ -255,39 +255,51 @@ extension AXWindow: WindowType {
      */
     func shouldBeManaged() -> Bool {
         let windowTitle = title() ?? ""
-        let frame = self.frame()
-        
-        // Debug logging to understand what windows are being considered
-        log("🔍 Evaluating window: '\(windowTitle)' size: \(frame.width)x\(frame.height)")
+        let windowPID = pid()
         
         guard isMovable() else {
-            log("❌ Window '\(windowTitle)' rejected: not movable")
             return false
         }
         
         guard isResizable() else {
-            log("❌ Window '\(windowTitle)' rejected: not resizable")
             return false
         }
 
         guard let subrole = string(forKey: kAXSubroleAttribute as CFString), subrole == kAXStandardWindowSubrole as String else {
-            log("❌ Window '\(windowTitle)' rejected: subrole=\(string(forKey: kAXSubroleAttribute as CFString) ?? "nil")")
             return false
         }
 
         // Additional filtering for proper manageable windows
         if isTemporaryWindow() {
-            log("❌ Window '\(windowTitle)' rejected: temporary window")
             return false
         }
         
         if isTooSmallToBeUseful() {
-            log("❌ Window '\(windowTitle)' rejected: too small (\(frame.width)x\(frame.height))")
             return false
         }
-
-        log("✅ Window '\(windowTitle)' accepted for management")
-        return true
+        
+        // Check if the app has shortcuts assigned - only manage windows from apps with shortcuts
+        if let runningApp = NSRunningApplication(processIdentifier: windowPID),
+           let bundleID = runningApp.bundleIdentifier {
+            
+            guard let config = ConfigurationManager.shared.loadConfig() else {
+                log("❌ Failed to load configuration for window management")
+                return false
+            }
+            
+            // Check if this app has any shortcuts configured
+            let hasAppShortcut = config.appShortcuts.contains { appShortcut in
+                appShortcut.bundleIdentifier == bundleID && appShortcut.shortcut != nil
+            }
+            
+            if hasAppShortcut {
+                log("📝 Managing window: '\(windowTitle)' from \(bundleID)")
+            }
+            
+            return hasAppShortcut
+        }
+        
+        return false
     }
     
     
