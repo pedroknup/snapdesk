@@ -308,6 +308,12 @@ class AppLifecycleManager {
         // Create AXWindow wrapper
         let axWindow = AXWindow(axElement: windowElement)
         
+        // Check if this window should be managed before adding it
+        guard axWindow.shouldBeManaged() else {
+            log("❌ Skipping new window - does not meet management criteria")
+            return
+        }
+        
         delegate?.windowDidCreate(axWindow, for: app)
     }
     
