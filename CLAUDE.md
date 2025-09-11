@@ -147,4 +147,29 @@ Treat these rules as invariants for cycling, focus, and layout behavior.
 
 **Remember:** **NO file creation or deletion** — request these operations via comments instead.
 
+## Build Findings and Issues
+
+### Recent Build Error Resolution (January 2025)
+
+**Issue**: After implementing incremental window positioning system, build failed with protocol conformance errors.
+
+**Root Cause**: 
+- Updated `WindowManaging` protocol to use new incremental methods (`moveWindowLeft()`, etc.)
+- But still had old positioning command bindings in `HotkeyManager.swift` calling deprecated methods (`positionWindowLeft()`, etc.)
+- Protocol definition and implementation were inconsistent
+
+**Resolution**:
+1. ✅ Updated `WindowManaging` protocol to remove old positioning methods
+2. ✅ Replaced old command bindings in `HotkeyManager.setUpWithWindowController()` 
+3. ✅ Updated `ConfigurationManager` default shortcuts to use new incremental system
+
+**Build Command Used**: 
+```bash
+xcodebuild -project ./snapdesk.xcodeproj -scheme snapdesk -configuration Debug build
+```
+
+**Key Learning**: Always ensure protocol definitions match implementations when refactoring. The Swift compiler provides clear error messages for protocol conformance issues.
+
+**Status**: ✅ **BUILD SUCCESSFUL** - All protocol conformance issues resolved. The incremental window positioning system is now properly integrated and compiles successfully.
+
 I must manually test it before you commit. Dont ever commit without having me giving you the green light.
