@@ -54,8 +54,9 @@ class FloatingWindowHelper {
             activeWindows.append(window)
             activePopupWindow = window
             
-            window.makeKeyAndOrderFront(nil)
+            // Set window level before showing to avoid positioning issues
             window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
+            window.makeKeyAndOrderFront(nil)
             
             // Schedule close timer
             schedulePopupClose(window: window, duration: settingsDuration)
@@ -194,9 +195,12 @@ class FloatingWindowHelper {
         
         backgroundView.addSubview(textView)
         
-        // Update window content and frame instantly
+        // Update window content and frame smoothly
         window.contentView = backgroundView
-        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: false)
+        let newFrame = NSRect(origin: windowOrigin, size: windowSize)
+        if !window.frame.equalTo(newFrame) {
+            window.setFrame(newFrame, display: false, animate: false)
+        }
     }
     
     /// Updates window to image layout and repositions it
@@ -381,9 +385,12 @@ class FloatingWindowHelper {
         stackView.setHuggingPriority(.defaultHigh, for: .horizontal)
         stackView.setHuggingPriority(.defaultHigh, for: .vertical)
         
-        // Update window content and frame instantly
+        // Update window content and frame smoothly
         window.contentView = containerView
-        window.setFrame(NSRect(origin: windowOrigin, size: windowSize), display: true, animate: false)
+        let newFrame = NSRect(origin: windowOrigin, size: windowSize)
+        if !window.frame.equalTo(newFrame) {
+            window.setFrame(newFrame, display: false, animate: false)
+        }
     }
     
     /// Schedules the popup window to close after the specified duration
