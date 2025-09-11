@@ -1161,6 +1161,277 @@ class FloatingWindowHelper {
             showFloatingWindow(text: "Third Window", position: .bottomLeft, duration: 3.0)
         }
     }
+    
+    /// Shows all available layouts in a grid with the current layout highlighted
+    static func showAllLayoutsGrid(currentLayout: LayoutKind, position: FloatingPosition = .center, duration: TimeInterval = 1.5) {
+        let layouts: [LayoutKind] = [.tall, .wide, .vertical_stack, .horizontal_stack, .fullscreen, .floating]
+        let layoutNames = ["Tall", "Wide", "V.Stack", "H.Stack", "Full", "Float"]
+        
+        // Check if we have an active popup to reuse
+        if let activePopup = activePopupWindow, activePopup.isVisible {
+            // Reuse existing popup - update content and reset timer
+            reuseActivePopupForLayoutGrid(window: activePopup, layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position, duration: duration)
+        } else {
+            // Create new popup
+            let window = createLayoutGridWindow(layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
+            activeWindows.append(window)
+            activePopupWindow = window
+            
+            // Set window level before showing to avoid positioning issues
+            window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
+            window.makeKeyAndOrderFront(nil)
+            
+            // Schedule close timer
+            schedulePopupClose(window: window, duration: duration)
+        }
+    }
+    
+    /// Reuses an active popup window for the layout grid display
+    private static func reuseActivePopupForLayoutGrid(window: NSWindow, layouts: [LayoutKind], layoutNames: [String], currentLayout: LayoutKind, position: FloatingPosition, duration: TimeInterval) {
+        // Cancel existing timer
+        popupTimer?.invalidate()
+        popupTimer = nil
+        
+        // Reset opacity to full
+        window.alphaValue = 1.0
+        
+        // Update window content with new layout grid
+        updatePopupContentForLayoutGrid(window: window, layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
+        
+        // Schedule new close timer
+        schedulePopupClose(window: window, duration: duration)
+    }
+    
+    /// Creates a window displaying all layouts in a grid format
+    private static func createLayoutGridWindow(layouts: [LayoutKind], layoutNames: [String], currentLayout: LayoutKind, position: FloatingPosition) -> NSWindow {
+        let itemWidth: CGFloat = 100
+        let itemHeight: CGFloat = 80
+        let spacing: CGFloat = 20
+        let padding: CGFloat = 24
+        let itemsPerRow = 3
+        
+        // Calculate grid dimensions
+        let rows = Int(ceil(Double(layouts.count) / Double(itemsPerRow)))
+        let cols = min(layouts.count, itemsPerRow)
+        
+        let contentWidth = CGFloat(cols) * itemWidth + CGFloat(cols - 1) * spacing
+        let contentHeight = CGFloat(rows) * itemHeight + CGFloat(rows - 1) * spacing
+        let windowSize = NSSize(width: contentWidth + padding * 2, height: contentHeight + padding * 2)
+        
+        // Calculate position
+        let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
+        let windowRect = NSRect(origin: windowOrigin, size: windowSize)
+        
+        let window = NSWindow(
+            contentRect: windowRect,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        
+        // Window styling
+        window.backgroundColor = NSColor.clear
+        window.isOpaque = false
+        window.hasShadow = true
+        window.ignoresMouseEvents = true
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        
+        // Create modern background
+        let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
+        backgroundView.wantsLayer = true
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.06, alpha: 0.95).cgColor
+        backgroundView.layer?.cornerRadius = 16
+        backgroundView.layer?.borderWidth = 1.0
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.12).cgColor
+        
+        // Enhanced shadow for depth
+        backgroundView.layer?.shadowColor = NSColor.black.cgColor
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 8)
+        backgroundView.layer?.shadowRadius = 24
+        backgroundView.layer?.shadowOpacity = 0.4
+        
+        // Create grid of layout items
+        for (index, layout) in layouts.enumerated() {
+            let row = index / itemsPerRow
+            let col = index % itemsPerRow
+            
+            let x = padding + CGFloat(col) * (itemWidth + spacing)
+            let y = padding + contentHeight - CGFloat(row + 1) * itemHeight - CGFloat(row) * spacing
+            
+            let itemView = createLayoutItemView(
+                layout: layout,
+                name: layoutNames[index],
+                isActive: layout == currentLayout,
+                frame: NSRect(x: x, y: y, width: itemWidth, height: itemHeight)
+            )
+            
+            backgroundView.addSubview(itemView)
+        }
+        
+        window.contentView = backgroundView
+        
+        // Add fade-in animation
+        window.alphaValue = 0.0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.2
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().alphaValue = 1.0
+        }
+        
+        return window
+    }
+    
+    /// Updates existing popup content to show the layout grid
+    private static func updatePopupContentForLayoutGrid(window: NSWindow, layouts: [LayoutKind], layoutNames: [String], currentLayout: LayoutKind, position: FloatingPosition) {
+        let itemWidth: CGFloat = 100
+        let itemHeight: CGFloat = 80
+        let spacing: CGFloat = 20
+        let padding: CGFloat = 24
+        let itemsPerRow = 3
+        
+        // Calculate grid dimensions
+        let rows = Int(ceil(Double(layouts.count) / Double(itemsPerRow)))
+        let cols = min(layouts.count, itemsPerRow)
+        
+        let contentWidth = CGFloat(cols) * itemWidth + CGFloat(cols - 1) * spacing
+        let contentHeight = CGFloat(rows) * itemHeight + CGFloat(rows - 1) * spacing
+        let windowSize = NSSize(width: contentWidth + padding * 2, height: contentHeight + padding * 2)
+        
+        // Calculate new position
+        let windowOrigin = calculateWindowOrigin(position: position, windowSize: windowSize)
+        
+        // Create modern background
+        let backgroundView = NSView(frame: NSRect(origin: .zero, size: windowSize))
+        backgroundView.wantsLayer = true
+        backgroundView.layer?.backgroundColor = NSColor(calibratedWhite: 0.06, alpha: 0.95).cgColor
+        backgroundView.layer?.cornerRadius = 16
+        backgroundView.layer?.borderWidth = 1.0
+        backgroundView.layer?.borderColor = NSColor(calibratedWhite: 1.0, alpha: 0.12).cgColor
+        
+        // Enhanced shadow for depth
+        backgroundView.layer?.shadowColor = NSColor.black.cgColor
+        backgroundView.layer?.shadowOffset = NSSize(width: 0, height: 8)
+        backgroundView.layer?.shadowRadius = 24
+        backgroundView.layer?.shadowOpacity = 0.4
+        
+        // Create grid of layout items
+        for (index, layout) in layouts.enumerated() {
+            let row = index / itemsPerRow
+            let col = index % itemsPerRow
+            
+            let x = padding + CGFloat(col) * (itemWidth + spacing)
+            let y = padding + contentHeight - CGFloat(row + 1) * itemHeight - CGFloat(row) * spacing
+            
+            let itemView = createLayoutItemView(
+                layout: layout,
+                name: layoutNames[index],
+                isActive: layout == currentLayout,
+                frame: NSRect(x: x, y: y, width: itemWidth, height: itemHeight)
+            )
+            
+            backgroundView.addSubview(itemView)
+        }
+        
+        // Update window content and frame smoothly
+        window.contentView = backgroundView
+        let newFrame = NSRect(origin: windowOrigin, size: windowSize)
+        if !window.frame.equalTo(newFrame) {
+            window.setFrame(newFrame, display: false, animate: false)
+        }
+    }
+    
+    /// Creates a single layout item view with icon and label
+    private static func createLayoutItemView(layout: LayoutKind, name: String, isActive: Bool, frame: NSRect) -> NSView {
+        let itemView = NSView(frame: frame)
+        itemView.wantsLayer = true
+        
+        // Container styling
+        let opacity: CGFloat = isActive ? 1.0 : 0.4
+        let borderWidth: CGFloat = isActive ? 2.0 : 1.0
+        let borderColor = isActive ? NSColor.white : NSColor(calibratedWhite: 0.6, alpha: 0.5)
+        
+        itemView.layer?.backgroundColor = NSColor(calibratedWhite: 0.12, alpha: opacity).cgColor
+        itemView.layer?.cornerRadius = 8
+        itemView.layer?.borderWidth = borderWidth
+        itemView.layer?.borderColor = borderColor.cgColor
+        itemView.alphaValue = opacity
+        
+        if isActive {
+            // Add glow effect for active layout
+            itemView.layer?.shadowColor = NSColor.white.cgColor
+            itemView.layer?.shadowOffset = NSSize(width: 0, height: 0)
+            itemView.layer?.shadowRadius = 6
+            itemView.layer?.shadowOpacity = 0.3
+        }
+        
+        // Create simple visual representation
+        let iconView = createLayoutIcon(for: layout, isActive: isActive)
+        iconView.frame = NSRect(x: 10, y: 30, width: frame.width - 20, height: frame.height - 50)
+        itemView.addSubview(iconView)
+        
+        // Add layout name label
+        let label = NSTextField(labelWithString: name)
+        label.font = NSFont.systemFont(ofSize: 11, weight: isActive ? .semibold : .regular)
+        label.textColor = isActive ? NSColor.white : NSColor(calibratedWhite: 0.8, alpha: 1.0)
+        label.alignment = .center
+        label.frame = NSRect(x: 5, y: 5, width: frame.width - 10, height: 20)
+        itemView.addSubview(label)
+        
+        return itemView
+    }
+    
+    /// Creates a simple visual icon for each layout type
+    private static func createLayoutIcon(for layout: LayoutKind, isActive: Bool) -> NSView {
+        let iconView = NSView()
+        iconView.wantsLayer = true
+        
+        let color = isActive ? NSColor.white : NSColor(calibratedWhite: 0.7, alpha: 1.0)
+        
+        switch layout {
+        case .tall:
+            // Main pane on top, secondary below
+            addRect(to: iconView, frame: NSRect(x: 0, y: 20, width: 60, height: 20), color: color)
+            addRect(to: iconView, frame: NSRect(x: 0, y: 0, width: 60, height: 15), color: color)
+            
+        case .wide:
+            // Main pane on left, secondary on right
+            addRect(to: iconView, frame: NSRect(x: 0, y: 0, width: 30, height: 35), color: color)
+            addRect(to: iconView, frame: NSRect(x: 35, y: 0, width: 25, height: 35), color: color)
+            
+        case .vertical_stack:
+            // Equal height windows stacked vertically
+            addRect(to: iconView, frame: NSRect(x: 0, y: 24, width: 60, height: 10), color: color)
+            addRect(to: iconView, frame: NSRect(x: 0, y: 12, width: 60, height: 10), color: color)
+            addRect(to: iconView, frame: NSRect(x: 0, y: 0, width: 60, height: 10), color: color)
+            
+        case .horizontal_stack:
+            // Equal width windows side by side
+            addRect(to: iconView, frame: NSRect(x: 0, y: 0, width: 18, height: 35), color: color)
+            addRect(to: iconView, frame: NSRect(x: 21, y: 0, width: 18, height: 35), color: color)
+            addRect(to: iconView, frame: NSRect(x: 42, y: 0, width: 18, height: 35), color: color)
+            
+        case .fullscreen:
+            // Single full window
+            addRect(to: iconView, frame: NSRect(x: 0, y: 0, width: 60, height: 35), color: color)
+            
+        case .floating:
+            // Overlapping windows
+            addRect(to: iconView, frame: NSRect(x: 0, y: 15, width: 25, height: 20), color: color)
+            addRect(to: iconView, frame: NSRect(x: 15, y: 8, width: 25, height: 20), color: color)
+            addRect(to: iconView, frame: NSRect(x: 30, y: 0, width: 25, height: 20), color: color)
+        }
+        
+        return iconView
+    }
+    
+    /// Helper method to add a rectangle to an icon view
+    private static func addRect(to parentView: NSView, frame: CGRect, color: NSColor) {
+        let rectView = NSView(frame: frame)
+        rectView.wantsLayer = true
+        rectView.layer?.backgroundColor = color.cgColor
+        rectView.layer?.cornerRadius = 2
+        parentView.addSubview(rectView)
+    }
 }
 
 // MARK: - Window Screenshot Utility

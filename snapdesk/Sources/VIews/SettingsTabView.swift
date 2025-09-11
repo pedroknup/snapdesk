@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsTabView: View {
     // Notifications & Visual Feedback
     @AppStorage("showLayoutIndicator") private var showLayoutIndicator = true
+    @AppStorage("show-all-layouts-on-toggle") private var showAllLayoutsOnToggle = false
     @AppStorage("showThrowNotifications") private var showThrowNotifications = true
     @AppStorage("notificationDuration") private var notificationDuration: Double = 1.5
     @AppStorage("notificationPosition") private var notificationPosition = "center"
@@ -42,6 +43,9 @@ struct SettingsTabView: View {
 
                     Toggle("Show Layout Change Notifications", isOn: $showLayoutIndicator)
                         .help("Display floating notification when toggling between layouts")
+                    
+                    Toggle("Show All Layouts Grid", isOn: $showAllLayoutsOnToggle)
+                        .help("Display all layout options in a grid view when toggling (instead of just text)")
                     
                     Toggle("Show Window Throw Notifications", isOn: $showThrowNotifications)
                         .help("Display notification when moving windows between screens")

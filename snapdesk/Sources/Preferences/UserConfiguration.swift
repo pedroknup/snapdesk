@@ -100,6 +100,7 @@ enum ConfigurationKey: String {
     case disablePaddingOnBuiltinDisplay = "disable-padding-on-builtin-display"
     case hideMenuBarIcon = "hide-menu-bar-icon"
     case launchAtLogin = "launchAtLogin"
+    case showAllLayoutsOnToggle = "show-all-layouts-on-toggle"
 }
 
 extension ConfigurationKey: CaseIterable {}
@@ -741,6 +742,10 @@ class UserConfiguration: NSObject {
 
     func hideMenuBarIcon() -> Bool {
         return storage.bool(forKey: .hideMenuBarIcon)
+    }
+    
+    func showAllLayoutsOnToggle() -> Bool {
+        return storage.bool(forKey: .showAllLayoutsOnToggle)
     }
 }
 

@@ -280,28 +280,38 @@ final class WindowSet: Identifiable {
     
     /// Shows a popup notification indicating the current layout
     private func showLayoutChangePopup(for layout: LayoutKind) {
-        let layoutDisplayName: String
-        
-        switch layout {
-        case .tall:
-            layoutDisplayName = "Tall"
-        case .wide:
-            layoutDisplayName = "Wide"
-        case .vertical_stack:
-            layoutDisplayName = "Vertical Stack"
-        case .horizontal_stack:
-            layoutDisplayName = "Horizontal Stack"
-        case .fullscreen:
-            layoutDisplayName = "Fullscreen"
-        case .floating:
-            layoutDisplayName = "Floating"
+        // Check if all layouts should be shown in a grid
+        if UserConfiguration.shared.showAllLayoutsOnToggle() {
+            FloatingWindowHelper.showAllLayoutsGrid(
+                currentLayout: layout,
+                position: .center,
+                duration: 1.5
+            )
+        } else {
+            // Show simple text popup (existing behavior)
+            let layoutDisplayName: String
+            
+            switch layout {
+            case .tall:
+                layoutDisplayName = "Tall"
+            case .wide:
+                layoutDisplayName = "Wide"
+            case .vertical_stack:
+                layoutDisplayName = "Vertical Stack"
+            case .horizontal_stack:
+                layoutDisplayName = "Horizontal Stack"
+            case .fullscreen:
+                layoutDisplayName = "Fullscreen"
+            case .floating:
+                layoutDisplayName = "Floating"
+            }
+            
+            FloatingWindowHelper.showFloatingWindow(
+                text: layoutDisplayName,
+                position: .center,
+                duration: 1.0,
+                fontSize: 16
+            )
         }
-        
-        FloatingWindowHelper.showFloatingWindow(
-            text: layoutDisplayName,
-            position: .center,
-            duration: 1.0,
-            fontSize: 16
-        )
     }
 }
