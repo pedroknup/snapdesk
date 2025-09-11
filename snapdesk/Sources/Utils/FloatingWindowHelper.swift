@@ -243,32 +243,16 @@ class FloatingWindowHelper {
                 // Extract the number from the title (e.g., "1. WindowTitle ◄" -> "1")
                 let numberString = title.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces) ?? ""
                 
-                // Create number badge with subtle background
-                let numberContainer = NSView()
-                numberContainer.wantsLayer = true
-                let numberWidth: CGFloat = 35
-                let numberHeight: CGFloat = 35
-                numberContainer.frame = NSRect(origin: .zero, size: NSSize(width: numberWidth, height: numberHeight))
-                
-                if isActive {
-                    numberContainer.layer?.backgroundColor = theme.accentColor.withAlphaComponent(0.15).cgColor
-                    numberContainer.layer?.borderWidth = 1
-                    numberContainer.layer?.borderColor = theme.accentColor.withAlphaComponent(0.3).cgColor
-                } else {
-                    numberContainer.layer?.backgroundColor = NSColor(calibratedWhite: 0.3, alpha: 0.2).cgColor
-                }
-                numberContainer.layer?.cornerRadius = 8
-                
+                // Create simple number label
                 let numberLabel = NSTextField(labelWithString: numberString)
                 numberLabel.textColor = isActive ? theme.accentColor : NSColor(calibratedWhite: 0.85, alpha: 1.0)
-                numberLabel.font = NSFont.systemFont(ofSize: fontSize, weight: isActive ? .semibold : .regular)
+                numberLabel.font = NSFont.systemFont(ofSize: fontSize + 2, weight: isActive ? .bold : .regular)
                 numberLabel.backgroundColor = NSColor.clear
                 numberLabel.isBordered = false
                 numberLabel.alignment = .center
-                numberLabel.frame = NSRect(x: 0, y: (numberHeight - 20) / 2, width: numberWidth, height: 20)
-                numberContainer.addSubview(numberLabel)
+                numberLabel.frame = NSRect(origin: .zero, size: NSSize(width: 35, height: 35))
                 
-                imageRowView.addArrangedSubview(numberContainer)
+                imageRowView.addArrangedSubview(numberLabel)
                 
                 // Create image view with subtle styling
                 let imageView = NSImageView()
@@ -276,15 +260,20 @@ class FloatingWindowHelper {
                 imageView.imageScaling = .scaleProportionallyUpOrDown
                 imageView.wantsLayer = true
                 imageView.layer?.cornerRadius = 6
-                imageView.layer?.masksToBounds = true
+                imageView.layer?.masksToBounds = false
                 
                 if isActive {
-                    // Subtle highlight for active window
-                    imageView.layer?.borderWidth = theme.activeWindowBorderWidth
-                    imageView.layer?.borderColor = theme.accentColor.withAlphaComponent(0.5).cgColor
+                    // Prominent highlight for active window
+                    imageView.layer?.borderWidth = 2.5
+                    imageView.layer?.borderColor = theme.accentColor.cgColor
                     imageView.alphaValue = 1.0
+                    // Add subtle glow effect
+                    imageView.layer?.shadowColor = theme.accentColor.cgColor
+                    imageView.layer?.shadowOffset = NSSize(width: 0, height: 0)
+                    imageView.layer?.shadowRadius = 6
+                    imageView.layer?.shadowOpacity = 0.4
                 } else {
-                    imageView.alphaValue = theme.inactiveWindowOpacity
+                    imageView.alphaValue = 0.7
                     imageView.layer?.borderWidth = 0.5
                     imageView.layer?.borderColor = NSColor(calibratedWhite: 0.5, alpha: 0.2).cgColor
                 }
@@ -298,13 +287,13 @@ class FloatingWindowHelper {
                     .replacingOccurrences(of: "\(numberString). ", with: "")
                     .replacingOccurrences(of: " ◄", with: "")
                 
-                // Create title with subtle styling and fixed alignment
+                // Create title with improved styling and fixed alignment
                 let titleContainer = NSView()
                 titleContainer.frame = NSRect(origin: .zero, size: NSSize(width: 200, height: 30))
                 
                 let titleLabel = NSTextField(labelWithString: cleanTitle)
-                titleLabel.textColor = isActive ? NSColor(calibratedWhite: 1.0, alpha: 1.0) : NSColor(calibratedWhite: 0.8, alpha: 1.0)
-                titleLabel.font = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .medium : .regular)
+                titleLabel.textColor = isActive ? theme.accentColor : NSColor(calibratedWhite: 0.8, alpha: 1.0)
+                titleLabel.font = NSFont.systemFont(ofSize: fontSize - 1, weight: isActive ? .semibold : .regular)
                 titleLabel.backgroundColor = NSColor.clear
                 titleLabel.isBordered = false
                 titleLabel.cell?.wraps = false
