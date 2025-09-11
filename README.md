@@ -1,7 +1,7 @@
 # SnapDesk
 
 <div align="center">
-  <img src="Assets.xcassets/snapdesk-logo.imageset/snapdesk-logo.png" alt="SnapDesk Logo" width="128" height="128">
+  <img src="./public/logo.png" alt="SnapDesk Logo" width="128" height="128">
   <br/>
   <strong>Effortless window management for macOS power users</strong>
   <br/><br/>
