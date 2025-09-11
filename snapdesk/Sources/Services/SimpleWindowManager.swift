@@ -570,9 +570,7 @@ class SimpleWindowManager: WindowManaging {
     /// Shows cycling order feedback with optional previews
     private func showCyclingOrderFeedback(bundleID: String, appName: String, windowOrder: [CGWindowID], focusedWindowID: CGWindowID) {
         let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
-        let totalWindows = windowOrder.count
-        let currentPosition = windowOrder.firstIndex(of: focusedWindowID).map { $0 + 1 } ?? 0
-        var feedbackText = "Window Order: \(appName)\nCurrent: \(currentPosition) of \(totalWindows)\n"
+        let feedbackText = ""
         
         var previewImages: [(NSImage, String)] = []
         
@@ -601,7 +599,6 @@ class SimpleWindowManager: WindowManaging {
             let truncatedTitle = truncateString(windowTitle, maxLength: 35)
             let isCurrent = windowID == focusedWindowID
             let marker = isCurrent ? " ◄" : ""
-            feedbackText += " \(index + 1). \(truncatedTitle)\(marker)\n"
             
             // Capture screenshot if preview is enabled
             if config.enabled {
@@ -612,18 +609,11 @@ class SimpleWindowManager: WindowManaging {
             }
         }
         
-        // Show feedback with previews if enabled
+        // Show feedback only with previews enabled
         if config.enabled && !previewImages.isEmpty {
             FloatingWindowHelper.showFloatingWindow(
                 attributedText: NSAttributedString(string: feedbackText),
                 images: previewImages,
-                position: .center,
-                duration: 2.5,
-                fontSize: 14
-            )
-        } else {
-            FloatingWindowHelper.showFloatingWindow(
-                text: feedbackText,
                 position: .center,
                 duration: 2.5,
                 fontSize: 14
