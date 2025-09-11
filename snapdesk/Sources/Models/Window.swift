@@ -254,16 +254,113 @@ extension AXWindow: WindowType {
      In this case the window must be movable and be a standard window.
      */
     func shouldBeManaged() -> Bool {
+        let windowTitle = title() ?? ""
+        let frame = self.frame()
+        
+        // Debug logging to understand what windows are being considered
+        log("🔍 Evaluating window: '\(windowTitle)' size: \(frame.width)x\(frame.height)")
+        
         guard isMovable() else {
+            log("❌ Window '\(windowTitle)' rejected: not movable")
             return false
         }
 
         guard let subrole = string(forKey: kAXSubroleAttribute as CFString), subrole == kAXStandardWindowSubrole as String else {
+            log("❌ Window '\(windowTitle)' rejected: subrole=\(string(forKey: kAXSubroleAttribute as CFString) ?? "nil")")
             return false
         }
 
+        // Additional filtering for proper manageable windows
+        if isTemporaryWindow() {
+            log("❌ Window '\(windowTitle)' rejected: temporary window")
+            return false
+        }
+        
+        if isTooSmallToBeUseful() {
+            log("❌ Window '\(windowTitle)' rejected: too small (\(frame.width)x\(frame.height))")
+            return false
+        }
+
+        log("✅ Window '\(windowTitle)' accepted for management")
         return true
     }
+    
+    
+    /**
+     Checks if this is a temporary window like tooltips, popups, or overlays.
+     */
+    private func isTemporaryWindow() -> Bool {
+        let windowTitle = title() ?? ""
+        let trimmedTitle = windowTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Windows with empty or very short titles are often temporary UI elements
+        if trimmedTitle.isEmpty || trimmedTitle.count <= 2 {
+            return true
+        }
+        
+        // Check for common temporary window patterns
+        let temporaryPatterns = [
+            "Tooltip",
+            "ToolTip", 
+            "tooltip",
+            "Popup",
+            "popup",
+            "Menu",
+            "ContextMenu",
+            "Dropdown",
+            "HUD",
+            "Overlay",
+            "Preview",
+            "Quick Look",
+            "Notification",
+            "Alert",
+            "Dialog",
+            // Arc browser specific patterns
+            "Space",
+            "Tab Preview",
+            "Link Preview",
+            "Hover",
+            "Float",
+            // Common system UI elements
+            "Status",
+            "Info",
+            "Help",
+            // Single character or number titles (often temporary)
+            "•", "…", "➤", "▶", "⏸", "⏹", "⏮", "⏭"
+        ]
+        
+        for pattern in temporaryPatterns {
+            if windowTitle.localizedCaseInsensitiveContains(pattern) {
+                return true
+            }
+        }
+        
+        // Check for windows that are just numbers or single characters
+        if trimmedTitle.count <= 3 && (trimmedTitle.rangeOfCharacter(from: CharacterSet.alphanumerics.inverted) != nil || trimmedTitle.allSatisfy { $0.isNumber }) {
+            return true
+        }
+        
+        // Check if title suggests this is a temporary Arc browser element
+        if windowTitle.contains("Arc") {
+            return true
+        }
+        
+        return false
+    }
+    
+    /**
+     Checks if the window is too small to be useful for tiling.
+     */
+    private func isTooSmallToBeUseful() -> Bool {
+        let frame = self.frame()
+        
+        // Filter out very small windows that are likely UI elements or tooltips
+        let minimumWidth: CGFloat = 200
+        let minimumHeight: CGFloat = 150
+        
+        return frame.width < minimumWidth || frame.height < minimumHeight
+    }
+    
 
     func shouldFloat() -> Bool {
         let userConfiguration = UserConfiguration.shared
