@@ -38,6 +38,7 @@ struct ShortcutsTabView: View {
     @State private var config: Config
     @State private var searchText: String = ""
     @State private var refreshTrigger: Bool = false
+    @StateObject private var availableKeysModel = AvailableKeysModel()
     private let configManager = ConfigurationManager.shared
     private let cacheManager = AppCacheManager.shared
     
@@ -126,6 +127,7 @@ struct ShortcutsTabView: View {
                                             }
                                             saveConfig()
                                             refreshTrigger.toggle()
+                                            updateAvailableKeys()
                                         }
                                     }
                                 ))
@@ -134,7 +136,7 @@ struct ShortcutsTabView: View {
                         }
                     }
                 }
-                
+
                 Section("Applications") {
                     if isLoading && apps.isEmpty {
                         ProgressView("Loading applications...")
@@ -156,9 +158,9 @@ struct ShortcutsTabView: View {
                                     Text(app.name).font(.headline)
                                     Text(app.bundleIdentifier).font(.caption).foregroundColor(.gray)
                                 }
-                                
+
                                 Spacer()
-                                
+
                                 ShortcutRecorder(shortcut: Binding(
                                     get: { app.shortcut },
                                     set: { newShortcut in
@@ -177,14 +179,15 @@ struct ShortcutsTabView: View {
                                             config.appShortcuts.removeAll { $0.bundleIdentifier == app.bundleIdentifier }
                                         }
                                         saveConfig()
-                                        
+
                                         // Update the app's shortcut in the apps array
                                         if let appIndex = apps.firstIndex(where: { $0.bundleIdentifier == app.bundleIdentifier }) {
                                             apps[appIndex].shortcut = newShortcut
                                         }
-                                        
+
                                         // Trigger UI refresh
                                         refreshTrigger.toggle()
+                                        updateAvailableKeys()
                                     }
                                 ))
                             }
@@ -193,11 +196,17 @@ struct ShortcutsTabView: View {
                     }
                 }
             }
+
+            // Available keys view at the bottom
+            AvailableKeysView(keysModel: availableKeysModel)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
         }
         .onAppear {
             loadAppsWithCache()
+            updateAvailableKeys()
         }
-        .onChange(of: refreshTrigger) { _ in
+        .onChange(of: refreshTrigger) {
             // This will trigger a UI refresh when refreshTrigger changes
         }
         .navigationTitle("Shortcuts")
@@ -222,9 +231,7 @@ struct ShortcutsTabView: View {
     private func refreshAppsInBackground() async {
         isRefreshing = true
         
-        let freshApps = await Task.detached(priority: .background) {
-            fetchInstalledApps()
-        }.value
+        let freshApps = fetchInstalledApps()
         
         // Update UI on main thread
         await MainActor.run {
@@ -310,6 +317,10 @@ struct ShortcutsTabView: View {
         if let appDelegate = NSApplication.shared.delegate as? SnapdeskApp {
             appDelegate.reloadHotkeyConfiguration()
         }
+    }
+
+    private func updateAvailableKeys() {
+        availableKeysModel.updateAvailability(from: config)
     }
 }
 

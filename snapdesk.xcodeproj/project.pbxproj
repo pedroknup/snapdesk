@@ -66,6 +66,8 @@
 		13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBF2E6F481B00DA7702 /* FullscreenLayout.swift */; };
 		13A3EEC82E6F481B00DA7702 /* FloatingLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEBE2E6F481B00DA7702 /* FloatingLayout.swift */; };
 		13A4B8A72DB527FA00390915 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 13A4B8A62DB527FA00390915 /* Yams */; };
+		13AA593B2E7983710031F956 /* AvailableKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA593A2E7983710031F956 /* AvailableKeysModel.swift */; };
+		13AA593D2E7983810031F956 /* AvailableKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA593C2E7983810031F956 /* AvailableKeysView.swift */; };
 		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
 		13F42D582E5F03DC001F7A25 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 13F42D572E5F03DC001F7A25 /* SwiftyBeaver */; };
@@ -139,6 +141,8 @@
 		13A3EEC02E6F481B00DA7702 /* LayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutEngine.swift; sourceTree = "<group>"; };
 		13A3EEC12E6F481B00DA7702 /* TallLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TallLayout.swift; sourceTree = "<group>"; };
 		13A3EEC22E6F481B00DA7702 /* WideLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WideLayout.swift; sourceTree = "<group>"; };
+		13AA593A2E7983710031F956 /* AvailableKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableKeysModel.swift; sourceTree = "<group>"; };
+		13AA593C2E7983810031F956 /* AvailableKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableKeysView.swift; sourceTree = "<group>"; };
 		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
@@ -236,6 +240,7 @@
 		135B550B2DB6596D00EC05FF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				13AA593A2E7983710031F956 /* AvailableKeysModel.swift */,
 				13972B382E5EF96800588D1B /* CGInfo.swift */,
 				13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */,
 				13972B122E5EEF2C00588D1B /* Application.swift */,
@@ -272,6 +277,7 @@
 		135B55182DB6596D00EC05FF /* VIews */ = {
 			isa = PBXGroup;
 			children = (
+				13AA593C2E7983810031F956 /* AvailableKeysView.swift */,
 				135B55112DB6596D00EC05FF /* AboutTabView.swift */,
 				135B55132DB6596D00EC05FF /* PreferencesView.swift */,
 				135B55142DB6596D00EC05FF /* SettingsTabView.swift */,
@@ -501,8 +507,10 @@
 				13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */,
 				13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */,
 				13F42D6F2E5F1CAF001F7A25 /* Screen.swift in Sources */,
+				13AA593D2E7983810031F956 /* AvailableKeysView.swift in Sources */,
 				13A3EEC32E6F481B00DA7702 /* LayoutEngine.swift in Sources */,
 				13A3EEC42E6F481B00DA7702 /* BaseLayout.swift in Sources */,
+				13AA593B2E7983710031F956 /* AvailableKeysModel.swift in Sources */,
 				13A3EEC52E6F481B00DA7702 /* TallLayout.swift in Sources */,
 				13A3EEC62E6F481B00DA7702 /* WideLayout.swift in Sources */,
 				13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */,
