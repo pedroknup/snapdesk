@@ -113,10 +113,11 @@ struct ShortcutsTabView: View {
                             .padding(.vertical, 8)
                     } else {
                         ForEach(generalShortcuts) { shortcut in
-                            HStack {
-                                Text(shortcut.name)
-                                Spacer()
-                                ShortcutRecorder(shortcut: Binding(
+                            ModernShortcutRow(
+                                title: shortcut.name,
+                                subtitle: nil,
+                                icon: nil,
+                                shortcut: Binding(
                                     get: { shortcut.shortcut },
                                     set: { newShortcut in
                                         if let index = config.generalShortcuts.firstIndex(where: { $0.name == shortcut.name }) {
@@ -130,9 +131,8 @@ struct ShortcutsTabView: View {
                                             updateAvailableKeys()
                                         }
                                     }
-                                ))
-                            }
-                            .padding(.vertical, 4)
+                                )
+                            )
                         }
                     }
                 }
@@ -148,20 +148,11 @@ struct ShortcutsTabView: View {
                             .padding(.vertical, 8)
                     } else {
                         ForEach(filteredApps) { app in
-                            HStack {
-                                Image(nsImage: app.icon ?? NSImage())
-                                    .resizable()
-                                    .frame(width: 32, height: 32)
-                                    .cornerRadius(6)
-
-                                VStack(alignment: .leading) {
-                                    Text(app.name).font(.headline)
-                                    Text(app.bundleIdentifier).font(.caption).foregroundColor(.gray)
-                                }
-
-                                Spacer()
-
-                                ShortcutRecorder(shortcut: Binding(
+                            ModernShortcutRow(
+                                title: app.name,
+                                subtitle: app.bundleIdentifier,
+                                icon: app.icon,
+                                shortcut: Binding(
                                     get: { app.shortcut },
                                     set: { newShortcut in
                                         if let newShortcut = newShortcut {
@@ -189,9 +180,8 @@ struct ShortcutsTabView: View {
                                         refreshTrigger.toggle()
                                         updateAvailableKeys()
                                     }
-                                ))
-                            }
-                            .padding(.vertical, 4)
+                                )
+                            )
                         }
                     }
                 }
@@ -321,6 +311,362 @@ struct ShortcutsTabView: View {
 
     private func updateAvailableKeys() {
         availableKeysModel.updateAvailability(from: config)
+    }
+}
+
+struct ModernShortcutRow: View {
+    let title: String
+    let subtitle: String?
+    let icon: NSImage?
+    @Binding var shortcut: ShortcutConfig?
+
+    private var hasShortcut: Bool {
+        guard let shortcut = shortcut else { return false }
+        return !shortcut.key.isEmpty || !shortcut.modifiers.isEmpty
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Icon section
+            if let icon = icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 40, height: 40)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+                    )
+            } else {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.secondary.opacity(0.1))
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: "gear")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 16))
+                    )
+            }
+
+            // Title and subtitle section
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Shortcut display and configuration section
+            HStack(spacing: 8) {
+                if hasShortcut {
+                    ModernShortcutDisplay(shortcut: shortcut)
+                } else {
+                    Text("No shortcut")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(6)
+                }
+
+                ModernShortcutRecorder(shortcut: $shortcut)
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.clear)
+                .contentShape(Rectangle())
+        )
+        .onHover { hovering in
+            // Optional: Add hover effect
+        }
+    }
+}
+
+struct ModernShortcutDisplay: View {
+    let shortcut: ShortcutConfig?
+
+    private var shortcutComponents: [String] {
+        guard let shortcut = shortcut else { return [] }
+
+        var components: [String] = []
+
+        // Add modifier symbols
+        for modifier in shortcut.modifiers {
+            switch modifier.lowercased() {
+            case "command":
+                components.append("⌘")
+            case "option":
+                components.append("⌥")
+            case "shift":
+                components.append("⇧")
+            case "control":
+                components.append("⌃")
+            default:
+                break
+            }
+        }
+
+        // Add key
+        if !shortcut.key.isEmpty {
+            components.append(shortcut.key.uppercased())
+        }
+
+        return components
+    }
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(Array(shortcutComponents.enumerated()), id: \.offset) { index, component in
+                Text(component)
+                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.accentColor.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+
+                if index < shortcutComponents.count - 1 && component != shortcutComponents.last {
+                    Text("+")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 2)
+                }
+            }
+        }
+    }
+}
+
+struct ModernShortcutRecorder: View {
+    @Binding var shortcut: ShortcutConfig?
+    @State private var showingRecorder = false
+
+    var body: some View {
+        Button(action: {
+            showingRecorder = true
+        }) {
+            HStack(spacing: 4) {
+                Image(systemName: "keyboard")
+                    .font(.system(size: 11))
+                Text("Set")
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .foregroundColor(.accentColor)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.accentColor.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: $showingRecorder) {
+            ModernShortcutRecorderPopover(shortcut: $shortcut, isPresented: $showingRecorder)
+                .frame(width: 280, height: 120)
+        }
+    }
+}
+
+struct ModernShortcutRecorderPopover: View {
+    @Binding var shortcut: ShortcutConfig?
+    @Binding var isPresented: Bool
+    @State private var isRecording = false
+    @State private var currentModifiers: NSEvent.ModifierFlags = []
+    @State private var currentKey: String?
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Press a key combination")
+                .font(.headline)
+                .foregroundColor(.primary)
+
+            HStack {
+                if isRecording {
+                    Text(formatCurrentKeys())
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.accentColor)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.accentColor.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                } else {
+                    Text("Click to start recording")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.secondary.opacity(0.1))
+                        )
+                }
+            }
+
+            HStack(spacing: 12) {
+                Button("Cancel") {
+                    stopRecording()
+                    isPresented = false
+                }
+                .buttonStyle(.borderless)
+
+                Button("Clear") {
+                    shortcut = ShortcutConfig(key: "", modifiers: [])
+                    stopRecording()
+                    isPresented = false
+                }
+                .buttonStyle(.borderless)
+                .foregroundColor(.red)
+
+                Button(isRecording ? "Stop" : "Start") {
+                    if isRecording {
+                        stopRecording()
+                    } else {
+                        startRecording()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding()
+        .onAppear {
+            setupEventMonitoring()
+            startRecording()
+        }
+        .onDisappear {
+            stopRecording()
+        }
+    }
+
+    private func setupEventMonitoring() {
+        NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+            if isRecording {
+                handleModifierChange(event)
+                return nil
+            }
+            return event
+        }
+
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if isRecording {
+                handleKeyDown(event)
+                return nil
+            }
+            return event
+        }
+    }
+
+    private func startRecording() {
+        isRecording = true
+        currentModifiers = []
+        currentKey = nil
+        HotkeyManager.pauseAllHotkeys()
+    }
+
+    private func stopRecording() {
+        isRecording = false
+        currentModifiers = []
+        currentKey = nil
+        HotkeyManager.resumeAllHotkeys()
+    }
+
+    private func handleModifierChange(_ event: NSEvent) {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        currentModifiers = modifiers
+
+        if modifiers.isEmpty {
+            currentKey = nil
+        }
+    }
+
+    private func handleKeyDown(_ event: NSEvent) {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        currentModifiers = modifiers
+
+        if let key = event.charactersIgnoringModifiers?.lowercased(), !key.isEmpty {
+            currentKey = key
+
+            var modifierStrings: [String] = []
+            if modifiers.contains(.command) {
+                modifierStrings.append("command")
+            }
+            if modifiers.contains(.option) {
+                modifierStrings.append("option")
+            }
+            if modifiers.contains(.shift) {
+                modifierStrings.append("shift")
+            }
+            if modifiers.contains(.control) {
+                modifierStrings.append("control")
+            }
+
+            let newShortcut = ShortcutConfig(key: key, modifiers: modifierStrings)
+            shortcut = newShortcut
+            stopRecording()
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isPresented = false
+            }
+        }
+    }
+
+    private func formatCurrentKeys() -> String {
+        var result = ""
+
+        if currentModifiers.contains(.command) {
+            result += "⌘ "
+        }
+        if currentModifiers.contains(.option) {
+            result += "⌥ "
+        }
+        if currentModifiers.contains(.shift) {
+            result += "⇧ "
+        }
+        if currentModifiers.contains(.control) {
+            result += "⌃ "
+        }
+
+        if !result.isEmpty && currentKey != nil {
+            result += " + "
+        }
+
+        if let key = currentKey {
+            result += key.uppercased()
+        } else if !result.isEmpty {
+            result += "..."
+        } else {
+            result = "Press keys..."
+        }
+
+        return result
     }
 }
 
