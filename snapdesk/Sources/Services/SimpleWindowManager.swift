@@ -91,34 +91,34 @@ class SimpleWindowManager: WindowManaging {
     func focusApp(_ bundleID: String) async {
         // Set flag to indicate we're programmatically focusing
         appLifecycleManager.setProgrammaticFocus(true)
-        
+
         guard let (windowSet, targetWindow) = cyclingManager.getNextWindowSetToFocus(for: bundleID) else {
             // No windows found - try to launch the app
             appLifecycleManager.launchApp(bundleID: bundleID)
             appLifecycleManager.setProgrammaticFocus(false)
             return
         }
-        
+
         // For windows in the same WindowSet with split layout, they're already visible
         // We only need to change which window has keyboard focus
-        
+
         if let targetWindow = targetWindow {
             // For split layouts, just focus the target window
             // All windows are already visible side-by-side
             let focusSucceeded = targetWindow.focus()
-            
+
             // Add a small delay to ensure focus takes effect
             try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
-            
+
             if !focusSucceeded {
                 log("⚠️ Failed to focus target window - likely no longer exists. Removing from layout and trying next window.")
-                
+
                 // Remove the dead window from its WindowSet
                 removeDeadWindow(targetWindow, from: windowSet, bundleID: bundleID)
-                
+
                 // Try to find and focus the next available window of the same app
                 await focusNextAvailableWindow(for: bundleID, excluding: targetWindow)
-                
+
                 // Reset the programmatic focus flag and return early
                 appLifecycleManager.setProgrammaticFocus(false)
                 return
@@ -126,7 +126,65 @@ class SimpleWindowManager: WindowManaging {
                 moveCursorToCenter(of: targetWindow)
             }
         }
-        
+
+        // Reset the flag after a longer delay to allow the focus events to fire,
+        // especially important for cross-screen window transitions which take longer
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.appLifecycleManager.setProgrammaticFocus(false)
+        }
+    }
+
+    func cycleCurrentAppBackward() async {
+        // Get the currently active app
+        guard let frontmostApp = NSWorkspace.shared.frontmostApplication,
+              let bundleID = frontmostApp.bundleIdentifier else {
+            log("❌ No frontmost application found")
+            return
+        }
+
+        log("🔄 Cycling backward through windows of current app: \(frontmostApp.localizedName ?? bundleID)")
+        await focusAppBackward(bundleID)
+    }
+
+    private func focusAppBackward(_ bundleID: String) async {
+        // Set flag to indicate we're programmatically focusing
+        appLifecycleManager.setProgrammaticFocus(true)
+
+        guard let (windowSet, targetWindow) = cyclingManager.getPreviousWindowSetToFocus(for: bundleID) else {
+            // No windows found for backward cycling
+            log("❌ No windows found for backward cycling for bundle: \(bundleID)")
+            appLifecycleManager.setProgrammaticFocus(false)
+            return
+        }
+
+        // For windows in the same WindowSet with split layout, they're already visible
+        // We only need to change which window has keyboard focus
+
+        if let targetWindow = targetWindow {
+            // For split layouts, just focus the target window
+            // All windows are already visible side-by-side
+            let focusSucceeded = targetWindow.focus()
+
+            // Add a small delay to ensure focus takes effect
+            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+
+            if !focusSucceeded {
+                log("⚠️ Failed to focus target window - likely no longer exists. Removing from layout and trying next window.")
+
+                // Remove the dead window from its WindowSet
+                removeDeadWindow(targetWindow, from: windowSet, bundleID: bundleID)
+
+                // Try to find and focus the next available window of the same app
+                await focusNextAvailableWindow(for: bundleID, excluding: targetWindow)
+
+                // Reset the programmatic focus flag and return early
+                appLifecycleManager.setProgrammaticFocus(false)
+                return
+            } else {
+                moveCursorToCenter(of: targetWindow)
+            }
+        }
+
         // Reset the flag after a longer delay to allow the focus events to fire,
         // especially important for cross-screen window transitions which take longer
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in

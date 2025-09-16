@@ -39,6 +39,7 @@ protocol WindowManaging: AnyObject {
     func decreaseMainPanelSize()
     func expandCurrentLayout()
     func focusApp(_ bundleID: String) async
+    func cycleCurrentAppBackward() async
     func addWindowToLayout(_ bundleID: String)
     func showLayoutVisualization()
     
@@ -210,10 +211,18 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.moveWindowUpInLayout()
         }
-        
+
         constructCommandWithCommandKey("move-window-down-in-layout") { [weak self] in
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.moveWindowDownInLayout()
+        }
+
+        // Global backward cycling shortcut
+        constructCommandWithCommandKey("cycle-current-app-backward") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            Task {
+                await self?.windowManager.cycleCurrentAppBackward()
+            }
         }
         
         // Setup app shortcuts - we'll need to handle these dynamically
@@ -226,10 +235,10 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         // Setup app shortcuts
         for appShortcut in config.appShortcuts {
             guard let shortcut = appShortcut.shortcut, !shortcut.key.isEmpty else { continue }
-            
+
             let key = Key(string: shortcut.key) ?? .zero
             let modifiers = parseModifiers(shortcut.modifiers)
-            
+
             // Create regular focus shortcut
             let focusHotKey = HotKey(key: key, modifiers: modifiers)
             focusHotKey.keyDownHandler = { [weak self] in
@@ -239,7 +248,7 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
                 }
             }
             hotKeys.append(focusHotKey)
-            
+
             // Create throw shortcut with shift modifier
             var throwModifiers = modifiers
             throwModifiers.insert(.shift)
@@ -402,6 +411,9 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             // Window reordering
             "move-window-up-in-layout": "Move Window Up in Layout",
             "move-window-down-in-layout": "Move Window Down in Layout",
+
+            // App cycling
+            "cycle-current-app-backward": "Cycle Current App Backward",
             
             // Screen focus
             "focus-screen-1": "Focus Screen 1",

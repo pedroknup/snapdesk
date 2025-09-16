@@ -163,10 +163,10 @@ class CyclingManager {
         guard let delegate = delegate else { return nil }
         let windowSets = windowSets(for: bundleID, in: delegate.workspace)
         guard !windowSets.isEmpty else { return nil }
-        
+
         let customOrder = getWindowCyclingOrder(for: bundleID)
         guard !customOrder.isEmpty else { return nil }
-        
+
         // Determine target window
         let targetWindowID: CGWindowID
         if currentBundleIDCycling != bundleID {
@@ -181,7 +181,7 @@ class CyclingManager {
             appCyclingIndex[bundleID] = nextIndex
             targetWindowID = customOrder[nextIndex]
         }
-        
+
         // Find WindowSet containing target window
         for screenWS in delegate.workspace.screens {
             for windowSet in screenWS.windowSets {
@@ -192,7 +192,45 @@ class CyclingManager {
                 }
             }
         }
-        
+
+        return nil
+    }
+
+    /// Returns the previous WindowSet that should be focused for a given bundle ID and the target window within it (backward cycling)
+    func getPreviousWindowSetToFocus(for bundleID: String) -> (WindowSet, AXWindow?)? {
+        guard let delegate = delegate else { return nil }
+        let windowSets = windowSets(for: bundleID, in: delegate.workspace)
+        guard !windowSets.isEmpty else { return nil }
+
+        let customOrder = getWindowCyclingOrder(for: bundleID)
+        guard !customOrder.isEmpty else { return nil }
+
+        // Determine target window
+        let targetWindowID: CGWindowID
+        if currentBundleIDCycling != bundleID {
+            // First time cycling this app - start from the last window
+            appCyclingIndex[bundleID] = customOrder.count - 1
+            currentBundleIDCycling = bundleID
+            targetWindowID = customOrder[customOrder.count - 1]
+        } else {
+            // Continue cycling backward
+            let currentIndex = appCyclingIndex[bundleID] ?? 0
+            let previousIndex = currentIndex == 0 ? customOrder.count - 1 : currentIndex - 1
+            appCyclingIndex[bundleID] = previousIndex
+            targetWindowID = customOrder[previousIndex]
+        }
+
+        // Find WindowSet containing target window
+        for screenWS in delegate.workspace.screens {
+            for windowSet in screenWS.windowSets {
+                if let window = windowSet.windows.first(where: { $0.cgID() == targetWindowID }) {
+                    currentFocusedWindowSetID = windowSet.id
+                    currentWindowSet = windowSet
+                    return (windowSet, window)
+                }
+            }
+        }
+
         return nil
     }
     
