@@ -139,6 +139,27 @@ struct ShortcutsTabView: View {
                 }
 
                 Section("Applications") {
+                    // Help text explaining shortcut behavior
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Application Shortcuts:")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                        Text("• Base shortcut: Focus app / cycle forward through windows")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("• + Shift: Add current window to layout")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("")
+                            .font(.caption)
+                        Text("Use 'Cycle Current App Backward' in General shortcuts to cycle backward through the currently active app's windows.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 8)
+
                     if isLoading && apps.isEmpty {
                         ProgressView("Loading applications...")
                             .frame(maxWidth: .infinity)

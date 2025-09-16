@@ -147,7 +147,10 @@ public class ConfigurationManager {
             // Window reordering
             "Move Window Up in Layout",
             "Move Window Down in Layout",
-            
+
+            // App cycling
+            "Cycle Current App Backward",
+
             // Screen focus
             "Focus Screen 1",
             "Focus Screen 2",
@@ -215,7 +218,10 @@ public class ConfigurationManager {
             // Window reordering
             "Move Window Up in Layout",
             "Move Window Down in Layout",
-            
+
+            // App cycling
+            "Cycle Current App Backward",
+
             // Screen focus
             "Focus Screen 1",
             "Focus Screen 2",
