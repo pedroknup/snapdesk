@@ -117,6 +117,7 @@ struct ShortcutsTabView: View {
                                 title: shortcut.name,
                                 subtitle: nil,
                                 icon: nil,
+                                showIcon: false,
                                 shortcut: Binding(
                                     get: { shortcut.shortcut },
                                     set: { newShortcut in
@@ -318,7 +319,16 @@ struct ModernShortcutRow: View {
     let title: String
     let subtitle: String?
     let icon: NSImage?
+    let showIcon: Bool
     @Binding var shortcut: ShortcutConfig?
+
+    init(title: String, subtitle: String?, icon: NSImage?, showIcon: Bool = true, shortcut: Binding<ShortcutConfig?>) {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = icon
+        self.showIcon = showIcon
+        self._shortcut = shortcut
+    }
 
     private var hasShortcut: Bool {
         guard let shortcut = shortcut else { return false }
@@ -328,25 +338,27 @@ struct ModernShortcutRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Icon section
-            if let icon = icon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 40, height: 40)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
-                    )
-            } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.secondary.opacity(0.1))
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        Image(systemName: "gear")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16))
-                    )
+            if showIcon {
+                if let icon = icon {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 40, height: 40)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.secondary.opacity(0.1))
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Image(systemName: "gear")
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 16))
+                        )
+                }
             }
 
             // Title and subtitle section
@@ -373,10 +385,10 @@ struct ModernShortcutRow: View {
                 } else {
                     Text("No shortcut")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.secondary.opacity(0.6))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.secondary.opacity(0.1))
+                        .background(Color.secondary.opacity(0.05))
                         .cornerRadius(6)
                 }
 
@@ -432,7 +444,7 @@ struct ModernShortcutDisplay: View {
         HStack(spacing: 2) {
             ForEach(Array(shortcutComponents.enumerated()), id: \.offset) { index, component in
                 Text(component)
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 16, weight: .semibold, design: .monospaced))
                     .foregroundColor(.primary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
@@ -447,7 +459,7 @@ struct ModernShortcutDisplay: View {
 
                 if index < shortcutComponents.count - 1 && component != shortcutComponents.last {
                     Text("+")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 2)
                 }
@@ -464,12 +476,8 @@ struct ModernShortcutRecorder: View {
         Button(action: {
             showingRecorder = true
         }) {
-            HStack(spacing: 4) {
-                Image(systemName: "keyboard")
-                    .font(.system(size: 11))
-                Text("Set")
-                    .font(.system(size: 12, weight: .medium))
-            }
+            Text("Set")
+                .font(.system(size: 12, weight: .medium))
             .foregroundColor(.accentColor)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
