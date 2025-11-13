@@ -9,13 +9,16 @@ import Foundation
 import AppKit
 
 class SimpleWindowManager: WindowManaging {
-    
+
     var workspace: WorkspaceModel
-    
+
     // Managers
     private var cyclingManager: CyclingManager!
     private var layoutManager: LayoutManager!
     private var appLifecycleManager: AppLifecycleManager
+
+    // Track last focused window per screen (keyed by screen ID)
+    private var lastFocusedWindowPerScreen: [String: AXWindow] = [:]
     
     init() {
         // Initialize workspace first
@@ -107,6 +110,10 @@ class SimpleWindowManager: WindowManaging {
             // All windows are already visible side-by-side
             let focusSucceeded = targetWindow.focus()
 
+            if focusSucceeded {
+                trackWindowFocus(targetWindow)
+            }
+
             // Add a small delay to ensure focus takes effect
             try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
 
@@ -164,6 +171,10 @@ class SimpleWindowManager: WindowManaging {
             // For split layouts, just focus the target window
             // All windows are already visible side-by-side
             let focusSucceeded = targetWindow.focus()
+
+            if focusSucceeded {
+                trackWindowFocus(targetWindow)
+            }
 
             // Add a small delay to ensure focus takes effect
             try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
@@ -231,7 +242,57 @@ class SimpleWindowManager: WindowManaging {
     }
     
     func focusScreen(_ screenNumber: Int) {
-        // TODO: Implement screen focus functionality
+        log("🎯 focusScreen(\(screenNumber)) called")
+
+        let screenIndex = screenNumber - 1
+        let screens = AMScreen.availableScreens
+
+        guard screenIndex < screens.count else {
+            log("❌ Screen \(screenNumber) does not exist (only \(screens.count) screens available)")
+            return
+        }
+
+        let targetScreen = screens[screenIndex]
+        let targetScreenFrame = targetScreen.frame()
+
+        guard let targetScreenID = targetScreen.screenID() else {
+            log("❌ Could not get screen ID for screen \(screenNumber)")
+            return
+        }
+
+        // Try to restore the last focused window on this screen
+        if let lastWindow = lastFocusedWindowPerScreen[targetScreenID] {
+            let windowFrame = lastWindow.frame()
+            if targetScreenFrame.intersects(windowFrame) {
+                lastWindow.focus()
+                lastWindow.raise()
+                moveCursorToCenter(of: lastWindow)
+                trackWindowFocus(lastWindow)
+                log("✅ Restored last focused window '\(lastWindow.title() ?? "untitled")' on screen \(screenNumber)")
+                return
+            } else {
+                lastFocusedWindowPerScreen.removeValue(forKey: targetScreenID)
+            }
+        }
+
+        // Find windows on the target screen using workspace model
+        if let screenWorkspace = workspace.screens.first(where: { $0.screen.screenID() == targetScreenID }) {
+            var windowsOnScreen: [AXWindow] = []
+            for windowSet in screenWorkspace.windowSets {
+                windowsOnScreen.append(contentsOf: windowSet.windows)
+            }
+
+            if let firstWindow = windowsOnScreen.first {
+                firstWindow.focus()
+                firstWindow.raise()
+                moveCursorToCenter(of: firstWindow)
+                trackWindowFocus(firstWindow)
+                log("✅ Focused window '\(firstWindow.title() ?? "untitled")' on screen \(screenNumber)")
+                return
+            }
+        }
+
+        log("⚠️ No manageable windows found on screen \(screenNumber)")
     }
     
     func throwToScreen(_ screenNumber: Int) {
@@ -243,10 +304,11 @@ class SimpleWindowManager: WindowManaging {
         
         let axWindow = AXWindow(axElement: focusedWindow)
         layoutManager.throwWindow(axWindow, toScreen: screenNumber)
-        
+
         // Focus the moved window
         axWindow.raise()
         axWindow.focus()
+        trackWindowFocus(axWindow)
         moveCursorToCenter(of: axWindow)
     }
     
@@ -313,6 +375,7 @@ class SimpleWindowManager: WindowManaging {
             // Focus the window that was before the removed window in the original layout
             windowToFocus.raise()
             windowToFocus.focus()
+            trackWindowFocus(windowToFocus)
             moveCursorToCenter(of: windowToFocus)
         }
     }
@@ -739,8 +802,9 @@ class SimpleWindowManager: WindowManaging {
             log("🎯 Attempting to focus next window: '\(nextWindow.title() ?? "untitled")'")
             nextWindow.raise()
             let focusSucceeded = nextWindow.focus()
-            
+
             if focusSucceeded {
+                trackWindowFocus(nextWindow)
                 log("✅ Successfully focused next window")
                 moveCursorToCenter(of: nextWindow)
             } else {
@@ -813,7 +877,16 @@ class SimpleWindowManager: WindowManaging {
     private func shouldAutoExpandNewWindows() -> Bool {
         return UserDefaults.standard.object(forKey: "autoExpandNewWindows") as? Bool ?? true
     }
-    
+
+    /// Updates the last focused window tracking for the window's screen
+    private func trackWindowFocus(_ window: AXWindow) {
+        let windowFrame = window.frame()
+        if let screen = AMScreen.availableScreens.first(where: { $0.frame().intersects(windowFrame) }),
+           let screenID = screen.screenID() {
+            lastFocusedWindowPerScreen[screenID] = window
+        }
+    }
+
     /// Moves the mouse cursor to the center of the given window
     private func moveCursorToCenter(of window: AXWindow) {
         let windowFrame = window.frame()
@@ -1004,27 +1077,113 @@ extension SimpleWindowManager: AppLifecycleDelegate {
     
     func screenParametersDidChange() {
         log("🖥️ Screen configuration changed, remapping windows...")
-        
+
         // Store current window sets before updating screens
         var orphanedWindowSets: [WindowSet] = []
         let previousScreenIDs = Set(workspace.screens.compactMap { $0.screen.screenID() })
-        
+
         // Get the new screens
         let newScreens = AMScreen.availableScreens
         let newScreenIDs = Set(newScreens.compactMap { $0.screenID() })
-        
+
+        // Log detailed screen information for debugging
+        log("📊 Previous screen IDs: \(previousScreenIDs)")
+        log("📊 New screen IDs: \(newScreenIDs)")
+        log("📊 Previous screens count: \(workspace.screens.count), New screens count: \(newScreens.count)")
+
+        // Log current screen details with stable IDs
+        log("📺 PREVIOUS SCREENS:")
+        for (index, screenWS) in workspace.screens.enumerated() {
+            let frame = screenWS.screen.frame()
+            let windowSetsCount = screenWS.windowSets.count
+            let totalWindows = screenWS.windowSets.flatMap { $0.windows }.count
+            let stableID = screenWS.screen.stableScreenID()
+            log("   Screen \(index): ID=\(screenWS.screen.screenID() ?? "nil"), stable=\(stableID), frame=\(NSStringFromRect(frame)), \(windowSetsCount) sets, \(totalWindows) windows")
+        }
+
+        log("📺 NEW SCREENS:")
+        for (index, screen) in newScreens.enumerated() {
+            let frame = screen.frame()
+            let stableID = screen.stableScreenID()
+            log("   Screen \(index): ID=\(screen.screenID() ?? "nil"), stable=\(stableID), frame=\(NSStringFromRect(frame))")
+        }
+
         // Find removed screen IDs
         let removedScreenIDs = previousScreenIDs.subtracting(newScreenIDs)
+        let addedScreenIDs = newScreenIDs.subtracting(previousScreenIDs)
         
         if !removedScreenIDs.isEmpty {
             log("📤 Screens removed: \(removedScreenIDs)")
-            
+
             // Collect all window sets from removed screens
             for screenWS in workspace.screens {
                 if let screenID = screenWS.screen.screenID(), removedScreenIDs.contains(screenID) {
+                    log("🔄 Collecting \(screenWS.windowSets.count) window sets from removed screen \(screenID)")
                     orphanedWindowSets.append(contentsOf: screenWS.windowSets)
                 }
             }
+        }
+
+        if !addedScreenIDs.isEmpty {
+            log("📥 Screens added: \(addedScreenIDs)")
+        }
+
+        // More sophisticated screen matching using frame information
+        // This helps detect when external monitors keep the same frame but get new IDs
+        var actuallyRemovedScreens: [ScreenWorkspace] = []
+        var screenMappings: [(ScreenWorkspace, AMScreen)] = []
+
+        for oldScreenWS in workspace.screens {
+            let oldFrame = oldScreenWS.screen.frame()
+
+            // Try to find a new screen with the same frame (or very similar)
+            if let matchingNewScreen = newScreens.first(where: { newScreen in
+                let newFrame = newScreen.frame()
+                return abs(oldFrame.origin.x - newFrame.origin.x) < 10 &&
+                       abs(oldFrame.origin.y - newFrame.origin.y) < 10 &&
+                       abs(oldFrame.width - newFrame.width) < 10 &&
+                       abs(oldFrame.height - newFrame.height) < 10
+            }) {
+                // Found a matching screen by frame - this is likely the same physical screen
+                screenMappings.append((oldScreenWS, matchingNewScreen))
+                if oldScreenWS.screen.screenID() != matchingNewScreen.screenID() {
+                    log("🔄 Screen ID changed but frame matched: \(oldScreenWS.screen.screenID() ?? "nil") -> \(matchingNewScreen.screenID() ?? "nil")")
+                }
+            } else {
+                // No matching frame found - this screen was actually removed
+                actuallyRemovedScreens.append(oldScreenWS)
+                log("❌ Screen actually removed: \(oldScreenWS.screen.screenID() ?? "nil"), frame=\(NSStringFromRect(oldFrame))")
+            }
+        }
+
+        // If we only have screen ID changes but frames match, this is likely just external monitor ID changes
+        if actuallyRemovedScreens.isEmpty && !screenMappings.isEmpty {
+            log("🔄 Detected screen ID changes but no physical screen changes - updating IDs only")
+
+            // Update screen references without repositioning windows
+            workspace.refreshScreens()
+
+            // Update WindowSet screen IDs to match new screen IDs without moving windows
+            for (oldScreenWS, newScreen) in screenMappings {
+                if let newScreenIndex = workspace.screens.firstIndex(where: { $0.screen.screenID() == newScreen.screenID() }) {
+                    // Update WindowSet screen IDs
+                    for windowSet in oldScreenWS.windowSets {
+                        windowSet.screenID = newScreen.screenID()
+                    }
+
+                    // Transfer window sets to the new screen workspace
+                    workspace.screens[newScreenIndex].windowSets = oldScreenWS.windowSets
+                }
+            }
+
+            log("✅ Updated screen IDs without repositioning windows")
+            return
+        }
+
+        // Check if this is just a spurious screen change event (no actual changes)
+        if removedScreenIDs.isEmpty && addedScreenIDs.isEmpty && previousScreenIDs == newScreenIDs {
+            log("⚠️ Screen parameters changed but no actual screen changes detected - skipping remapping")
+            return
         }
         
         // Update workspace with new screens
@@ -1049,7 +1208,8 @@ extension SimpleWindowManager: AppLifecycleDelegate {
                             )
                             workspace.screens[screenIndex].windowSets.append(newSet)
                             
-                            log("✅ Remapped window '\(window.title() ?? "<untitled>")' to screen \(currentScreen.screenID() ?? "unknown")")
+                            let windowFrame = window.frame()
+                            log("✅ Remapped window '\(window.title() ?? "<untitled>")' from orphaned set to screen \(currentScreen.screenID() ?? "unknown"), frame=\(NSStringFromRect(windowFrame))")
                             
                             // Expand the window if auto-expand is enabled
                             if shouldAutoExpandNewWindows() {
