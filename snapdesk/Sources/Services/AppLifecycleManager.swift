@@ -222,8 +222,16 @@ class AppLifecycleManager {
     }
     
     @objc private func screenParametersDidChange(_ notification: Notification) {
-        log("🖥️ Screen configuration changed...")
-        delegate?.screenParametersDidChange()
+        let timestamp = Date()
+        log("🖥️ Screen configuration changed at \(timestamp)")
+        log("📋 Notification object: \(notification.object ?? "nil")")
+        log("📋 Notification userInfo: \(notification.userInfo ?? [:])")
+
+        // Add a small delay to let the system stabilize before processing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            log("🔄 Processing screen parameter change after delay...")
+            self?.delegate?.screenParametersDidChange()
+        }
     }
     
     // MARK: - Application Window Observers

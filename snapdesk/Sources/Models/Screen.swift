@@ -139,6 +139,17 @@ struct AMScreen: ScreenType {
         return String(managedDisplay.takeRetainedValue())
     }
 
+    /// More stable screen identifier that includes frame information
+    /// This helps identify screens even when their managed display ID changes
+    func stableScreenID() -> String {
+        let frame = frameIncludingDockAndMenu()
+        let managedID = screenID() ?? "unknown"
+
+        // Create a stable identifier using frame dimensions and managed display ID
+        // This helps maintain consistency when external monitors change IDs during sleep/wake
+        return "\(managedID)_\(Int(frame.width))x\(Int(frame.height))@\(Int(frame.origin.x)),\(Int(frame.origin.y))"
+    }
+
     func focusScreen() {
         let screenFrame = frameIncludingDockAndMenu()
         let mouseCursorPoint = NSPoint(x: screenFrame.midX, y: screenFrame.midY)
