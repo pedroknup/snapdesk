@@ -97,6 +97,12 @@ func frontmostWindow() -> AXUIElement? {
 
 @discardableResult
 func move(window: AXUIElement, to targetFrame: CGRect) -> Bool {
+    // Check if window position validation is needed to prevent unnecessary moves
+    if shouldPreserveWindowPosition(window, targetFrame: targetFrame) {
+        log("🔒 Preserving window position - target frame is similar to current frame")
+        return true
+    }
+
     // Missing constant in some SDKs
     let kAXFullscreenAttribute: CFString = "AXFullScreen" as CFString
 
@@ -115,4 +121,44 @@ func move(window: AXUIElement, to targetFrame: CGRect) -> Bool {
     let ok1 = window.axSetAttribute(kAXSizeAttribute     as CFString, makeAXValue(.cgSize,  &size))
     let ok2 = window.axSetAttribute(kAXPositionAttribute as CFString, makeAXValue(.cgPoint, &pos))
     return ok1 && ok2
+}
+
+/// Determines if a window should preserve its current position instead of being moved
+/// Returns true if the window is already properly positioned and shouldn't be moved
+private func shouldPreserveWindowPosition(_ window: AXUIElement, targetFrame: CGRect) -> Bool {
+    // Check if position preservation is enabled (default: true)
+    let preserveEnabled = UserDefaults.standard.object(forKey: "preventUnnecessaryWindowMoves") as? Bool ?? true
+    if !preserveEnabled {
+        return false
+    }
+
+    // Get current window frame
+    guard let currentFrame = windowFrame(of: window) else {
+        return false
+    }
+
+    // Define tolerance for position and size differences (in pixels)
+    let positionTolerance: CGFloat = 5.0
+    let sizeTolerance: CGFloat = 10.0
+
+    // Check if positions are similar (within tolerance)
+    let positionsSimilar = abs(currentFrame.origin.x - targetFrame.origin.x) <= positionTolerance &&
+                          abs(currentFrame.origin.y - targetFrame.origin.y) <= positionTolerance
+
+    // Check if sizes are similar (within tolerance)
+    let sizesSimilar = abs(currentFrame.size.width - targetFrame.size.width) <= sizeTolerance &&
+                      abs(currentFrame.size.height - targetFrame.size.height) <= sizeTolerance
+
+    // Check if window is on the correct screen by ensuring target frame is reasonable
+    let targetInBounds = targetFrame.width > 50 && targetFrame.height > 50 &&
+                        targetFrame.origin.x > -1000 && targetFrame.origin.y > -1000
+
+    // Preserve position if window is already properly positioned and target makes sense
+    let shouldPreserve = positionsSimilar && sizesSimilar && targetInBounds
+
+    if shouldPreserve {
+        log("📍 Window already properly positioned: current=\(NSStringFromRect(currentFrame)) target=\(NSStringFromRect(targetFrame))")
+    }
+
+    return shouldPreserve
 }
