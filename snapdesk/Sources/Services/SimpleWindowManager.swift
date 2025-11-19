@@ -1034,13 +1034,25 @@ extension SimpleWindowManager: AppLifecycleDelegate {
     }
     
     func windowDidCreate(_ window: AXWindow, for app: NSRunningApplication) {
+        // Check if this window already exists in any WindowSet (deduplication)
+        let newWindowID = window.windowID()
+        let newWindowPID = window.pid()
+        for screen in workspace.screens {
+            for windowSet in screen.windowSets {
+                if windowSet.windows.contains(where: { $0.windowID() == newWindowID && $0.pid() == newWindowPID }) {
+                    log("⚠️ Window already exists in workspace, skipping duplicate (WID: \(newWindowID), PID: \(newWindowPID))")
+                    return
+                }
+            }
+        }
+
         // Find the appropriate screen for this window
         guard let amScreen: AMScreen = window.snapScreen() else {
             log("❌ Could not determine screen for new window")
             return
         }
-        
-        
+
+
         // Find or create screen workspace
         var screenWS: ScreenWorkspace
         if let existingIndex = workspace.screens.firstIndex(where: { $0.screen == amScreen }) {
@@ -1049,21 +1061,21 @@ extension SimpleWindowManager: AppLifecycleDelegate {
             screenWS = ScreenWorkspace(screen: amScreen, sets: [])
             workspace.screens.append(screenWS)
         }
-        
+
         // Create a new WindowSet for this window
         let defaultLayout = getDefaultLayoutMode()
         let newWindowSet = WindowSet(layout: defaultLayout, windows: [window], screenID: amScreen.screenID())
-        
+
         // Add to appropriate screen workspace
         if let screenIndex = workspace.screens.firstIndex(where: { $0.screen == amScreen }) {
             workspace.screens[screenIndex].windowSets.append(newWindowSet)
         }
-        
+
         // Auto-expand the new window if enabled
         if shouldAutoExpandNewWindows() {
             newWindowSet.expandWindows(on: amScreen, bringToFront: false)
         }
-        
+
         log("✅ Added new window to workspace - now tracking \(workspace.screens.flatMap { $0.windowSets }.count) WindowSets")
     }
     

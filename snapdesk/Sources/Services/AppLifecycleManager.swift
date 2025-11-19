@@ -66,9 +66,9 @@ class AppLifecycleManager {
                     log("❌ Failed to launch app: \(error.localizedDescription)")
                 } else if let app = runningApp {
                     log("✅ Successfully launched: \(app.localizedName ?? "Unknown")")
-                    
+
                     // Give the app time to create windows, then notify delegate
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         self.delegate?.appDidLaunch(app)
                     }
                 }
@@ -168,9 +168,9 @@ class AppLifecycleManager {
         if app.bundleIdentifier != nil, app.isManageable == .manageable {
             setupObserver(for: app)
         }
-        
+
         // Give the app a moment to create windows, then notify delegate
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.delegate?.appDidLaunch(app)
         }
     }
@@ -237,42 +237,67 @@ class AppLifecycleManager {
     // MARK: - Application Window Observers
     
     private func setupObserver(for app: NSRunningApplication) {
-        guard app.bundleIdentifier != nil else { return }
-        
+        guard let bundleID = app.bundleIdentifier else { return }
+
         let pid = app.processIdentifier
-        
+        let appName = app.localizedName ?? bundleID
+
         // Skip if we already have an observer for this app
-        guard applicationObservers[pid] == nil else { return }
-        
+        guard applicationObservers[pid] == nil else {
+            log("🔍 Observer already exists for \(appName) (PID: \(pid))")
+            return
+        }
+
+        log("🔧 Setting up observer for \(appName) (PID: \(pid))")
+
         // Create application element
         let appElement = AXUIElementCreateApplication(pid)
-        
+
         var observer: AXObserver?
         let result = AXObserverCreate(pid, { observer, element, notification, userData in
             guard let userData = userData else { return }
             let manager = Unmanaged<AppLifecycleManager>.fromOpaque(userData).takeUnretainedValue()
-            
+
             let notificationName = notification as String
             if notificationName == kAXCreatedNotification as String {
                 DispatchQueue.main.async {
                     manager.handleWindowCreated(element)
                 }
+            } else if notificationName == kAXWindowDeminiaturizedNotification as String {
+                DispatchQueue.main.async {
+                    manager.handleWindowDeminiaturized(element)
+                }
             }
         }, &observer)
-        
+
         guard result == .success, let observer = observer else {
+            log("❌ Failed to create observer for \(appName) (PID: \(pid)): AXError \(result.rawValue)")
             return
         }
-        
-        // Add observer for window creation notifications on this application
-        let addResult = AXObserverAddNotification(
-            observer,
-            appElement,
-            kAXCreatedNotification as CFString,
-            Unmanaged.passUnretained(self).toOpaque()
-        )
-        
-        if addResult == .success {
+
+        // Add observers for window notifications on this application
+        let notifications: [(CFString, String)] = [
+            (kAXCreatedNotification as CFString, "kAXCreatedNotification"),
+            (kAXWindowDeminiaturizedNotification as CFString, "kAXWindowDeminiaturizedNotification")
+        ]
+
+        var successCount = 0
+        for (notification, name) in notifications {
+            let addResult = AXObserverAddNotification(
+                observer,
+                appElement,
+                notification,
+                Unmanaged.passUnretained(self).toOpaque()
+            )
+
+            if addResult == .success {
+                successCount += 1
+            } else {
+                log("⚠️ Failed to add \(name) for \(appName) (PID: \(pid)): AXError \(addResult.rawValue)")
+            }
+        }
+
+        if successCount > 0 {
             // Start observing
             CFRunLoopAddSource(
                 CFRunLoopGetCurrent(),
@@ -280,6 +305,9 @@ class AppLifecycleManager {
                 .defaultMode
             )
             applicationObservers[pid] = observer
+            log("✅ Observer registered successfully for \(appName) (PID: \(pid)) - \(successCount)/\(notifications.count) notifications")
+        } else {
+            log("❌ Failed to add any notifications for \(appName) (PID: \(pid))")
         }
     }
     
@@ -300,38 +328,111 @@ class AppLifecycleManager {
         // Check if this is a standard window we should track
         let role: String? = windowElement.axCopyAttribute(kAXRoleAttribute as CFString)
         let subrole: String? = windowElement.axCopyAttribute(kAXSubroleAttribute as CFString)
-        
-        guard role == (kAXWindowRole as String),
-              subrole != (kAXSystemDialogSubrole as String),
+
+        // Get the window's process ID for logging
+        var pid: pid_t = 0
+        let pidResult = AXUIElementGetPid(windowElement, &pid)
+        let app = pidResult == .success ? NSRunningApplication(processIdentifier: pid) : nil
+        let appName = app?.localizedName ?? "Unknown"
+
+        log("🪟 Window created notification received for \(appName) - role: \(role ?? "nil"), subrole: \(subrole ?? "nil")")
+
+        guard role == (kAXWindowRole as String) else {
+            log("   ⏩ Filtered: role is not AXWindow")
+            return
+        }
+
+        guard subrole != (kAXSystemDialogSubrole as String),
               subrole != (kAXFloatingWindowSubrole as String),
               subrole != "AXSheet" else {
+            log("   ⏩ Filtered: subrole is system dialog/floating/sheet")
             return
         }
-        
+
         // Get the window's process ID to identify the app
-        var pid: pid_t = 0
-        guard AXUIElementGetPid(windowElement, &pid) == .success,
-              let app = NSRunningApplication(processIdentifier: pid),
+        guard pidResult == .success,
+              let app = app,
               let bundleID = app.bundleIdentifier else {
+            log("   ⏩ Filtered: failed to get PID or bundle ID")
             return
         }
-        
+
         // Skip SnapDesk's own windows immediately
         if bundleID == "com.pedroknup.snapdesk" {
+            log("   ⏩ Filtered: SnapDesk's own window")
             return
         }
-        
+
         // Create AXWindow wrapper
         let axWindow = AXWindow(axElement: windowElement)
-        
+
         // Check if this window should be managed before adding it
         guard axWindow.shouldBeManaged() else {
+            log("   ⏩ Filtered: shouldBeManaged() returned false, will retry after delay")
+
+            // Retry after a short delay - window might not be fully initialized yet
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                log("   🔄 Retrying shouldBeManaged() for \(appName)")
+                if axWindow.shouldBeManaged() {
+                    log("   ✅ Window now passes checks on retry, notifying delegate for \(appName)")
+                    self?.delegate?.windowDidCreate(axWindow, for: app)
+                } else {
+                    log("   ❌ Window still fails shouldBeManaged() after retry for \(appName)")
+                }
+            }
             return
         }
-        
+
+        log("   ✅ Window passed all checks, notifying delegate for \(appName)")
         delegate?.windowDidCreate(axWindow, for: app)
     }
-    
+
+    private func handleWindowDeminiaturized(_ windowElement: AXUIElement) {
+        // Get the window's process ID for logging
+        var pid: pid_t = 0
+        let pidResult = AXUIElementGetPid(windowElement, &pid)
+        let app = pidResult == .success ? NSRunningApplication(processIdentifier: pid) : nil
+        let appName = app?.localizedName ?? "Unknown"
+
+        log("🔼 Window deminiaturized notification received for \(appName)")
+
+        guard pidResult == .success,
+              let app = app,
+              let bundleID = app.bundleIdentifier else {
+            log("   ⏩ Filtered: failed to get PID or bundle ID")
+            return
+        }
+
+        // Skip SnapDesk's own windows
+        if bundleID == "com.pedroknup.snapdesk" {
+            log("   ⏩ Filtered: SnapDesk's own window")
+            return
+        }
+
+        // Create AXWindow wrapper
+        let axWindow = AXWindow(axElement: windowElement)
+
+        // Check if this window should be managed
+        guard axWindow.shouldBeManaged() else {
+            log("   ⏩ Filtered: shouldBeManaged() returned false, will retry after delay")
+
+            // Retry after a short delay - window might not be fully restored yet
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                log("   🔄 Retrying shouldBeManaged() for deminiaturized window from \(appName)")
+                if axWindow.shouldBeManaged() {
+                    log("   ✅ Window now passes checks on retry, notifying delegate for \(appName)")
+                    self?.delegate?.windowDidCreate(axWindow, for: app)
+                } else {
+                    log("   ❌ Window still fails shouldBeManaged() after retry for \(appName)")
+                }
+            }
+            return
+        }
+
+        log("   ✅ Deminiaturized window passed all checks, notifying delegate for \(appName)")
+        delegate?.windowDidCreate(axWindow, for: app)
+    }
+
     // MARK: - Cleanup
     
     deinit {
