@@ -256,49 +256,58 @@ extension AXWindow: WindowType {
     func shouldBeManaged() -> Bool {
         let windowTitle = title() ?? ""
         let windowPID = pid()
-        
+
         guard isMovable() else {
+            log("   🚫 shouldBeManaged: not movable - '\(windowTitle)'")
             return false
         }
-        
+
         guard isResizable() else {
+            log("   🚫 shouldBeManaged: not resizable - '\(windowTitle)'")
             return false
         }
 
         guard let subrole = string(forKey: kAXSubroleAttribute as CFString), subrole == kAXStandardWindowSubrole as String else {
+            log("   🚫 shouldBeManaged: subrole not AXStandardWindow - '\(windowTitle)'")
             return false
         }
 
         // Additional filtering for proper manageable windows
         if isTemporaryWindow() {
+            log("   🚫 shouldBeManaged: isTemporaryWindow - '\(windowTitle)'")
             return false
         }
-        
+
         if isTooSmallToBeUseful() {
+            let frame = self.frame()
+            log("   🚫 shouldBeManaged: too small (\(frame.width)x\(frame.height)) - '\(windowTitle)'")
             return false
         }
-        
+
         // Check if the app has shortcuts assigned - only manage windows from apps with shortcuts
         if let runningApp = NSRunningApplication(processIdentifier: windowPID),
            let bundleID = runningApp.bundleIdentifier {
-            
+
             guard let config = ConfigurationManager.shared.loadConfig() else {
                 log("❌ Failed to load configuration for window management")
                 return false
             }
-            
+
             // Check if this app has any shortcuts configured
             let hasAppShortcut = config.appShortcuts.contains { appShortcut in
                 appShortcut.bundleIdentifier == bundleID && appShortcut.shortcut != nil
             }
-            
+
             if hasAppShortcut {
                 log("📝 Managing window: '\(windowTitle)' from \(bundleID)")
+            } else {
+                log("   🚫 shouldBeManaged: no shortcut configured for '\(bundleID)' - '\(windowTitle)'")
             }
-            
+
             return hasAppShortcut
         }
-        
+
+        log("   🚫 shouldBeManaged: failed to get app/bundleID - '\(windowTitle)'")
         return false
     }
     
