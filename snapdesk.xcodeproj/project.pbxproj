@@ -31,7 +31,7 @@
 		1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */; };
 		1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */; };
 		1367E5DC2ED1189C0003CFDD /* NotificationPositionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */; };
-		1367E5DE2ED119150003CFDD /* NotificationWindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */; };
+		1367E5DE2ED119150003CFDD /* NotificationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DD2ED119120003CFDD /* NotificationState.swift */; };
 		1367E5E02ED11D1E0003CFDD /* ScreenConfigurationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DF2ED11D1C0003CFDD /* ScreenConfigurationHandler.swift */; };
 		1367E5E22ED1210F0003CFDD /* WindowOrderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5E12ED120FF0003CFDD /* WindowOrderManager.swift */; };
 		1367E5E62ED121F00003CFDD /* WindowCleanupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5E52ED121E80003CFDD /* WindowCleanupService.swift */; };
@@ -39,8 +39,8 @@
 		1367E5EA2ED124CF0003CFDD /* LayoutVisualizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5E92ED124C80003CFDD /* LayoutVisualizationService.swift */; };
 		1367E5EC2ED126B70003CFDD /* WindowRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5EB2ED126B10003CFDD /* WindowRefreshService.swift */; };
 		1367E5EE2ED1296D0003CFDD /* NotificationContentRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5ED2ED1296B0003CFDD /* NotificationContentRenderer.swift */; };
-		1367E5F02ED1297C0003CFDD /* TerminalStyleWindowFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5EF2ED129760003CFDD /* TerminalStyleWindowFactory.swift */; };
-		1367E5F22ED129800003CFDD /* LayoutGridVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F12ED1297E0003CFDD /* LayoutGridVisualizer.swift */; };
+		1367E5F02ED1297C0003CFDD /* NotificationWindowFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5EF2ED129760003CFDD /* NotificationWindowFactory.swift */; };
+		1367E5F22ED129800003CFDD /* LayoutSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F12ED1297E0003CFDD /* LayoutSelectorView.swift */; };
 		1367E5F42ED1298D0003CFDD /* WindowScreenshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F32ED129880003CFDD /* WindowScreenshotCache.swift */; };
 		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
@@ -50,7 +50,7 @@
 		13858B1C2E5F467600FD0DB8 /* ScreenWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */; };
 		13858B1E2E5F46C500FD0DB8 /* WorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */; };
 		13858B212E5F4AF600FD0DB8 /* ScanWindows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */; };
-		13858B232E5F680900FD0DB8 /* FloatingWindowHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */; };
+		13858B232E5F680900FD0DB8 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B222E5F680900FD0DB8 /* NotificationService.swift */; };
 		13858B252E5F75B700FD0DB8 /* DebugLogViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B242E5F75B700FD0DB8 /* DebugLogViewer.swift */; };
 		13858B282E5F866800FD0DB8 /* SnapdeskLogo.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13858B262E5F860E00FD0DB8 /* SnapdeskLogo.icns */; };
 		13972B132E5EEF2F00588D1B /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B122E5EEF2C00588D1B /* Application.swift */; };
@@ -92,7 +92,7 @@
 		13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D642E5F0B80001F7A25 /* Windows.swift */; };
 		13F42D672E5F0F31001F7A25 /* MouseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D662E5F0F31001F7A25 /* MouseState.swift */; };
 		13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */; };
-		13F42D6B2E5F18EF001F7A25 /* SimpleWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6A2E5F18EF001F7A25 /* SimpleWindowManager.swift */; };
+		13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */; };
 		13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */; };
 		13F42D6F2E5F1CAF001F7A25 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6E2E5F1CAF001F7A25 /* Screen.swift */; };
 /* End PBXBuildFile section */
@@ -124,7 +124,7 @@
 		1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHelpers.swift; sourceTree = "<group>"; };
 		1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationHelpers.swift; sourceTree = "<group>"; };
 		1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPositionCalculator.swift; sourceTree = "<group>"; };
-		1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWindowState.swift; sourceTree = "<group>"; };
+		1367E5DD2ED119120003CFDD /* NotificationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationState.swift; sourceTree = "<group>"; };
 		1367E5DF2ED11D1C0003CFDD /* ScreenConfigurationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenConfigurationHandler.swift; sourceTree = "<group>"; };
 		1367E5E12ED120FF0003CFDD /* WindowOrderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowOrderManager.swift; sourceTree = "<group>"; };
 		1367E5E52ED121E80003CFDD /* WindowCleanupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCleanupService.swift; sourceTree = "<group>"; };
@@ -132,8 +132,8 @@
 		1367E5E92ED124C80003CFDD /* LayoutVisualizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutVisualizationService.swift; sourceTree = "<group>"; };
 		1367E5EB2ED126B10003CFDD /* WindowRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowRefreshService.swift; sourceTree = "<group>"; };
 		1367E5ED2ED1296B0003CFDD /* NotificationContentRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationContentRenderer.swift; sourceTree = "<group>"; };
-		1367E5EF2ED129760003CFDD /* TerminalStyleWindowFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalStyleWindowFactory.swift; sourceTree = "<group>"; };
-		1367E5F12ED1297E0003CFDD /* LayoutGridVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutGridVisualizer.swift; sourceTree = "<group>"; };
+		1367E5EF2ED129760003CFDD /* NotificationWindowFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWindowFactory.swift; sourceTree = "<group>"; };
+		1367E5F12ED1297E0003CFDD /* LayoutSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutSelectorView.swift; sourceTree = "<group>"; };
 		1367E5F32ED129880003CFDD /* WindowScreenshotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowScreenshotCache.swift; sourceTree = "<group>"; };
 		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
@@ -143,7 +143,7 @@
 		13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenWorkspace.swift; sourceTree = "<group>"; };
 		13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceModel.swift; sourceTree = "<group>"; };
 		13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanWindows.swift; sourceTree = "<group>"; };
-		13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingWindowHelper.swift; sourceTree = "<group>"; };
+		13858B222E5F680900FD0DB8 /* NotificationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		13858B242E5F75B700FD0DB8 /* DebugLogViewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DebugLogViewer.swift; sourceTree = "<group>"; };
 		13858B262E5F860E00FD0DB8 /* SnapdeskLogo.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SnapdeskLogo.icns; sourceTree = "<group>"; };
 		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
@@ -181,7 +181,7 @@
 		13F42D642E5F0B80001F7A25 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		13F42D662E5F0F31001F7A25 /* MouseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseState.swift; sourceTree = "<group>"; };
 		13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationEventHandler.swift; sourceTree = "<group>"; };
-		13F42D6A2E5F18EF001F7A25 /* SimpleWindowManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleWindowManager.swift; sourceTree = "<group>"; };
+		13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkspaceCoordinator.swift; sourceTree = "<group>"; };
 		13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowInformation.swift; sourceTree = "<group>"; };
 		13F42D6E2E5F1CAF001F7A25 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -300,7 +300,7 @@
 				13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */,
 				13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */,
 				13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */,
-				13F42D6A2E5F18EF001F7A25 /* SimpleWindowManager.swift */,
+				13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */,
 				135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */,
 				135B550D2DB6596D00EC05FF /* HotkeyManager.swift */,
 				135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */,
@@ -342,16 +342,16 @@
 			isa = PBXGroup;
 			children = (
 				1367E5F32ED129880003CFDD /* WindowScreenshotCache.swift */,
-				1367E5F12ED1297E0003CFDD /* LayoutGridVisualizer.swift */,
-				1367E5EF2ED129760003CFDD /* TerminalStyleWindowFactory.swift */,
+				1367E5F12ED1297E0003CFDD /* LayoutSelectorView.swift */,
+				1367E5EF2ED129760003CFDD /* NotificationWindowFactory.swift */,
 				1367E5ED2ED1296B0003CFDD /* NotificationContentRenderer.swift */,
-				1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */,
+				1367E5DD2ED119120003CFDD /* NotificationState.swift */,
 				1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */,
 				1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */,
 				1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */,
 				13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */,
 				13858B242E5F75B700FD0DB8 /* DebugLogViewer.swift */,
-				13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */,
+				13858B222E5F680900FD0DB8 /* NotificationService.swift */,
 				13858B202E5F4AF600FD0DB8 /* ScanWindows.swift */,
 			);
 			path = Utils;
@@ -512,7 +512,7 @@
 				13972B3C2E5EF9F700588D1B /* Screens.swift in Sources */,
 				135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */,
 				135B55232DB6596D00EC05FF /* PreferencesView.swift in Sources */,
-				13F42D6B2E5F18EF001F7A25 /* SimpleWindowManager.swift in Sources */,
+				13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */,
 				13858B1E2E5F46C500FD0DB8 /* WorkspaceModel.swift in Sources */,
 				13972B352E5EF93000588D1B /* FocusFollowMouseManager.swift in Sources */,
 				13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */,
@@ -528,7 +528,7 @@
 				13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */,
 				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
-				13858B232E5F680900FD0DB8 /* FloatingWindowHelper.swift in Sources */,
+				13858B232E5F680900FD0DB8 /* NotificationService.swift in Sources */,
 				13A3EEBB2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift in Sources */,
 				13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */,
 				1367E5EA2ED124CF0003CFDD /* LayoutVisualizationService.swift in Sources */,
@@ -537,7 +537,7 @@
 				1367E5EC2ED126B70003CFDD /* WindowRefreshService.swift in Sources */,
 				13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */,
 				13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */,
-				1367E5F02ED1297C0003CFDD /* TerminalStyleWindowFactory.swift in Sources */,
+				1367E5F02ED1297C0003CFDD /* NotificationWindowFactory.swift in Sources */,
 				1367E5E22ED1210F0003CFDD /* WindowOrderManager.swift in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
 				13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */,
@@ -565,13 +565,13 @@
 				13AA593B2E7983710031F956 /* AvailableKeysModel.swift in Sources */,
 				13A3EEC52E6F481B00DA7702 /* TallLayout.swift in Sources */,
 				13A3EEC62E6F481B00DA7702 /* WideLayout.swift in Sources */,
-				1367E5F22ED129800003CFDD /* LayoutGridVisualizer.swift in Sources */,
+				1367E5F22ED129800003CFDD /* LayoutSelectorView.swift in Sources */,
 				13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */,
 				1367E5EE2ED1296D0003CFDD /* NotificationContentRenderer.swift in Sources */,
 				13A3EEC82E6F481B00DA7702 /* FloatingLayout.swift in Sources */,
 				135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */,
 				1367E5E82ED1229E0003CFDD /* ScreenNavigationService.swift in Sources */,
-				1367E5DE2ED119150003CFDD /* NotificationWindowState.swift in Sources */,
+				1367E5DE2ED119150003CFDD /* NotificationState.swift in Sources */,
 				135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

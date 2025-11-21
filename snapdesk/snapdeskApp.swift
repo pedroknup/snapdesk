@@ -10,7 +10,7 @@ import Cocoa
 
 @objc(SnapdeskApp)
 class SnapdeskApp: NSObject, NSApplicationDelegate {
-    var windowManager: SimpleWindowManager!
+    var windowManager: WorkspaceCoordinator!
     var hotkeyManager: HotkeyManager!
     var userConfiguration: UserConfiguration!
     var statusItem: NSStatusItem?
@@ -19,7 +19,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Force SwiftyBeaver logging setup early to capture all logs
         _ = log
-        log("🚀 App startup beginning - logging system initialized")
+        log("App startup beginning - logging system initialized")
         
         // Check if another instance is running
         let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.pedroknup.snapdesk"
@@ -38,11 +38,11 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         
         NSApplication.shared.setActivationPolicy(.accessory)
         let trusted = AXIsProcessTrusted()
-        log("🔐 AX trusted? \(trusted)")
+        log("AX trusted? \(trusted)")
         if !trusted {
             let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
             _ = AXIsProcessTrustedWithOptions(options)
-            log("⚠️ Not trusted. Exiting...")
+            log("Not trusted. Exiting...")
             exit(1)
         }
 
@@ -54,8 +54,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
             userConfiguration.setLaunchAtLogin(true)
         }
         
-        // Initialize WindowManager (simplified approach without Silica dependency)
-        windowManager = SimpleWindowManager()
+        windowManager = WorkspaceCoordinator()
         
         // Initialize HotkeyManager with the new simplified approach
         hotkeyManager = HotkeyManager(windowManager: windowManager, userConfiguration: userConfiguration)
@@ -83,10 +82,8 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
 
         if let button = statusItem?.button {
             button.image = NSImage(named: "snapdesk-status-bar-icon")
-            button.image?.isTemplate = true // 🔥 this enables proper styling
+            button.image?.isTemplate = true
         }
-
-        // 🧾 Create menu
         let menu = NSMenu()
         
         let versionItem = NSMenuItem(title: "Version 0.0.1 (beta)", action: nil, keyEquivalent: "")
@@ -103,78 +100,60 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Quit Snapdesk", action: #selector(quitApp), keyEquivalent: "q"))
 
         statusItem?.menu = menu
-        
-        log("🚀 Snapdesk is listening for hotkeys")
-        
-        FloatingWindowHelper.showFloatingWindow(text: "Snapdesk loaded", position: .center, duration: 3.0)
-        
-        // Initialize debug log viewer (this will show it if setting is enabled)
+
+        log("Snapdesk is listening for hotkeys")
+
+        NotificationService.showFloatingWindow(text: "Snapdesk loaded", position: .center, duration: 3.0)
+
         _ = DebugLogViewer.shared
-        log("🔧 Debug log viewer initialized")
+        log("Debug log viewer initialized")
         
     }
     
     
     @objc func appDidLaunch(_ notification: Notification) {
-//        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
-//            log("🚀 App launched: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
-//            windowController?.trackWindowsForApp(app)
-//        }
     }
 
     @objc func appDidTerminate(_ notification: Notification) {
-//        if let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
-//            log("❌ App terminated: \(app.localizedName ?? "Unknown") [\(app.bundleIdentifier ?? "No Bundle ID")]")
-//            windowController?.scanAndTrackWindows()
-//        }
     }
-    
+
     @objc func quitApp() {
-        log("👋 Quit clicked")
+        log("Quit clicked")
         NSApp.terminate(nil)
     }
-    
+
     @objc func openSettings() {
-        log("⚙️ Settings clicked")
+        log("Settings clicked")
         
         // Ensure we're on the main thread
         DispatchQueue.main.async { [weak self] in
             if self?.settingsWindowController == nil {
-                log("📱 Creating new SettingsWindowController...")
                 self?.settingsWindowController = SettingsWindowController()
-            } else {
-                log("♻️ Reusing existing SettingsWindowController")
             }
-            
+
             self?.settingsWindowController?.showTab(.settings)
         }
     }
 
     @objc func showAbout() {
-        log("ℹ️ About clicked")
-        
-        // Ensure we're on the main thread
+        log("About clicked")
+
         DispatchQueue.main.async { [weak self] in
             if self?.settingsWindowController == nil {
-                log("📱 Creating new SettingsWindowController...")
                 self?.settingsWindowController = SettingsWindowController()
-            } else {
-                log("♻️ Reusing existing SettingsWindowController")
             }
-            
+
             self?.settingsWindowController?.showTab(.about)
         }
     }
-    
+
     @objc func revaluateWindows() {
-        log("🔄 Revaluate windows clicked")
-        // TODO: Add reevaluateWindows method to SimpleWindowManager if needed
+        log("Revaluate windows clicked")
     }
-    
-    
+
     @objc func testFloatingWindows() {
-        log("🪟 Test floating windows clicked")
-        FloatingWindowHelper.showMultipleDemo()
+        log("Test floating windows clicked")
+        NotificationService.showMultipleDemo()
     }
     
     @objc func toggleDebugViewer() {

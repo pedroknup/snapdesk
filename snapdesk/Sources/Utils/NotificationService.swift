@@ -1,8 +1,6 @@
 //
-//  FloatingWindowHelper.swift
+//  NotificationService.swift
 //  snapdesk
-//
-//  Created by Claude on 27/08/2025.
 //
 
 import Cocoa
@@ -15,8 +13,8 @@ enum FloatingPosition {
     case bottomRight
 }
 
-class FloatingWindowHelper {
-    private static var state: NotificationWindowState { NotificationWindowState.shared }
+class NotificationService {
+    private static var state: NotificationState { NotificationState.shared }
 
     static func showFloatingWindow(text: String, position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
         showFloatingWindow(attributedText: NSAttributedString(string: text), position: position, duration: duration, fontSize: fontSize)
@@ -42,7 +40,7 @@ class FloatingWindowHelper {
         if let activePopup = state.activePopupWindow, activePopup.isVisible {
             reuseActivePopup(window: activePopup, attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize, duration: settingsDuration)
         } else {
-            let window = TerminalStyleWindowFactory.createWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
+            let window = NotificationWindowFactory.createWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
             state.addActiveWindow(window)
             state.setActivePopupWindow(window)
 
@@ -60,7 +58,7 @@ class FloatingWindowHelper {
         if let activePopup = state.activePopupWindow, activePopup.isVisible {
             reuseActivePopupForLayoutGrid(window: activePopup, layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position, duration: duration)
         } else {
-            let window = LayoutGridVisualizer.createLayoutGridWindow(layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
+            let window = LayoutSelectorView.createLayoutGridWindow(layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
             state.addActiveWindow(window)
             state.setActivePopupWindow(window)
 
@@ -92,14 +90,14 @@ class FloatingWindowHelper {
     private static func reuseActivePopup(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], position: FloatingPosition, fontSize: CGFloat, duration: TimeInterval) {
         state.invalidateTimer()
         window.alphaValue = 1.0
-        TerminalStyleWindowFactory.updateWindowContent(window: window, attributedText: attributedText, images: images, position: position, fontSize: fontSize)
+        NotificationWindowFactory.updateWindowContent(window: window, attributedText: attributedText, images: images, position: position, fontSize: fontSize)
         schedulePopupClose(window: window, duration: duration)
     }
 
     private static func reuseActivePopupForLayoutGrid(window: NSWindow, layouts: [LayoutKind], layoutNames: [String], currentLayout: LayoutKind, position: FloatingPosition, duration: TimeInterval) {
         state.invalidateTimer()
         window.alphaValue = 1.0
-        LayoutGridVisualizer.updateLayoutGridContent(window: window, layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
+        LayoutSelectorView.updateLayoutGridContent(window: window, layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
         schedulePopupClose(window: window, duration: duration)
     }
 

@@ -130,7 +130,7 @@ class WindowOrderManager {
         }
 
         if config.enabled && !previewImages.isEmpty {
-            FloatingWindowHelper.showFloatingWindow(
+            NotificationService.showFloatingWindow(
                 attributedText: NSAttributedString(string: feedbackText),
                 images: previewImages,
                 position: .center,

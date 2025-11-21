@@ -282,13 +282,12 @@ final class WindowSet: Identifiable {
     private func showLayoutChangePopup(for layout: LayoutKind) {
         // Check if all layouts should be shown in a grid
         if UserConfiguration.shared.showAllLayoutsOnToggle() {
-            FloatingWindowHelper.showAllLayoutsGrid(
+            NotificationService.showAllLayoutsGrid(
                 currentLayout: layout,
                 position: .center,
                 duration: 1.5
             )
         } else {
-            // Show simple text popup (existing behavior)
             let layoutDisplayName: String
             
             switch layout {
@@ -306,7 +305,7 @@ final class WindowSet: Identifiable {
                 layoutDisplayName = "Floating"
             }
             
-            FloatingWindowHelper.showFloatingWindow(
+            NotificationService.showFloatingWindow(
                 text: layoutDisplayName,
                 position: .center,
                 duration: 1.0,
