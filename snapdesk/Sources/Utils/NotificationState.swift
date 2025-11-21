@@ -1,14 +1,12 @@
 //
-//  NotificationWindowState.swift
+//  NotificationState.swift
 //  snapdesk
-//
-//  Created by Pedro Knup on 21/11/2025.
 //
 
 import Cocoa
 
-class NotificationWindowState {
-    static let shared = NotificationWindowState()
+class NotificationState {
+    static let shared = NotificationState()
 
     private(set) var activeWindows: [NSWindow] = []
     private(set) var activePopupWindow: NSWindow?

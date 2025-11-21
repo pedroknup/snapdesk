@@ -1,13 +1,11 @@
 //
-//  LayoutGridVisualizer.swift
+//  LayoutSelectorView.swift
 //  snapdesk
-//
-//  Created by Pedro Knup on 22/11/2025.
 //
 
 import Cocoa
 
-enum LayoutGridVisualizer {
+enum LayoutSelectorView {
     static func createLayoutGridWindow(layouts: [LayoutKind], layoutNames: [String], currentLayout: LayoutKind, position: FloatingPosition) -> NSWindow {
         let itemWidth: CGFloat = 100
         let itemHeight: CGFloat = 80

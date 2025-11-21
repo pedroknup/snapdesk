@@ -1,13 +1,11 @@
 //
-//  TerminalStyleWindowFactory.swift
+//  NotificationWindowFactory.swift
 //  snapdesk
-//
-//  Created by Pedro Knup on 22/11/2025.
 //
 
 import Cocoa
 
-enum TerminalStyleWindowFactory {
+enum NotificationWindowFactory {
     static func createWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
         if images.isEmpty {
             return createTextOnlyWindow(attributedText: attributedText, position: position, fontSize: fontSize)

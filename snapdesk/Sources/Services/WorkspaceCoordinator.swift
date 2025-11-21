@@ -1,14 +1,12 @@
 //
-//  SimpleWindowManager.swift
+//  WorkspaceCoordinator.swift
 //  snapdesk
-//
-//  Created by Pedro Knup on 27/08/2025.
 //
 
 import Foundation
 import AppKit
 
-class SimpleWindowManager: WindowManaging, WorkspaceProvider {
+class WorkspaceCoordinator: WindowManaging, WorkspaceProvider {
 
     var workspace: WorkspaceModel
 
@@ -418,13 +416,10 @@ class SimpleWindowManager: WindowManaging, WorkspaceProvider {
 
 // MARK: - Delegate Conformances
 
-extension SimpleWindowManager: CyclingManagerDelegate, LayoutManagerDelegate {
-    // Both protocols require workspace property which is already implemented
+extension WorkspaceCoordinator: CyclingManagerDelegate, LayoutManagerDelegate {
 }
 
-// MARK: - AppLifecycleDelegate Implementation
-
-extension SimpleWindowManager: AppLifecycleDelegate {
+extension WorkspaceCoordinator: AppLifecycleDelegate {
     
     func appDidLaunch(_ app: NSRunningApplication) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
