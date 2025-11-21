@@ -32,6 +32,7 @@
 		1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */; };
 		1367E5DC2ED1189C0003CFDD /* NotificationPositionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */; };
 		1367E5DE2ED119150003CFDD /* NotificationWindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */; };
+		1367E5E02ED11D1E0003CFDD /* ScreenConfigurationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DF2ED11D1C0003CFDD /* ScreenConfigurationHandler.swift */; };
 		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
 		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
@@ -115,6 +116,7 @@
 		1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationHelpers.swift; sourceTree = "<group>"; };
 		1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPositionCalculator.swift; sourceTree = "<group>"; };
 		1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWindowState.swift; sourceTree = "<group>"; };
+		1367E5DF2ED11D1C0003CFDD /* ScreenConfigurationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenConfigurationHandler.swift; sourceTree = "<group>"; };
 		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
 		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
@@ -271,6 +273,7 @@
 		135B55102DB6596D00EC05FF /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				1367E5DF2ED11D1C0003CFDD /* ScreenConfigurationHandler.swift */,
 				13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */,
 				13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */,
 				13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */,
@@ -514,6 +517,7 @@
 				1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */,
 				1367E5DC2ED1189C0003CFDD /* NotificationPositionCalculator.swift in Sources */,
 				13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */,
+				1367E5E02ED11D1E0003CFDD /* ScreenConfigurationHandler.swift in Sources */,
 				13858B252E5F75B700FD0DB8 /* DebugLogViewer.swift in Sources */,
 				13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */,
 				13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */,
