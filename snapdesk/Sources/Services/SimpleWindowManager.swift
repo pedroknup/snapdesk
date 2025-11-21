@@ -36,7 +36,7 @@ class SimpleWindowManager: WindowManaging {
         self.appLifecycleManager.delegate = self
 
         let discovered = scanWindows()
-        let defaultLayout = getDefaultLayoutMode()
+        let defaultLayout = ConfigurationHelpers.getDefaultLayoutMode()
         
         
         for (win, screen) in discovered {
@@ -46,14 +46,14 @@ class SimpleWindowManager: WindowManaging {
                 workspace.screens[idx].windowSets.append(newSet)
                 
                 // Auto-expand the window if the setting is enabled (without bringing to front during startup)
-                if shouldAutoExpandNewWindows() {
+                if ConfigurationHelpers.shouldAutoExpandNewWindows() {
                     newSet.expandWindows(on: screen, bringToFront: false)
                 }
             }
         }
         
         // Final comprehensive pass: Ensure ALL windows are expanded if auto-expand is enabled
-        if shouldAutoExpandNewWindows() {
+        if ConfigurationHelpers.shouldAutoExpandNewWindows() {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
@@ -131,7 +131,7 @@ class SimpleWindowManager: WindowManaging {
                 appLifecycleManager.setProgrammaticFocus(false)
                 return
             } else {
-                moveCursorToCenter(of: targetWindow)
+                WorkspaceHelpers.moveCursorToCenter(of:targetWindow)
             }
         }
 
@@ -193,7 +193,7 @@ class SimpleWindowManager: WindowManaging {
                 appLifecycleManager.setProgrammaticFocus(false)
                 return
             } else {
-                moveCursorToCenter(of: targetWindow)
+                WorkspaceHelpers.moveCursorToCenter(of:targetWindow)
             }
         }
 
@@ -225,7 +225,7 @@ class SimpleWindowManager: WindowManaging {
         log("🎯 Found focused window: '\(focusedWindow.title() ?? "untitled")'")
         
         // Find the WindowSet containing the focused window
-        guard let (targetWindowSet, _, _) = findWindowSetContaining(focusedWindow) else {
+        guard let (targetWindowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(focusedWindow, in: workspace) else {
             log("❌ Focused window not found in any WindowSet")
             return
         }
@@ -268,7 +268,7 @@ class SimpleWindowManager: WindowManaging {
             if targetScreenFrame.intersects(windowFrame) {
                 lastWindow.focus()
                 lastWindow.raise()
-                moveCursorToCenter(of: lastWindow)
+                WorkspaceHelpers.moveCursorToCenter(of:lastWindow)
                 trackWindowFocus(lastWindow)
                 log("✅ Restored last focused window '\(lastWindow.title() ?? "untitled")' on screen \(screenNumber)")
                 return
@@ -287,7 +287,7 @@ class SimpleWindowManager: WindowManaging {
             if let firstWindow = windowsOnScreen.first {
                 firstWindow.focus()
                 firstWindow.raise()
-                moveCursorToCenter(of: firstWindow)
+                WorkspaceHelpers.moveCursorToCenter(of:firstWindow)
                 trackWindowFocus(firstWindow)
                 log("✅ Focused window '\(firstWindow.title() ?? "untitled")' on screen \(screenNumber)")
                 return
@@ -311,7 +311,7 @@ class SimpleWindowManager: WindowManaging {
         axWindow.raise()
         axWindow.focus()
         trackWindowFocus(axWindow)
-        moveCursorToCenter(of: axWindow)
+        WorkspaceHelpers.moveCursorToCenter(of:axWindow)
     }
     
     // MARK: - WindowManaging methods
@@ -378,7 +378,7 @@ class SimpleWindowManager: WindowManaging {
             windowToFocus.raise()
             windowToFocus.focus()
             trackWindowFocus(windowToFocus)
-            moveCursorToCenter(of: windowToFocus)
+            WorkspaceHelpers.moveCursorToCenter(of:windowToFocus)
         }
     }
       
@@ -398,7 +398,7 @@ class SimpleWindowManager: WindowManaging {
             }
             
             let axWindow = AXWindow(axElement: focusedWindow)
-            if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+            if let (windowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(axWindow, in: workspace) {
                 targetWindowSet = windowSet
             }
         }
@@ -434,7 +434,7 @@ class SimpleWindowManager: WindowManaging {
             }
             
             let axWindow = AXWindow(axElement: focusedWindow)
-            if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+            if let (windowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(axWindow, in: workspace) {
                 targetWindowSet = windowSet
             }
         }
@@ -463,7 +463,7 @@ class SimpleWindowManager: WindowManaging {
             }
             
             let axWindow = AXWindow(axElement: focusedWindow)
-            if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+            if let (windowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(axWindow, in: workspace) {
                 targetWindowSet = windowSet
             }
         }
@@ -492,7 +492,7 @@ class SimpleWindowManager: WindowManaging {
             }
             
             let axWindow = AXWindow(axElement: focusedWindow)
-            if let (windowSet, _, _) = findWindowSetContaining(axWindow) {
+            if let (windowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(axWindow, in: workspace) {
                 targetWindowSet = windowSet
             }
         }
@@ -797,7 +797,7 @@ class SimpleWindowManager: WindowManaging {
         }
         
         // Expand the windows in the WindowSet
-        if shouldAutoExpandNewWindows() {
+        if ConfigurationHelpers.shouldAutoExpandNewWindows() {
             nextWindowSet.expandWindows()
         }
         
@@ -813,7 +813,7 @@ class SimpleWindowManager: WindowManaging {
             if focusSucceeded {
                 trackWindowFocus(nextWindow)
                 log("✅ Successfully focused next window")
-                moveCursorToCenter(of: nextWindow)
+                WorkspaceHelpers.moveCursorToCenter(of:nextWindow)
             } else {
                 log("❌ Failed to focus next window - it may also be dead")
                 // Could recursively call this method, but let's avoid infinite recursion for now
@@ -865,17 +865,6 @@ class SimpleWindowManager: WindowManaging {
     }
     
     // MARK: - Private Helper Methods
-    // These delegate to extracted utilities (ConfigurationHelpers, WorkspaceHelpers)
-
-    /// Gets the default layout mode from settings
-    private func getDefaultLayoutMode() -> LayoutKind {
-        return ConfigurationHelpers.getDefaultLayoutMode()
-    }
-
-    /// Gets whether auto-expand new windows is enabled
-    private func shouldAutoExpandNewWindows() -> Bool {
-        return ConfigurationHelpers.shouldAutoExpandNewWindows()
-    }
 
     /// Updates the last focused window tracking for the window's screen
     private func trackWindowFocus(_ window: AXWindow) {
@@ -884,16 +873,6 @@ class SimpleWindowManager: WindowManaging {
            let screenID = screen.screenID() {
             lastFocusedWindowPerScreen[screenID] = window
         }
-    }
-
-    /// Moves the mouse cursor to the center of the given window
-    private func moveCursorToCenter(of window: AXWindow) {
-        WorkspaceHelpers.moveCursorToCenter(of: window)
-    }
-
-    /// Finds the WindowSet containing the given window and returns the WindowSet, window index, and screen index
-    private func findWindowSetContaining(_ window: AXWindow) -> (WindowSet, Int, Int)? {
-        return WorkspaceHelpers.findWindowSetContaining(window, in: workspace)
     }
     
     private func refreshWindows() {
@@ -957,12 +936,12 @@ class SimpleWindowManager: WindowManaging {
     
     private func addWindow(_ window: AXWindow, to screenWS: inout ScreenWorkspace) {
         // Create a separate WindowSet for each window to enable cycling
-        let defaultLayout = getDefaultLayoutMode()
+        let defaultLayout = ConfigurationHelpers.getDefaultLayoutMode()
         let newSet = WindowSet(layout: defaultLayout, windows: [window], screenID: screenWS.screen.screenID())
         screenWS.windowSets.append(newSet)
         
         // Auto-expand the window if the setting is enabled (without bringing to front during initialization)
-        if shouldAutoExpandNewWindows() {
+        if ConfigurationHelpers.shouldAutoExpandNewWindows() {
             newSet.expandWindows(on: screenWS.screen, bringToFront: false)
         }
         
@@ -1039,7 +1018,7 @@ extension SimpleWindowManager: AppLifecycleDelegate {
         }
 
         // Create a new WindowSet for this window
-        let defaultLayout = getDefaultLayoutMode()
+        let defaultLayout = ConfigurationHelpers.getDefaultLayoutMode()
         let newWindowSet = WindowSet(layout: defaultLayout, windows: [window], screenID: amScreen.screenID())
 
         // Add to appropriate screen workspace
@@ -1048,7 +1027,7 @@ extension SimpleWindowManager: AppLifecycleDelegate {
         }
 
         // Auto-expand the new window if enabled
-        if shouldAutoExpandNewWindows() {
+        if ConfigurationHelpers.shouldAutoExpandNewWindows() {
             newWindowSet.expandWindows(on: amScreen, bringToFront: false)
         }
 
@@ -1203,7 +1182,7 @@ extension SimpleWindowManager: AppLifecycleDelegate {
                             log("✅ Remapped window '\(window.title() ?? "<untitled>")' from orphaned set to screen \(currentScreen.screenID() ?? "unknown"), frame=\(NSStringFromRect(windowFrame))")
                             
                             // Expand the window if auto-expand is enabled
-                            if shouldAutoExpandNewWindows() {
+                            if ConfigurationHelpers.shouldAutoExpandNewWindows() {
                                 newSet.expandWindows(on: currentScreen, bringToFront: false)
                             }
                         }
@@ -1224,7 +1203,7 @@ extension SimpleWindowManager: AppLifecycleDelegate {
                 }
                 
                 // Re-expand windows to ensure proper positioning
-                if shouldAutoExpandNewWindows() {
+                if ConfigurationHelpers.shouldAutoExpandNewWindows() {
                     windowSet.expandWindows(on: screenWS.screen, bringToFront: false)
                 }
             }
