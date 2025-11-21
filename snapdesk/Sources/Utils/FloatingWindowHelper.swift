@@ -16,10 +16,14 @@ enum FloatingPosition {
 }
 
 class FloatingWindowHelper {
+    // MARK: - State Management
+    // TODO: Extract to NotificationWindowState class
     private static var activeWindows: [NSWindow] = []
     private static var activePopupWindow: NSWindow?
     private static var popupTimer: Timer?
-    
+
+    // MARK: - Public API
+    // TODO: Extract to NotificationService protocol
     static func showFloatingWindow(text: String, position: FloatingPosition = .center, duration: TimeInterval = 2.0, fontSize: CGFloat = 16) {
         showFloatingWindow(attributedText: NSAttributedString(string: text), position: position, duration: duration, fontSize: fontSize)
     }
@@ -63,6 +67,9 @@ class FloatingWindowHelper {
         }
     }
     
+    // MARK: - Window Lifecycle Management
+    // TODO: Extract to NotificationWindowLifecycle class
+
     /// Reuses an active popup window by updating its content, resetting timer and opacity
     private static func reuseActivePopup(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], position: FloatingPosition, fontSize: CGFloat, duration: TimeInterval) {
         // Cancel existing timer
@@ -429,6 +436,9 @@ class FloatingWindowHelper {
     }
     
     /// Creates a terminal-style floating window with ASCII borders and monospace styling
+    // MARK: - Terminal Style Window Creation
+    // TODO: Extract to TerminalStyleWindowFactory class
+
     private static func createTerminalStyleFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
         let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
         let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
@@ -658,6 +668,9 @@ class FloatingWindowHelper {
         return window
     }
     
+    // MARK: - Legacy Window Creation (Alternative Styles)
+    // TODO: Consider consolidating with terminal style or removing if unused
+
     private static func createFloatingWindow(attributedText: NSAttributedString, images: [(NSImage, String)] = [], position: FloatingPosition, fontSize: CGFloat = 16) -> NSWindow {
         let maxWidth = NSScreen.main?.visibleFrame.width ?? 1920 * 0.6
         let maxHeight = NSScreen.main?.visibleFrame.height ?? 1080 * 0.8
@@ -830,6 +843,9 @@ class FloatingWindowHelper {
     }
     
     /// Creates clean terminal content without borders for images
+    // MARK: - Content Rendering & Formatting
+    // TODO: Extract to NotificationContentRenderer class
+
     private static func createTerminalContentWithImages(attributedText: NSAttributedString, images: [(NSImage, String)], fontSize: CGFloat, maxWidth: CGFloat) -> NSAttributedString {
         let result = NSMutableAttributedString()
         let terminalFont = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .medium)
@@ -996,6 +1012,9 @@ class FloatingWindowHelper {
     }
     
     /// Helper to calculate window origin based on position
+    // MARK: - Position Calculation
+    // TODO: Extract to NotificationPositionCalculator class
+
     private static func calculateWindowOrigin(position: FloatingPosition, windowSize: NSSize) -> NSPoint {
         let screenFrame = NSScreen.main?.visibleFrame ?? NSRect.zero
         
@@ -1163,6 +1182,9 @@ class FloatingWindowHelper {
     }
     
     /// Shows all available layouts in a grid with the current layout highlighted
+    // MARK: - Layout Grid Visualization
+    // TODO: Extract to LayoutGridVisualizer class
+
     static func showAllLayoutsGrid(currentLayout: LayoutKind, position: FloatingPosition = .center, duration: TimeInterval = 1.5) {
         let layouts: [LayoutKind] = [.tall, .wide, .vertical_stack, .horizontal_stack, .fullscreen, .floating]
         let layoutNames = ["Tall", "Wide", "V.Stack", "H.Stack", "Full", "Float"]
@@ -1443,6 +1465,9 @@ class WindowScreenshotCapture {
     ///   - windowID: The window ID to capture
     ///   - maxSize: Maximum size for the captured image
     /// - Returns: NSImage of the window, scaled to maxSize if necessary
+    // MARK: - Window Capture & Screenshot Caching
+    // TODO: Extract to WindowScreenshotCache class (already partially separated)
+
     static func captureWindow(windowID: CGWindowID, maxSize: NSSize = NSSize(width: 200, height: 150)) -> NSImage? {
         let config = ConfigurationManager.shared.loadConfig()?.windowPreview ?? WindowPreviewConfig()
         

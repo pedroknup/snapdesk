@@ -90,7 +90,8 @@ class SimpleWindowManager: WindowManaging {
     }
 
     // MARK: - App Management
-    
+    // TODO: Extract to AppFocusService (handles app focusing, cycling, window tracking)
+
     func focusApp(_ bundleID: String) async {
         // Set flag to indicate we're programmatically focusing
         appLifecycleManager.setProgrammaticFocus(true)
@@ -235,7 +236,8 @@ class SimpleWindowManager: WindowManaging {
     }
     
     // MARK: - Screen Management
-    
+    // TODO: Extract to ScreenNavigationService (screen focus, window throwing between screens)
+
     func toggleFullScreen() {
         log("🖥 toggleFullScreen() called")
         // TODO: Implement full screen toggle functionality
@@ -564,7 +566,8 @@ class SimpleWindowManager: WindowManaging {
     }
 
     // MARK: - Window Positioning
-      
+    // TODO: Extract to WindowPositioningService (single window positioning commands)
+
     func positionWindowLeft() {
         log("⬅️ positionWindowLeft() called")
         positionSingleWindow(to: "left")
@@ -611,6 +614,7 @@ class SimpleWindowManager: WindowManaging {
     }
     
     // MARK: - Window Reordering
+    // TODO: Extract to WindowOrderService (window cycling order management)
     
     func moveWindowUpInLayout() {
         moveWindowInLayout(direction: .up)
@@ -752,6 +756,9 @@ class SimpleWindowManager: WindowManaging {
     
     // MARK: - Dead Window Handling
     
+    // MARK: - Dead Window Cleanup
+    // TODO: Extract to WindowCleanupService (dead window detection and removal)
+
     /// Removes a dead window from its WindowSet and cleans up empty WindowSets
     private func removeDeadWindow(_ deadWindow: AXWindow, from windowSet: WindowSet, bundleID: String) {
         log("🗑️ Removing dead window '\(deadWindow.title() ?? "untitled")' from WindowSet")
@@ -857,6 +864,9 @@ class SimpleWindowManager: WindowManaging {
         return nil
     }
     
+    // MARK: - Private Helper Methods
+    // These delegate to extracted utilities (ConfigurationHelpers, WorkspaceHelpers)
+
     /// Gets the default layout mode from settings
     private func getDefaultLayoutMode() -> LayoutKind {
         return ConfigurationHelpers.getDefaultLayoutMode()
@@ -1053,6 +1063,9 @@ extension SimpleWindowManager: AppLifecycleDelegate {
         updateCurrentWindowSetFromFocus()
     }
     
+    // MARK: - Screen Configuration Changes
+    // TODO: Extract to ScreenConfigurationHandler (complex multi-screen window remapping)
+
     func screenParametersDidChange() {
         log("🖥️ Screen configuration changed, remapping windows...")
 
