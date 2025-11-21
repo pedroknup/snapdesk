@@ -31,6 +31,7 @@
 		1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */; };
 		1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */; };
 		1367E5DC2ED1189C0003CFDD /* NotificationPositionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */; };
+		1367E5DE2ED119150003CFDD /* NotificationWindowState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */; };
 		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
 		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
@@ -113,6 +114,7 @@
 		1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHelpers.swift; sourceTree = "<group>"; };
 		1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationHelpers.swift; sourceTree = "<group>"; };
 		1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPositionCalculator.swift; sourceTree = "<group>"; };
+		1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWindowState.swift; sourceTree = "<group>"; };
 		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
 		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 		13858B1F2E5F4AEB00FD0DB8 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				1367E5DD2ED119120003CFDD /* NotificationWindowState.swift */,
 				1367E5DB2ED118950003CFDD /* NotificationPositionCalculator.swift */,
 				1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */,
 				1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */,
@@ -528,6 +531,7 @@
 				13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */,
 				13A3EEC82E6F481B00DA7702 /* FloatingLayout.swift in Sources */,
 				135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */,
+				1367E5DE2ED119150003CFDD /* NotificationWindowState.swift in Sources */,
 				135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
