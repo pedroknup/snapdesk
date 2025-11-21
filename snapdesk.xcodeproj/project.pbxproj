@@ -28,6 +28,8 @@
 		135B55252DB6596D00EC05FF /* ShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */; };
 		135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */; };
 		135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55172DB6596D00EC05FF /* WindowDebugTest.swift */; };
+		1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */; };
+		1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */; };
 		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
 		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
@@ -107,6 +109,8 @@
 		135B55152DB6596D00EC05FF /* ShortcutRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
 		135B55162DB6596D00EC05FF /* ShortcutsTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShortcutsTabView.swift; sourceTree = "<group>"; };
 		135B55172DB6596D00EC05FF /* WindowDebugTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WindowDebugTest.swift; sourceTree = "<group>"; };
+		1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHelpers.swift; sourceTree = "<group>"; };
+		1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationHelpers.swift; sourceTree = "<group>"; };
 		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
 		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
@@ -307,6 +311,8 @@
 		13858B1F2E5F4AEB00FD0DB8 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				1367E5D92ED0AAA90003CFDD /* ConfigurationHelpers.swift */,
+				1367E5D72ED0AA9D0003CFDD /* WorkspaceHelpers.swift */,
 				13A3EEBA2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift */,
 				13858B242E5F75B700FD0DB8 /* DebugLogViewer.swift */,
 				13858B222E5F680900FD0DB8 /* FloatingWindowHelper.swift */,
@@ -481,6 +487,7 @@
 				13972B282E5EF70500588D1B /* WindowManager.swift in Sources */,
 				13A3EEB32E6B1DB300DA7702 /* Untitled.swift in Sources */,
 				13972B1A2E5EF30200588D1B /* Space.swift in Sources */,
+				1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */,
 				13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */,
 				13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */,
 				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
@@ -498,6 +505,7 @@
 				13858B212E5F4AF600FD0DB8 /* ScanWindows.swift in Sources */,
 				13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */,
 				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
+				1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */,
 				13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */,
 				13858B252E5F75B700FD0DB8 /* DebugLogViewer.swift in Sources */,
 				13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */,
