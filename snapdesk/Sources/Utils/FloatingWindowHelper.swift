@@ -17,10 +17,8 @@ enum FloatingPosition {
 
 class FloatingWindowHelper {
     // MARK: - State Management
-    // TODO: Extract to NotificationWindowState class
-    private static var activeWindows: [NSWindow] = []
-    private static var activePopupWindow: NSWindow?
-    private static var popupTimer: Timer?
+    // Delegated to NotificationWindowState
+    private static var state: NotificationWindowState { NotificationWindowState.shared }
 
     // MARK: - Public API
     // TODO: Extract to NotificationService protocol
@@ -49,14 +47,14 @@ class FloatingWindowHelper {
         }
         
         // Check if we have an active popup to reuse
-        if let activePopup = activePopupWindow, activePopup.isVisible {
+        if let activePopup = state.activePopupWindow, activePopup.isVisible {
             // Reuse existing popup - update content, reset timer and opacity
             reuseActivePopup(window: activePopup, attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize, duration: settingsDuration)
         } else {
             // Create new popup
             let window = createTerminalStyleFloatingWindow(attributedText: attributedText, images: images, position: actualPosition, fontSize: fontSize)
-            activeWindows.append(window)
-            activePopupWindow = window
+            state.addActiveWindow(window)
+            state.setActivePopupWindow(window)
             
             // Set window level before showing to avoid positioning issues
             window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
@@ -73,8 +71,7 @@ class FloatingWindowHelper {
     /// Reuses an active popup window by updating its content, resetting timer and opacity
     private static func reuseActivePopup(window: NSWindow, attributedText: NSAttributedString, images: [(NSImage, String)], position: FloatingPosition, fontSize: CGFloat, duration: TimeInterval) {
         // Cancel existing timer
-        popupTimer?.invalidate()
-        popupTimer = nil
+        state.invalidateTimer()
         
         // Reset opacity to full
         window.alphaValue = 1.0
@@ -402,21 +399,21 @@ class FloatingWindowHelper {
     
     /// Schedules the popup window to close after the specified duration
     private static func schedulePopupClose(window: NSWindow, duration: TimeInterval) {
-        popupTimer?.invalidate()
-        popupTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
+        state.invalidateTimer()
+        let timer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
             closePopup(window)
         }
+        state.setPopupTimer(timer)
     }
-    
+
     /// Closes the popup window and cleans up references
     private static func closePopup(_ window: NSWindow) {
-        popupTimer?.invalidate()
-        popupTimer = nil
-        
-        if activePopupWindow == window {
-            activePopupWindow = nil
+        state.invalidateTimer()
+
+        if state.activePopupWindow == window {
+            state.clearActivePopupWindow()
         }
-        
+
         hideWindow(window)
     }
     
@@ -1129,13 +1126,13 @@ class FloatingWindowHelper {
         }, completionHandler: {
             window.orderOut(nil)
             // Remove from active windows array
-            activeWindows.removeAll { $0 === window }
+            NotificationWindowState.shared.removeActiveWindow(window)
         })
     }
-    
+
     // Helper method to immediately hide all floating windows
     static func hideAllFloatingWindows() {
-        for window in activeWindows {
+        for window in state.activeWindows {
             hideWindow(window)
         }
     }
@@ -1162,14 +1159,14 @@ class FloatingWindowHelper {
         let layoutNames = ["Tall", "Wide", "V.Stack", "H.Stack", "Full", "Float"]
         
         // Check if we have an active popup to reuse
-        if let activePopup = activePopupWindow, activePopup.isVisible {
+        if let activePopup = state.activePopupWindow, activePopup.isVisible {
             // Reuse existing popup - update content and reset timer
             reuseActivePopupForLayoutGrid(window: activePopup, layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position, duration: duration)
         } else {
             // Create new popup
             let window = createLayoutGridWindow(layouts: layouts, layoutNames: layoutNames, currentLayout: currentLayout, position: position)
-            activeWindows.append(window)
-            activePopupWindow = window
+            state.addActiveWindow(window)
+            state.setActivePopupWindow(window)
             
             // Set window level before showing to avoid positioning issues
             window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
@@ -1183,8 +1180,7 @@ class FloatingWindowHelper {
     /// Reuses an active popup window for the layout grid display
     private static func reuseActivePopupForLayoutGrid(window: NSWindow, layouts: [LayoutKind], layoutNames: [String], currentLayout: LayoutKind, position: FloatingPosition, duration: TimeInterval) {
         // Cancel existing timer
-        popupTimer?.invalidate()
-        popupTimer = nil
+        state.invalidateTimer()
         
         // Reset opacity to full
         window.alphaValue = 1.0
