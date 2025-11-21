@@ -42,6 +42,7 @@
 		1367E5F02ED1297C0003CFDD /* NotificationWindowFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5EF2ED129760003CFDD /* NotificationWindowFactory.swift */; };
 		1367E5F22ED129800003CFDD /* LayoutSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F12ED1297E0003CFDD /* LayoutSelectorView.swift */; };
 		1367E5F42ED1298D0003CFDD /* WindowScreenshotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F32ED129880003CFDD /* WindowScreenshotCache.swift */; };
+		1367E5F62ED130730003CFDD /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F52ED130730003CFDD /* Screen.swift */; };
 		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
 		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
@@ -58,17 +59,10 @@
 		13972B182E5EF2EC00588D1B /* Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B172E5EF2EA00588D1B /* Window.swift */; };
 		13972B1A2E5EF30200588D1B /* Space.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B192E5EF30100588D1B /* Space.swift */; };
 		13972B1D2E5EF38700588D1B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B1C2E5EF38700588D1B /* SwiftyJSON */; };
-		13972B282E5EF70500588D1B /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B272E5EF70100588D1B /* WindowManager.swift */; };
 		13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */; };
 		13972B2F2E5EF83D00588D1B /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B2E2E5EF83D00588D1B /* RxSwift */; };
-		13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */; };
-		13972B332E5EF91F00588D1B /* FocusTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */; };
-		13972B352E5EF93000588D1B /* FocusFollowMouseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */; };
 		13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B382E5EF96800588D1B /* CGInfo.swift */; };
-		13972B3C2E5EF9F700588D1B /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3B2E5EF9F600588D1B /* Screens.swift */; };
-		13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3D2E5EFA0700588D1B /* ScreenManager.swift */; };
 		13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3F2E5EFB6C00588D1B /* LogManager.swift */; };
-		13A3EEB32E6B1DB300DA7702 /* Untitled.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB22E6B1DAF00DA7702 /* Untitled.swift */; };
 		13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */; };
 		13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */; };
 		13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */; };
@@ -89,12 +83,10 @@
 		13F42D5F2E5F0819001F7A25 /* Change.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D5E2E5F0819001F7A25 /* Change.swift */; };
 		13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D602E5F0894001F7A25 /* WindowSet.swift */; };
 		13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */; };
-		13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D642E5F0B80001F7A25 /* Windows.swift */; };
 		13F42D672E5F0F31001F7A25 /* MouseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D662E5F0F31001F7A25 /* MouseState.swift */; };
 		13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */; };
 		13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */; };
 		13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */; };
-		13F42D6F2E5F1CAF001F7A25 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6E2E5F1CAF001F7A25 /* Screen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -135,6 +127,7 @@
 		1367E5EF2ED129760003CFDD /* NotificationWindowFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWindowFactory.swift; sourceTree = "<group>"; };
 		1367E5F12ED1297E0003CFDD /* LayoutSelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutSelectorView.swift; sourceTree = "<group>"; };
 		1367E5F32ED129880003CFDD /* WindowScreenshotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowScreenshotCache.swift; sourceTree = "<group>"; };
+		1367E5F52ED130730003CFDD /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
 		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
@@ -149,16 +142,9 @@
 		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
 		13972B192E5EF30100588D1B /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
-		13972B272E5EF70100588D1B /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfiguration.swift; sourceTree = "<group>"; };
-		13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTransitionCoordinator.swift; sourceTree = "<group>"; };
-		13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTransitionCoordinator.swift; sourceTree = "<group>"; };
-		13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusFollowMouseManager.swift; sourceTree = "<group>"; };
 		13972B382E5EF96800588D1B /* CGInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGInfo.swift; sourceTree = "<group>"; };
-		13972B3B2E5EF9F600588D1B /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
-		13972B3D2E5EFA0700588D1B /* ScreenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenManager.swift; sourceTree = "<group>"; };
 		13972B3F2E5EFB6C00588D1B /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
-		13A3EEB22E6B1DAF00DA7702 /* Untitled.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Untitled.swift; sourceTree = "<group>"; };
 		13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLifecycleManager.swift; sourceTree = "<group>"; };
 		13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclingManager.swift; sourceTree = "<group>"; };
 		13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutManager.swift; sourceTree = "<group>"; };
@@ -178,12 +164,10 @@
 		13F42D5E2E5F0819001F7A25 /* Change.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Change.swift; sourceTree = "<group>"; };
 		13F42D602E5F0894001F7A25 /* WindowSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSet.swift; sourceTree = "<group>"; };
 		13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationObservation.swift; sourceTree = "<group>"; };
-		13F42D642E5F0B80001F7A25 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		13F42D662E5F0F31001F7A25 /* MouseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseState.swift; sourceTree = "<group>"; };
 		13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationEventHandler.swift; sourceTree = "<group>"; };
 		13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkspaceCoordinator.swift; sourceTree = "<group>"; };
 		13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowInformation.swift; sourceTree = "<group>"; };
-		13F42D6E2E5F1CAF001F7A25 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -268,6 +252,7 @@
 		135B550B2DB6596D00EC05FF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				1367E5F52ED130730003CFDD /* Screen.swift */,
 				13AA593A2E7983710031F956 /* AvailableKeysModel.swift */,
 				13972B382E5EF96800588D1B /* CGInfo.swift */,
 				13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */,
@@ -280,7 +265,6 @@
 				13F42D662E5F0F31001F7A25 /* MouseState.swift */,
 				13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */,
 				13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */,
-				13F42D6E2E5F1CAF001F7A25 /* Screen.swift */,
 				13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */,
 				13858B152E5F20D800FD0DB8 /* Reliable.swift */,
 				13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */,
@@ -329,7 +313,6 @@
 				13858B1F2E5F4AEB00FD0DB8 /* Utils */,
 				13F42D5B2E5F0791001F7A25 /* Categories */,
 				13972B422E5F001500588D1B /* Preferences */,
-				13972B412E5F000800588D1B /* Events */,
 				13972B262E5EF6FC00588D1B /* Managers */,
 				135B550B2DB6596D00EC05FF /* Models */,
 				135B55102DB6596D00EC05FF /* Services */,
@@ -360,26 +343,11 @@
 		13972B262E5EF6FC00588D1B /* Managers */ = {
 			isa = PBXGroup;
 			children = (
-				13A3EEB22E6B1DAF00DA7702 /* Untitled.swift */,
 				13726AE42E65D05F005D42DF /* AppCacheManager.swift */,
 				13972B3F2E5EFB6C00588D1B /* LogManager.swift */,
-				13972B3D2E5EFA0700588D1B /* ScreenManager.swift */,
-				13972B3B2E5EF9F600588D1B /* Screens.swift */,
-				13972B342E5EF92B00588D1B /* FocusFollowMouseManager.swift */,
-				13972B322E5EF91900588D1B /* FocusTransitionCoordinator.swift */,
-				13972B302E5EF8FB00588D1B /* WindowTransitionCoordinator.swift */,
-				13972B272E5EF70100588D1B /* WindowManager.swift */,
-				13F42D642E5F0B80001F7A25 /* Windows.swift */,
 				13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */,
 			);
 			path = Managers;
-			sourceTree = "<group>";
-		};
-		13972B412E5F000800588D1B /* Events */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Events;
 			sourceTree = "<group>";
 		};
 		13972B422E5F001500588D1B /* Preferences */ = {
@@ -507,25 +475,19 @@
 				13972B182E5EF2EC00588D1B /* Window.swift in Sources */,
 				130647332DB38D6F00A63735 /* main.swift in Sources */,
 				135B55242DB6596D00EC05FF /* SettingsTabView.swift in Sources */,
-				13972B332E5EF91F00588D1B /* FocusTransitionCoordinator.swift in Sources */,
 				130646D12DB38D4D00A63735 /* Item.swift in Sources */,
-				13972B3C2E5EF9F700588D1B /* Screens.swift in Sources */,
 				135B55272DB6596D00EC05FF /* WindowDebugTest.swift in Sources */,
 				135B55232DB6596D00EC05FF /* PreferencesView.swift in Sources */,
 				13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */,
 				13858B1E2E5F46C500FD0DB8 /* WorkspaceModel.swift in Sources */,
-				13972B352E5EF93000588D1B /* FocusFollowMouseManager.swift in Sources */,
 				13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */,
 				13F42D5F2E5F0819001F7A25 /* Change.swift in Sources */,
 				135A76EA2E717AB9009C1DDD /* VerticalStackLayout.swift in Sources */,
 				135A76EB2E717AB9009C1DDD /* HorizontalStackLayout.swift in Sources */,
 				13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */,
-				13972B282E5EF70500588D1B /* WindowManager.swift in Sources */,
-				13A3EEB32E6B1DB300DA7702 /* Untitled.swift in Sources */,
 				13972B1A2E5EF30200588D1B /* Space.swift in Sources */,
 				1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */,
 				13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */,
-				13F42D652E5F0B80001F7A25 /* Windows.swift in Sources */,
 				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				13858B232E5F680900FD0DB8 /* NotificationService.swift in Sources */,
@@ -536,7 +498,6 @@
 				13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */,
 				1367E5EC2ED126B70003CFDD /* WindowRefreshService.swift in Sources */,
 				13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */,
-				13972B3E2E5EFA0900588D1B /* ScreenManager.swift in Sources */,
 				1367E5F02ED1297C0003CFDD /* NotificationWindowFactory.swift in Sources */,
 				1367E5E22ED1210F0003CFDD /* WindowOrderManager.swift in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
@@ -551,12 +512,10 @@
 				1367E5E02ED11D1E0003CFDD /* ScreenConfigurationHandler.swift in Sources */,
 				13858B252E5F75B700FD0DB8 /* DebugLogViewer.swift in Sources */,
 				13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */,
-				13972B312E5EF90100588D1B /* WindowTransitionCoordinator.swift in Sources */,
 				135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */,
 				13F42D5D2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift in Sources */,
 				13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */,
 				13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */,
-				13F42D6F2E5F1CAF001F7A25 /* Screen.swift in Sources */,
 				1367E5F42ED1298D0003CFDD /* WindowScreenshotCache.swift in Sources */,
 				13AA593D2E7983810031F956 /* AvailableKeysView.swift in Sources */,
 				13A3EEC32E6F481B00DA7702 /* LayoutEngine.swift in Sources */,
@@ -564,6 +523,7 @@
 				13A3EEC42E6F481B00DA7702 /* BaseLayout.swift in Sources */,
 				13AA593B2E7983710031F956 /* AvailableKeysModel.swift in Sources */,
 				13A3EEC52E6F481B00DA7702 /* TallLayout.swift in Sources */,
+				1367E5F62ED130730003CFDD /* Screen.swift in Sources */,
 				13A3EEC62E6F481B00DA7702 /* WideLayout.swift in Sources */,
 				1367E5F22ED129800003CFDD /* LayoutSelectorView.swift in Sources */,
 				13A3EEC72E6F481B00DA7702 /* FullscreenLayout.swift in Sources */,
