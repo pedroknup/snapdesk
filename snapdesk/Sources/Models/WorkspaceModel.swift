@@ -39,4 +39,28 @@ struct WorkspaceModel {
     func screen(for amScreen: AMScreen) -> ScreenWorkspace? {
         return screens.first { $0.screen == amScreen }
     }
+
+    /// Returns all WindowSets across all screens
+    func allWindowSets() -> [WindowSet] {
+        return screens.flatMap { $0.windowSets }
+    }
+
+    /// Returns all windows across all screens
+    func allWindows() -> [AXWindow] {
+        return screens.flatMap { screenWS in
+            screenWS.windowSets.flatMap { $0.windows }
+        }
+    }
+
+    /// Returns the total count of windows across all screens
+    func windowCount() -> Int {
+        return screens.reduce(0) { count, screenWS in
+            count + screenWS.windowSets.reduce(0) { $0 + $1.windows.count }
+        }
+    }
+
+    /// Returns the total count of WindowSets across all screens
+    func windowSetCount() -> Int {
+        return screens.reduce(0) { $0 + $1.windowSets.count }
+    }
 }
