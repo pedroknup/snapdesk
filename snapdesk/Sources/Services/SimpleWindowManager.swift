@@ -859,23 +859,12 @@ class SimpleWindowManager: WindowManaging {
     
     /// Gets the default layout mode from settings
     private func getDefaultLayoutMode() -> LayoutKind {
-        let defaultLayoutString = UserDefaults.standard.string(forKey: "defaultLayoutMode") ?? "wide"
-        
-        switch defaultLayoutString.lowercased() {
-        case "tall":
-            return .tall
-        case "fullscreen":
-            return .fullscreen
-        case "floating":
-            return .floating
-        default:
-            return .wide
-        }
+        return ConfigurationHelpers.getDefaultLayoutMode()
     }
-    
+
     /// Gets whether auto-expand new windows is enabled
     private func shouldAutoExpandNewWindows() -> Bool {
-        return UserDefaults.standard.object(forKey: "autoExpandNewWindows") as? Bool ?? true
+        return ConfigurationHelpers.shouldAutoExpandNewWindows()
     }
 
     /// Updates the last focused window tracking for the window's screen
@@ -889,35 +878,12 @@ class SimpleWindowManager: WindowManaging {
 
     /// Moves the mouse cursor to the center of the given window
     private func moveCursorToCenter(of window: AXWindow) {
-        let windowFrame = window.frame()
-        let centerPoint = NSPoint(
-            x: windowFrame.midX,
-            y: windowFrame.midY
-        )
-        
-        
-        // Create and post mouse move event
-        if let mouseMoveEvent = CGEvent(
-            mouseEventSource: nil,
-            mouseType: .mouseMoved,
-            mouseCursorPosition: centerPoint,
-            mouseButton: .left
-        ) {
-            mouseMoveEvent.flags = CGEventFlags(rawValue: 0)
-            mouseMoveEvent.post(tap: .cghidEventTap)
-        }
+        WorkspaceHelpers.moveCursorToCenter(of: window)
     }
-    
+
     /// Finds the WindowSet containing the given window and returns the WindowSet, window index, and screen index
     private func findWindowSetContaining(_ window: AXWindow) -> (WindowSet, Int, Int)? {
-        for (screenIndex, screenWS) in workspace.screens.enumerated() {
-            for windowSet in screenWS.windowSets {
-                if let windowIndex = windowSet.windows.firstIndex(where: { $0.cgID() == window.cgID() }) {
-                    return (windowSet, windowIndex, screenIndex)
-                }
-            }
-        }
-        return nil
+        return WorkspaceHelpers.findWindowSetContaining(window, in: workspace)
     }
     
     private func refreshWindows() {
