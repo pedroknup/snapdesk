@@ -57,11 +57,9 @@
 		13972B132E5EEF2F00588D1B /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B122E5EEF2C00588D1B /* Application.swift */; };
 		13972B162E5EF2BA00588D1B /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B152E5EF2BA00588D1B /* Silica */; };
 		13972B182E5EF2EC00588D1B /* Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B172E5EF2EA00588D1B /* Window.swift */; };
-		13972B1A2E5EF30200588D1B /* Space.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B192E5EF30100588D1B /* Space.swift */; };
 		13972B1D2E5EF38700588D1B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B1C2E5EF38700588D1B /* SwiftyJSON */; };
 		13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */; };
 		13972B2F2E5EF83D00588D1B /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B2E2E5EF83D00588D1B /* RxSwift */; };
-		13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B382E5EF96800588D1B /* CGInfo.swift */; };
 		13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3F2E5EFB6C00588D1B /* LogManager.swift */; };
 		13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */; };
 		13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */; };
@@ -80,13 +78,9 @@
 		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
 		13F42D582E5F03DC001F7A25 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 13F42D572E5F03DC001F7A25 /* SwiftyBeaver */; };
 		13F42D5D2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D5C2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift */; };
-		13F42D5F2E5F0819001F7A25 /* Change.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D5E2E5F0819001F7A25 /* Change.swift */; };
 		13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D602E5F0894001F7A25 /* WindowSet.swift */; };
 		13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */; };
-		13F42D672E5F0F31001F7A25 /* MouseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D662E5F0F31001F7A25 /* MouseState.swift */; };
-		13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */; };
 		13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */; };
-		13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -141,9 +135,7 @@
 		13858B262E5F860E00FD0DB8 /* SnapdeskLogo.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SnapdeskLogo.icns; sourceTree = "<group>"; };
 		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
-		13972B192E5EF30100588D1B /* Space.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Space.swift; sourceTree = "<group>"; };
 		13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfiguration.swift; sourceTree = "<group>"; };
-		13972B382E5EF96800588D1B /* CGInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGInfo.swift; sourceTree = "<group>"; };
 		13972B3F2E5EFB6C00588D1B /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLifecycleManager.swift; sourceTree = "<group>"; };
 		13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclingManager.swift; sourceTree = "<group>"; };
@@ -161,13 +153,9 @@
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		13F42D5C2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+Manageable.swift"; sourceTree = "<group>"; };
-		13F42D5E2E5F0819001F7A25 /* Change.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Change.swift; sourceTree = "<group>"; };
 		13F42D602E5F0894001F7A25 /* WindowSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSet.swift; sourceTree = "<group>"; };
 		13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationObservation.swift; sourceTree = "<group>"; };
-		13F42D662E5F0F31001F7A25 /* MouseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseState.swift; sourceTree = "<group>"; };
-		13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationEventHandler.swift; sourceTree = "<group>"; };
 		13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkspaceCoordinator.swift; sourceTree = "<group>"; };
-		13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowInformation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -254,17 +242,11 @@
 			children = (
 				1367E5F52ED130730003CFDD /* Screen.swift */,
 				13AA593A2E7983710031F956 /* AvailableKeysModel.swift */,
-				13972B382E5EF96800588D1B /* CGInfo.swift */,
 				13858B1D2E5F46C500FD0DB8 /* WorkspaceModel.swift */,
 				13972B122E5EEF2C00588D1B /* Application.swift */,
 				13F42D602E5F0894001F7A25 /* WindowSet.swift */,
 				13972B172E5EF2EA00588D1B /* Window.swift */,
-				13972B192E5EF30100588D1B /* Space.swift */,
-				13F42D5E2E5F0819001F7A25 /* Change.swift */,
 				13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */,
-				13F42D662E5F0F31001F7A25 /* MouseState.swift */,
-				13F42D682E5F0F5F001F7A25 /* ApplicationEventHandler.swift */,
-				13F42D6C2E5F1C4C001F7A25 /* WindowInformation.swift */,
 				13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */,
 				13858B152E5F20D800FD0DB8 /* Reliable.swift */,
 				13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */,
@@ -471,7 +453,6 @@
 			files = (
 				13972B132E5EEF2F00588D1B /* Application.swift in Sources */,
 				13858B1C2E5F467600FD0DB8 /* ScreenWorkspace.swift in Sources */,
-				13F42D672E5F0F31001F7A25 /* MouseState.swift in Sources */,
 				13972B182E5EF2EC00588D1B /* Window.swift in Sources */,
 				130647332DB38D6F00A63735 /* main.swift in Sources */,
 				135B55242DB6596D00EC05FF /* SettingsTabView.swift in Sources */,
@@ -481,14 +462,10 @@
 				13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */,
 				13858B1E2E5F46C500FD0DB8 /* WorkspaceModel.swift in Sources */,
 				13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */,
-				13F42D5F2E5F0819001F7A25 /* Change.swift in Sources */,
 				135A76EA2E717AB9009C1DDD /* VerticalStackLayout.swift in Sources */,
 				135A76EB2E717AB9009C1DDD /* HorizontalStackLayout.swift in Sources */,
-				13972B392E5EF96A00588D1B /* CGInfo.swift in Sources */,
-				13972B1A2E5EF30200588D1B /* Space.swift in Sources */,
 				1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */,
 				13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */,
-				13F42D6D2E5F1C4C001F7A25 /* WindowInformation.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				13858B232E5F680900FD0DB8 /* NotificationService.swift in Sources */,
 				13A3EEBB2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift in Sources */,
@@ -511,7 +488,6 @@
 				13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */,
 				1367E5E02ED11D1E0003CFDD /* ScreenConfigurationHandler.swift in Sources */,
 				13858B252E5F75B700FD0DB8 /* DebugLogViewer.swift in Sources */,
-				13F42D692E5F0F5F001F7A25 /* ApplicationEventHandler.swift in Sources */,
 				135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */,
 				13F42D5D2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift in Sources */,
 				13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */,
