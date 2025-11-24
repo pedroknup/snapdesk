@@ -45,7 +45,6 @@
 		1367E5F62ED130730003CFDD /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367E5F52ED130730003CFDD /* Screen.swift */; };
 		13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13726AE42E65D05F005D42DF /* AppCacheManager.swift */; };
 		13858B142E5F1EAE00FD0DB8 /* PreferencesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */; };
-		13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B152E5F20D800FD0DB8 /* Reliable.swift */; };
 		13858B182E5F294200FD0DB8 /* SkyLight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13858B172E5F294200FD0DB8 /* SkyLight.framework */; };
 		13858B1A2E5F3FAE00FD0DB8 /* AX+Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */; };
 		13858B1C2E5F467600FD0DB8 /* ScreenWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */; };
@@ -79,7 +78,6 @@
 		13F42D582E5F03DC001F7A25 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 13F42D572E5F03DC001F7A25 /* SwiftyBeaver */; };
 		13F42D5D2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D5C2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift */; };
 		13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D602E5F0894001F7A25 /* WindowSet.swift */; };
-		13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */; };
 		13F42D6B2E5F18EF001F7A25 /* WorkspaceCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */; };
 /* End PBXBuildFile section */
 
@@ -124,7 +122,6 @@
 		1367E5F52ED130730003CFDD /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		13726AE42E65D05F005D42DF /* AppCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCacheManager.swift; sourceTree = "<group>"; };
 		13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesViewModel.swift; sourceTree = "<group>"; };
-		13858B152E5F20D800FD0DB8 /* Reliable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reliable.swift; sourceTree = "<group>"; };
 		13858B172E5F294200FD0DB8 /* SkyLight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SkyLight.framework; path = ../../../../../System/Library/PrivateFrameworks/SkyLight.framework; sourceTree = "<group>"; };
 		13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AX+Windows.swift"; sourceTree = "<group>"; };
 		13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenWorkspace.swift; sourceTree = "<group>"; };
@@ -154,7 +151,6 @@
 		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		13F42D5C2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+Manageable.swift"; sourceTree = "<group>"; };
 		13F42D602E5F0894001F7A25 /* WindowSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSet.swift; sourceTree = "<group>"; };
-		13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationObservation.swift; sourceTree = "<group>"; };
 		13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkspaceCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -246,9 +242,7 @@
 				13972B122E5EEF2C00588D1B /* Application.swift */,
 				13F42D602E5F0894001F7A25 /* WindowSet.swift */,
 				13972B172E5EF2EA00588D1B /* Window.swift */,
-				13F42D622E5F0AEE001F7A25 /* ApplicationObservation.swift */,
 				13858B132E5F1EAE00FD0DB8 /* PreferencesViewModel.swift */,
-				13858B152E5F20D800FD0DB8 /* Reliable.swift */,
 				13858B1B2E5F467600FD0DB8 /* ScreenWorkspace.swift */,
 			);
 			path = Models;
@@ -474,12 +468,10 @@
 				13A3EEB82E6B1E0900DA7702 /* AppLifecycleManager.swift in Sources */,
 				13A3EEB92E6B1E0900DA7702 /* CyclingManager.swift in Sources */,
 				1367E5EC2ED126B70003CFDD /* WindowRefreshService.swift in Sources */,
-				13F42D632E5F0AEE001F7A25 /* ApplicationObservation.swift in Sources */,
 				1367E5F02ED1297C0003CFDD /* NotificationWindowFactory.swift in Sources */,
 				1367E5E22ED1210F0003CFDD /* WindowOrderManager.swift in Sources */,
 				135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */,
 				13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */,
-				13858B162E5F20D800FD0DB8 /* Reliable.swift in Sources */,
 				13858B212E5F4AF600FD0DB8 /* ScanWindows.swift in Sources */,
 				13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */,
 				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
