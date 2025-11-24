@@ -13,14 +13,7 @@ import Yams
 import ServiceManagement
 import SwiftyBeaver
 
-enum DefaultFloat: Equatable {
-    case floating
-    case notFloating
-
-    fileprivate static func from(_ bool: Bool) -> DefaultFloat {
-        return bool ? .floating : .notFloating
-    }
-}
+// DefaultFloat enum removed - floating window feature not used in SnapDesk
 
 protocol ConfigurationStorage {
     func object(forKey key: ConfigurationKey) -> Any?
@@ -529,84 +522,7 @@ class UserConfiguration: NSObject {
         storage.set(layoutKeys as Any?, forKey: .layouts)
     }
 
-    func runningApplication(_ runningApplication: BundleIdentifiable, byDefaultFloatsForTitle title: String?) -> Reliable<DefaultFloat> {
-        let useIdentifiersAsBlacklist = floatingBundleIdentifiersIsBlacklist()
-
-        // If the application is in the floating list we need to continue to check title
-        // Otherwise
-        //   - Blacklist means not floating
-        //   - Whitelist menas floating
-        guard let floatingBundle = runningApplicationFloatingBundle(runningApplication) else {
-            return .reliable(DefaultFloat.from(!useIdentifiersAsBlacklist))
-        }
-
-        // If the window list is empty then all windows are included in the list
-        //   - Blacklist means floating
-        //   - Whitelist means not floating
-        if floatingBundle.windowTitles.isEmpty {
-            return .reliable(DefaultFloat.from(useIdentifiersAsBlacklist))
-        }
-
-        // If the title is `nil` then we cannot make a determination so we fall back to the default. However, we have to treat this value as unreliable as the window could have just been created and be in the process of loading.
-        guard let title = title else {
-            return .unreliable(DefaultFloat.from(!useIdentifiersAsBlacklist))
-        }
-
-        // If the title matches it is included
-        //   - Blacklist means floating
-        //   - Whitelist means not floating
-        if floatingBundle.windowTitles.contains(where: { windowTitle in
-            if title.range(of: windowTitle, options: .regularExpression) != nil {
-                return true
-            } else {
-                return false
-            }
-        }) {
-            return .reliable(DefaultFloat.from(useIdentifiersAsBlacklist))
-        }
-
-        // Otherwise the window is not included
-        //   - Blacklist means not floating
-        //   - Whitelist means floating
-        let defaultFloat = DefaultFloat.from(!useIdentifiersAsBlacklist)
-
-        // If the title is empty the window could have just been created and in the process of loading. Our float determination could still be correct, but to account for the potential change we mark it as unreliable.
-        if title.isEmpty {
-            return .unreliable(defaultFloat)
-        }
-
-        return .reliable(defaultFloat)
-    }
-
-    func runningApplicationFloatingBundle(_ runningApplication: BundleIdentifiable) -> FloatingBundle? {
-        let floatingBundles = self.floatingBundles()
-
-        let bundleIdentifier = runningApplication.bundleIdentifier ?? ""
-
-        for floatingBundle in floatingBundles {
-            if floatingBundle.id.contains("*") {
-                do {
-                    let pattern = floatingBundle.id
-                        .replacingOccurrences(of: ".", with: "\\.")
-                        .replacingOccurrences(of: "*", with: ".*")
-                    let regex = try NSRegularExpression(pattern: "^\(pattern)$", options: [])
-                    let fullRange = NSRange(location: 0, length: bundleIdentifier.count)
-
-                    if regex.firstMatch(in: bundleIdentifier, options: [], range: fullRange) != nil {
-                        return floatingBundle
-                    }
-                } catch {
-                    continue
-                }
-            } else {
-                if floatingBundle.id == runningApplication.bundleIdentifier {
-                    return floatingBundle
-                }
-            }
-        }
-
-        return nil
-    }
+    // Floating bundle logic removed - not used in SnapDesk
 
     func ignoreMenuBar() -> Bool {
         return storage.bool(forKey: .ignoreMenuBar)
@@ -705,24 +621,7 @@ class UserConfiguration: NSObject {
         return CGFloat(storage.float(forKey: .screenPaddingRight))
     }
 
-    func floatingBundleIdentifiersIsBlacklist() -> Bool {
-        guard storage.object(forKey: .floatingBundleIdentifiersIsBlacklist) != nil else {
-            return true
-        }
-        return storage.bool(forKey: .floatingBundleIdentifiersIsBlacklist)
-    }
-
-    func floatingBundles() -> [FloatingBundle] {
-        guard let floatingBundles = storage.array(forKey: .floatingBundleIdentifiers) else {
-            return []
-        }
-
-        return floatingBundles.compactMap { FloatingBundle.from($0) }
-    }
-
-    func setFloatingBundles(_ floatingBundles: [FloatingBundle]) {
-        storage.set(floatingBundles.map { $0.encoded() }, forKey: .floatingBundleIdentifiers)
-    }
+    // Floating bundle configuration methods removed - not used in SnapDesk
 
     func sendNewWindowsToMainPane() -> Bool {
         return storage.bool(forKey: .newWindowsToMain)
