@@ -44,11 +44,11 @@ struct AboutTabView: View {
                     
                     // Enhanced Description with Value Proposition
                     VStack(spacing: 12) {
-                        Text("Supercharge Your Workflow")
+                        Text("Window management for macOS power users")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(.primary)
                         
-                        Text("The fastest way to organize windows on macOS. Built for developers, designers, and power users who demand efficiency.")
+                        Text("The snapiest and most efficient way to organize windows on macOS. Built for developers, designers, and power users who demand efficiency.")
                             .font(.system(size: 15))
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
@@ -168,129 +168,11 @@ struct AboutTabView: View {
                         }
                     }
                 }
-                
-                // Info Cards
-                VStack(spacing: 16) {
-                    // Author Card
-                    InfoCard(
-                        icon: "person.crop.circle.fill",
-                        title: "Author",
-                        value: "Pedro Knup",
-                        iconColor: .blue
-                    )
-                    
-                    // License Card
-                    InfoCard(
-                        icon: "doc.text.fill",
-                        title: "License",
-                        value: "MIT License",
-                        iconColor: .green
-                    )
-                    
-                    // Platform Card
-                    InfoCard(
-                        icon: "desktopcomputer",
-                        title: "Platform",
-                        value: "macOS 13.0+",
-                        iconColor: .purple
-                    )
-                }
-                
-                // Attribution Section with Better Design
-                VStack(spacing: 16) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.yellow)
-                            .font(.system(size: 16))
-                        Text("Acknowledgments")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.primary)
-                    }
-                    
-                    Text("Built upon the foundation of **Amethyst** by Ian Ynda-Hummel and contributors. Special recognition to the Amethyst project for pioneering tiling window management on macOS.")
-                        .font(.system(size: 14))
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.secondary)
-                        .lineSpacing(2)
-                        .padding(.horizontal, 8)
-                    
-                    Button(action: {
-                        if let url = URL(string: "https://github.com/ianyh/Amethyst") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "arrow.up.right.square.fill")
-                                .font(.system(size: 14))
-                            Text("Visit ˚Amethyst Project")
-                                .font(.system(size: 14, weight: .medium))
-                        }
-                        .foregroundColor(.purple)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(.purple.opacity(0.1))
-                        .cornerRadius(8)
-                    }
-                    .buttonStyle(.plain)
-                    .onHover { isHovered in
-                        if isHovered {
-                            NSCursor.pointingHand.push()
-                        } else {
-                            NSCursor.pop()
-                        }
-                    }
-                }
-                .padding(20)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                )
-                
-                // Footer
-                Text("Made with ❤️ for the macOS community")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(.bottom, 16)
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-// Helper View for Info Cards
-struct InfoCard: View {
-    let icon: String
-    let title: String
-    let value: String
-    let iconColor: Color
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundColor(iconColor)
-                .frame(width: 20)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary)
-                Text(value)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.primary)
-            }
-            
-            Spacer()
-        }
-        .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-        )
     }
 }
 

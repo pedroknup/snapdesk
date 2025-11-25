@@ -8,6 +8,7 @@
 import Foundation
 import Cocoa
 import Yams
+import ServiceManagement
 
 public struct ShortcutConfig: Codable {
     public var key: String
@@ -502,6 +503,16 @@ public class ConfigurationManager {
         config.application.launchAtLogin = value
         try? saveConfig(config)
         _config = config
+
+        do {
+            if value {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            print("Failed to \(value ? "enable" : "disable") launch at login: \(error)")
+        }
     }
 
     public func updateShowAllLayoutsOnToggle(_ value: Bool) {
