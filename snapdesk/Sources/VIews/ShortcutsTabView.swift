@@ -229,35 +229,40 @@ struct ShortcutsTabView: View {
         if let cachedApps = cacheManager.getCachedApps() {
             self.apps = cachedApps
             updateAppsWithShortcuts()
+            isLoading = false
+
+            // Fetch fresh data in background (no loading indicator)
+            refreshAppsInBackground()
         } else {
             // No cache, show loading indicator
             isLoading = true
-        }
-        
-        // Then fetch fresh data in background
-        Task {
-            await refreshAppsInBackground()
+
+            // Fetch apps in background
+            refreshAppsInBackground()
         }
     }
-    
-    private func refreshAppsInBackground() async {
+
+    private func refreshAppsInBackground() {
         isRefreshing = true
-        
-        let freshApps = fetchInstalledApps()
-        
-        // Update UI on main thread
-        await MainActor.run {
-            // Only update if data has changed or we didn't have cached data
-            if apps.isEmpty || hasAppsChanged(old: apps, new: freshApps) {
-                self.apps = freshApps
-                updateAppsWithShortcuts()
-                
-                // Save to cache
-                cacheManager.setCachedApps(freshApps)
+
+        // Run the heavy file system enumeration on a background queue
+        DispatchQueue.global(qos: .userInitiated).async {
+            let freshApps = self.fetchInstalledApps()
+
+            // Update UI on main thread
+            DispatchQueue.main.async {
+                // Only update if data has changed or we didn't have cached data
+                if self.apps.isEmpty || self.hasAppsChanged(old: self.apps, new: freshApps) {
+                    self.apps = freshApps
+                    self.updateAppsWithShortcuts()
+
+                    // Save to cache
+                    self.cacheManager.setCachedApps(freshApps)
+                }
+
+                self.isLoading = false
+                self.isRefreshing = false
             }
-            
-            isLoading = false
-            isRefreshing = false
         }
     }
     

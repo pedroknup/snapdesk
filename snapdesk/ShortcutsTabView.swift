@@ -186,72 +186,57 @@ struct ShortcutsTabView: View {
             }
         }
         .onAppear {
-            Task {
-                await loadApps()
-                refreshConfig()
-            }
+            loadApps()
+            refreshConfig()
         }
         .navigationTitle("Shortcuts")
     }
 
-    private func loadApps() async {
-        // First, try to load from cache
-        if let cachedApps = loadAppsFromCache() {
-            apps = cachedApps
-            isLoading = false
-            
-            // Update apps with their shortcuts from config
-            for (index, app) in apps.enumerated() {
-                if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
-                    apps[index].shortcut = shortcut
+    private func loadApps() {
+        // Run cache loading on background thread to avoid blocking UI
+        DispatchQueue.global(qos: .userInitiated).async {
+            let cachedApps = loadAppsFromCache()
+            let cacheTimestamp = getCacheTimestamp()
+
+            DispatchQueue.main.async {
+                if let cachedApps = cachedApps {
+                    apps = cachedApps
+                    isLoading = false
+                    updateAppsWithShortcuts()
+
+                    // Check if cache is expired, refresh in background without loading indicator
+                    if let cacheTimestamp = cacheTimestamp,
+                       Date().timeIntervalSince(cacheTimestamp) > cacheExpirationInterval {
+                        refreshAppsInBackground()
+                    }
+                } else {
+                    // No cache exists, show loading and fetch
+                    isLoading = true
+                    refreshAppsInBackground()
                 }
             }
-            
-            // Check if cache is expired
-            if let cacheTimestamp = getCacheTimestamp(), 
-               Date().timeIntervalSince(cacheTimestamp) > cacheExpirationInterval {
-                // Cache is expired, fetch fresh data in the background
-                Task {
-                    await refreshAppsInBackground()
-                }
-            }
-        } else {
-            // If no cache exists, fetch apps normally
-            isLoading = true
-            apps = await Task.detached(priority: .userInitiated) {
-                fetchInstalledApps()
-            }.value
-            
-            // Update apps with their shortcuts from config
-            for (index, app) in apps.enumerated() {
-                if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
-                    apps[index].shortcut = shortcut
-                }
-            }
-            
-            // Save the fetched apps to cache
-            saveAppsToCache(apps)
-            isLoading = false
         }
     }
-    
-    private func refreshAppsInBackground() async {
-        let freshApps = await Task.detached(priority: .userInitiated) {
-            fetchInstalledApps()
-        }.value
-        
-        // Update apps with fresh data
-        apps = freshApps
-        
-        // Update apps with their shortcuts from config
+
+    private func refreshAppsInBackground() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let freshApps = fetchInstalledApps()
+
+            DispatchQueue.main.async {
+                apps = freshApps
+                updateAppsWithShortcuts()
+                saveAppsToCache(apps)
+                isLoading = false
+            }
+        }
+    }
+
+    private func updateAppsWithShortcuts() {
         for (index, app) in apps.enumerated() {
             if let shortcut = config.appShortcuts.first(where: { $0.bundleIdentifier == app.bundleIdentifier })?.shortcut {
                 apps[index].shortcut = shortcut
             }
         }
-        
-        // Save the fresh data to cache
-        saveAppsToCache(apps)
     }
     
     private func saveAppsToCache(_ apps: [AppInfo]) {
