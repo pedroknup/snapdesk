@@ -73,7 +73,8 @@
 		13AA593B2E7983710031F956 /* AvailableKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA593A2E7983710031F956 /* AvailableKeysModel.swift */; };
 		13AA593D2E7983810031F956 /* AvailableKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AA593C2E7983810031F956 /* AvailableKeysView.swift */; };
 		13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B773972DEA2753005DF3A6 /* snapdeskApp.swift */; };
-		13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 13EEDACF2DB6274F001133DA /* AppIcon.icns */; };
+		13CEC2512ED5C5AF009FEB4D /* playstore.png in Resources */ = {isa = PBXBuildFile; fileRef = 13CEC2502ED5C5AF009FEB4D /* playstore.png */; };
+		13CEC2532ED5C5AF009FEB4D /* appstore.png in Resources */ = {isa = PBXBuildFile; fileRef = 13CEC24E2ED5C5AF009FEB4D /* appstore.png */; };
 		13F42D582E5F03DC001F7A25 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 13F42D572E5F03DC001F7A25 /* SwiftyBeaver */; };
 		13F42D5D2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D5C2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift */; };
 		13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13F42D602E5F0894001F7A25 /* WindowSet.swift */; };
@@ -146,7 +147,8 @@
 		13AA593C2E7983810031F956 /* AvailableKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableKeysView.swift; sourceTree = "<group>"; };
 		13B773962DEA2753005DF3A6 /* snapdesk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = snapdesk.entitlements; sourceTree = "<group>"; };
 		13B773972DEA2753005DF3A6 /* snapdeskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = snapdeskApp.swift; sourceTree = "<group>"; };
-		13EEDACF2DB6274F001133DA /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		13CEC24E2ED5C5AF009FEB4D /* appstore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = appstore.png; sourceTree = "<group>"; };
+		13CEC2502ED5C5AF009FEB4D /* playstore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playstore.png; sourceTree = "<group>"; };
 		13F42D5C2E5F07B0001F7A25 /* NSRunningApplication+Manageable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+Manageable.swift"; sourceTree = "<group>"; };
 		13F42D602E5F0894001F7A25 /* WindowSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSet.swift; sourceTree = "<group>"; };
 		13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkspaceCoordinator.swift; sourceTree = "<group>"; };
@@ -197,13 +199,14 @@
 			children = (
 				13858B262E5F860E00FD0DB8 /* SnapdeskLogo.icns */,
 				135B55192DB6596D00EC05FF /* Sources */,
-				13EEDACF2DB6274F001133DA /* AppIcon.icns */,
 				130647202DB38D6E00A63735 /* Info.plist */,
 				130647222DB38D6E00A63735 /* Silica-Prefix.pch */,
 				1306471E2DB38D6E00A63735 /* main.swift */,
 				13B773962DEA2753005DF3A6 /* snapdesk.entitlements */,
 				13B773972DEA2753005DF3A6 /* snapdeskApp.swift */,
 				130646D02DB38D4D00A63735 /* Item.swift */,
+				13CEC24E2ED5C5AF009FEB4D /* appstore.png */,
+				13CEC2502ED5C5AF009FEB4D /* playstore.png */,
 				130646D22DB38D4E00A63735 /* Assets.xcassets */,
 				130646D52DB38D4E00A63735 /* Preview Content */,
 			);
@@ -420,10 +423,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13EEDAD02DB6274F001133DA /* AppIcon.icns in Resources */,
 				130646D72DB38D4E00A63735 /* Preview Assets.xcassets in Resources */,
 				13858B282E5F866800FD0DB8 /* SnapdeskLogo.icns in Resources */,
 				130646D32DB38D4E00A63735 /* Assets.xcassets in Resources */,
+				13CEC2512ED5C5AF009FEB4D /* playstore.png in Resources */,
+				13CEC2532ED5C5AF009FEB4D /* appstore.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,6 +616,7 @@
 		130646DB2DB38D4E00A63735 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = snapdesk/snapdesk.entitlements;
@@ -660,6 +665,7 @@
 		130646DC2DB38D4E00A63735 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = snapdesk/snapdesk.entitlements;
