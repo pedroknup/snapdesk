@@ -19,9 +19,9 @@ struct SettingsTabView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = true
     @AppStorage("enableAccessibilityOnStart") private var enableAccessibilityOnStart = true
     
-    // Layout & Windows  
+    // Layout & Windows
     @AppStorage("windowGap") private var windowGap: Double = 0
-    @AppStorage("windowMargin") private var windowMargin: Double = 0
+    @State private var windowMargin: Double = 0
     @AppStorage("defaultLayoutMode") private var defaultLayoutMode = "wide"
     @AppStorage("animateWindowTransitions") private var animateWindowTransitions = true
     @AppStorage("respectWindowMinimumSize") private var respectWindowMinimumSize = true
@@ -125,6 +125,9 @@ struct SettingsTabView: View {
                         TextField("Margin", value: $windowMargin, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 60)
+                            .onChange(of: windowMargin) { _ in
+                                saveWindowMarginConfig()
+                            }
                         Text("px")
                             .foregroundColor(.secondary)
                     }
@@ -246,13 +249,29 @@ struct SettingsTabView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             loadWindowPreviewConfig()
+            loadWindowMarginConfig()
             loadStartupSettings()
             refreshApplicationList()
         }
     }
     
+    // MARK: - Window Margin Configuration
+
+    private func loadWindowMarginConfig() {
+        let config = ConfigurationManager.shared.config
+        windowMargin = Double(config.windowBehavior.margins.size)
+    }
+
+    private func saveWindowMarginConfig() {
+        guard var config = ConfigurationManager.shared.loadConfig() else { return }
+        config.windowBehavior.margins.size = CGFloat(windowMargin)
+        config.windowBehavior.margins.enabled = windowMargin > 0
+        try? ConfigurationManager.shared.saveConfig(config)
+        ConfigurationManager.shared.reloadConfig()
+    }
+
     // MARK: - Window Preview Configuration
-    
+
     private func loadWindowPreviewConfig() {
         if let config = ConfigurationManager.shared.loadConfig() {
             windowPreviewEnabled = config.windowPreview.enabled

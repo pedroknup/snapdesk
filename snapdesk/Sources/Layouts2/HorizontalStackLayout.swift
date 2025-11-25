@@ -39,26 +39,26 @@ class HorizontalStackLayout: BaseLayout {
         let windowWidth = availableWidth / CGFloat(windowCount)
         
         var currentX = frame.origin.x
-        for (index, window) in windows.enumerated() {
+        for window in windows {
             let windowFrame = CGRect(
-                x: currentX + settings.windowMargin,
-                y: frame.origin.y + settings.windowMargin,
-                width: windowWidth - (settings.windowMargin * 2),
-                height: frame.height - (settings.windowMargin * 2)
+                x: currentX,
+                y: frame.origin.y,
+                width: windowWidth,
+                height: frame.height
             )
-            
+
             let assignment = FrameAssignment<AXWindow>(
                 frame: windowFrame,
                 windowID: window.id(),
                 screenFrame: frame,
                 resizeRules: ResizeRules(
-                    isMain: false,  // No main window in stack layout
+                    isMain: false,
                     unconstrainedDimension: .horizontal,
                     scaleFactor: 1.0 / CGFloat(windowCount)
                 )
             )
             assignments.append(assignment)
-            
+
             currentX += windowWidth + settings.windowGap
         }
         

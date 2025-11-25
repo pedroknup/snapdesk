@@ -88,7 +88,7 @@ public struct WindowMarginsConfig: Codable {
     public var smart: Bool
     public var size: CGFloat
 
-    public init(enabled: Bool = true, smart: Bool = false, size: CGFloat = 10.0) {
+    public init(enabled: Bool = false, smart: Bool = false, size: CGFloat = 0) {
         self.enabled = enabled
         self.smart = smart
         self.size = size

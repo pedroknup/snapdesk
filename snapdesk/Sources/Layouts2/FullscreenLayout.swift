@@ -27,17 +27,10 @@ class FullscreenLayout: BaseLayout {
         bringToFront: Bool
     ) -> [FrameAssignment<AXWindow>] {
         var assignments: [FrameAssignment<AXWindow>] = []
-        
-        let fullscreenFrame = CGRect(
-            x: frame.origin.x + settings.windowMargin,
-            y: frame.origin.y + settings.windowMargin,
-            width: frame.width - (settings.windowMargin * 2),
-            height: frame.height - (settings.windowMargin * 2)
-        )
-        
+
         for window in windows {
             let assignment = FrameAssignment<AXWindow>(
-                frame: fullscreenFrame,
+                frame: frame,
                 windowID: window.id(),
                 screenFrame: frame,
                 resizeRules: ResizeRules(
