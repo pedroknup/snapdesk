@@ -99,7 +99,7 @@ struct SettingsTabView: View {
                     Toggle("Launch at Login", isOn: $launchAtLogin)
                         .help("Start Snapdesk automatically when you log in to your Mac")
                         .onChange(of: launchAtLogin) { newValue in
-                            UserConfiguration.shared.setLaunchAtLogin(newValue)
+                            ConfigurationManager.shared.updateLaunchAtLogin(newValue)
                         }
                     
                     Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
@@ -286,7 +286,7 @@ struct SettingsTabView: View {
     // MARK: - Startup Settings
     
     private func loadStartupSettings() {
-        launchAtLogin = UserConfiguration.shared.launchAtLogin()
+        launchAtLogin = ConfigurationManager.shared.config.application.launchAtLogin
     }
     
     // MARK: - Application Management

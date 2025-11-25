@@ -389,10 +389,9 @@ extension AXWindow: WindowType {
     
 
     func shouldFloat() -> Bool {
-        let userConfiguration = UserConfiguration.shared
         let frame = self.frame()
 
-        if userConfiguration.floatSmallWindows() && frame.size.width < 500 && frame.size.height < 500 {
+        if ConfigurationManager.shared.config.windowBehavior.floatSmallWindows && frame.size.width < 500 && frame.size.height < 500 {
             return true
         }
 
@@ -453,12 +452,12 @@ extension AXWindow: WindowType {
             return false
         }
 
-        guard UserConfiguration.shared.mouseFollowsFocus() else {
+        guard ConfigurationManager.shared.config.windowBehavior.mouseFollowsFocus else {
             return true
         }
 
         let windowFrame = frame()
-        let mouseCursorPoint = NSPoint(x: windowFrame.midX, y: windowFrame.midY)
+        let mouseCursorPoint = CGPoint(x: windowFrame.midX, y: windowFrame.midY)
         guard let mouseMoveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: mouseCursorPoint, mouseButton: .left) else {
             return true
         }

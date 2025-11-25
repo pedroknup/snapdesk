@@ -65,7 +65,6 @@ private class HotkeyManagerStorage {
 }
 
 class HotkeyManager: NSObject, HotKeyRegistrar {
-    private let userConfiguration: UserConfiguration
     private var hotKeys: [HotKey] = []
     private let windowManager: WindowManaging
     
@@ -90,17 +89,16 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         return self.constructKeyCodeMap()
     }()
 
-    init(windowManager: WindowManaging, userConfiguration: UserConfiguration) {
+    init(windowManager: WindowManaging) {
         self.windowManager = windowManager
-        self.userConfiguration = userConfiguration
         super.init()
         _ = constructKeyCodeMap()
-        
+
         // Set this as the active instance for static method access
         HotkeyManagerStorage.activeInstance = self
     }
 
-    func setUpWithWindowController(_ windowManager: WindowManaging, configuration: UserConfiguration) async {
+    func setUpWithWindowController(_ windowManager: WindowManaging) async {
         
         // Remove current window from layout
         constructCommandWithCommandKey("remove-current-window-from-layout") { [weak self] in
@@ -336,7 +334,7 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     }
 
     private func constructCommandWithCommandKey(_ commandKey: String, handler: @escaping HotKeyHandler) {
-        userConfiguration.constructCommand(for: self, commandKey: commandKey, handler: handler)
+        ConfigurationManager.shared.constructCommand(for: self, commandKey: commandKey, handler: handler)
     }
     
     // MARK: - HotKeyRegistrar Protocol
@@ -438,10 +436,10 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
     func reloadConfiguration() {
         // Clear existing hotkeys
         hotKeys.removeAll()
-        
-        // Reload general shortcuts with new Amethyst pattern
+
+        // Reload general shortcuts
         Task {
-            await setUpWithWindowController(windowManager, configuration: userConfiguration)
+            await setUpWithWindowController(windowManager)
         }
     }
 }

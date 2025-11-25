@@ -12,12 +12,11 @@ enum WorkspaceHelpers {
     /// Moves the mouse cursor to the center of the given window
     static func moveCursorToCenter(of window: AXWindow) {
         let windowFrame = window.frame()
-        let centerPoint = NSPoint(
+        let centerPoint = CGPoint(
             x: windowFrame.midX,
             y: windowFrame.midY
         )
 
-        // Create and post mouse move event
         if let mouseMoveEvent = CGEvent(
             mouseEventSource: nil,
             mouseType: .mouseMoved,
