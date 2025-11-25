@@ -29,15 +29,8 @@ class WideLayout: BaseLayout {
         
         if windows.count == 1 {
             // Single window takes full space
-            let windowFrame = CGRect(
-                x: frame.origin.x + settings.windowMargin,
-                y: frame.origin.y + settings.windowMargin,
-                width: frame.width - (settings.windowMargin * 2),
-                height: frame.height - (settings.windowMargin * 2)
-            )
-            
             assignments.append(FrameAssignment<AXWindow>(
-                frame: windowFrame,
+                frame: frame,
                 windowID: windows[0].id(),
                 screenFrame: frame,
                 resizeRules: ResizeRules(
@@ -50,20 +43,20 @@ class WideLayout: BaseLayout {
             // Main pane on left, secondary pane on right
             let paneGap = settings.windowGap
             let availableWidth = frame.width - paneGap
-            
+
             // Main pane gets 50% by default, adjusted by mainPanelSizeAdjustment
             let baseMainWidth = availableWidth * 0.5
             let mainWidth = max(100, baseMainWidth + settings.mainPanelSizeAdjustment)
             let secondaryWidth = availableWidth - mainWidth
-            
+
             // Main pane (single window)
             let mainFrame = CGRect(
-                x: frame.origin.x + settings.windowMargin,
-                y: frame.origin.y + settings.windowMargin,
-                width: mainWidth - (settings.windowMargin * 2),
-                height: frame.height - (settings.windowMargin * 2)
+                x: frame.origin.x,
+                y: frame.origin.y,
+                width: mainWidth,
+                height: frame.height
             )
-            
+
             assignments.append(FrameAssignment<AXWindow>(
                 frame: mainFrame,
                 windowID: windows[0].id(),
@@ -74,25 +67,25 @@ class WideLayout: BaseLayout {
                     scaleFactor: mainWidth / availableWidth
                 )
             ))
-            
+
             // Secondary pane (remaining windows stacked horizontally)
             let secondaryWindows = Array(windows.dropFirst())
             let secondaryWindowCount = secondaryWindows.count
             let secondaryWindowGaps = settings.windowGap * CGFloat(max(0, secondaryWindowCount - 1))
             let availableSecondaryWidth = secondaryWidth - secondaryWindowGaps
             let secondaryWindowWidth = availableSecondaryWidth / CGFloat(secondaryWindowCount)
-            
+
             let secondaryStartX = frame.origin.x + mainWidth + paneGap
-            
+
             for (index, window) in secondaryWindows.enumerated() {
                 let windowX = secondaryStartX + (CGFloat(index) * (secondaryWindowWidth + settings.windowGap))
                 let windowFrame = CGRect(
-                    x: windowX + settings.windowMargin,
-                    y: frame.origin.y + settings.windowMargin,
-                    width: secondaryWindowWidth - (settings.windowMargin * 2),
-                    height: frame.height - (settings.windowMargin * 2)
+                    x: windowX,
+                    y: frame.origin.y,
+                    width: secondaryWindowWidth,
+                    height: frame.height
                 )
-                
+
                 assignments.append(FrameAssignment<AXWindow>(
                     frame: windowFrame,
                     windowID: window.id(),

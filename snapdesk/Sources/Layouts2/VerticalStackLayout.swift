@@ -39,26 +39,26 @@ class VerticalStackLayout: BaseLayout {
         let windowHeight = availableHeight / CGFloat(windowCount)
         
         var currentY = frame.origin.y
-        for (index, window) in windows.enumerated() {
+        for window in windows {
             let windowFrame = CGRect(
-                x: frame.origin.x + settings.windowMargin,
-                y: currentY + settings.windowMargin,
-                width: frame.width - (settings.windowMargin * 2),
-                height: windowHeight - (settings.windowMargin * 2)
+                x: frame.origin.x,
+                y: currentY,
+                width: frame.width,
+                height: windowHeight
             )
-            
+
             let assignment = FrameAssignment<AXWindow>(
                 frame: windowFrame,
                 windowID: window.id(),
                 screenFrame: frame,
                 resizeRules: ResizeRules(
-                    isMain: false,  // No main window in stack layout
+                    isMain: false,
                     unconstrainedDimension: .vertical,
                     scaleFactor: 1.0 / CGFloat(windowCount)
                 )
             )
             assignments.append(assignment)
-            
+
             currentY += windowHeight + settings.windowGap
         }
         
