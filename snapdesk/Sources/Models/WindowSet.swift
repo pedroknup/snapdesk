@@ -52,7 +52,8 @@ struct ResizeRules {
             }
         }()
 
-        let padding = UserConfiguration.shared.windowMargins() ? UserConfiguration.shared.windowMarginSize() : 0
+        let config = ConfigurationManager.shared.config
+        let padding = config.windowBehavior.margins.enabled ? config.windowBehavior.margins.size : 0
         return negatePadding ? dimension + padding : dimension
     }
 }
@@ -91,17 +92,18 @@ struct FrameAssignment<W: WindowType> {
     /// The final frame is the desired frame, but transformed to provide desired padding
     var finalFrame: CGRect {
         var ret = frame
-        let padding = floor(UserConfiguration.shared.windowMarginSize() / 2)
+        let config = ConfigurationManager.shared.config
+        let padding = floor(config.windowBehavior.margins.size / 2)
 
-        if UserConfiguration.shared.windowMargins() && !disableWindowMargins {
+        if config.windowBehavior.margins.enabled && !disableWindowMargins && padding > 0 {
             ret.origin.x += padding
             ret.origin.y += padding
             ret.size.width -= 2 * padding
             ret.size.height -= 2 * padding
         }
 
-        let windowMinimumWidth = UserConfiguration.shared.windowMinimumWidth()
-        let windowMinimumHeight = UserConfiguration.shared.windowMinimumHeight()
+        let windowMinimumWidth = config.windowBehavior.minimumSize.width
+        let windowMinimumHeight = config.windowBehavior.minimumSize.height
 
         if windowMinimumWidth > ret.size.width {
             ret.origin.x -= ((windowMinimumWidth - ret.size.width) / 2)
@@ -281,7 +283,7 @@ final class WindowSet: Identifiable {
     /// Shows a popup notification indicating the current layout
     private func showLayoutChangePopup(for layout: LayoutKind) {
         // Check if all layouts should be shown in a grid
-        if UserConfiguration.shared.showAllLayoutsOnToggle() {
+        if ConfigurationManager.shared.config.application.showAllLayoutsOnToggle {
             NotificationService.showAllLayoutsGrid(
                 currentLayout: layout,
                 position: .center,

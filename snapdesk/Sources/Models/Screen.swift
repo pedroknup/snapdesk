@@ -75,20 +75,23 @@ struct AMScreen: ScreenType {
     let screen: NSScreen
 
     func adjustedFrame(disableWindowMargins: Bool) -> CGRect {
-        var frame = UserConfiguration.shared.ignoreMenuBar() ? frameIncludingDockAndMenu() : frameWithoutDockOrMenu()
+        let config = ConfigurationManager.shared.config
+        var frame = config.windowBehavior.ignoreMenuBar ? frameIncludingDockAndMenu() : frameWithoutDockOrMenu()
 
-        if UserConfiguration.shared.windowMargins() && !disableWindowMargins {
+        if config.windowBehavior.margins.enabled && !disableWindowMargins {
             /* Inset for producing half of the full padding around screen as collapse only adds half of it to all windows */
-            let padding = floor(UserConfiguration.shared.windowMarginSize() / 2)
+            let padding = floor(config.windowBehavior.margins.size / 2)
 
-            frame.origin.x += padding
-            frame.origin.y += padding
-            frame.size.width -= 2 * padding
-            frame.size.height -= 2 * padding
+            if padding > 0 {
+                frame.origin.x += padding
+                frame.origin.y += padding
+                frame.size.width -= 2 * padding
+                frame.size.height -= 2 * padding
+            }
         }
 
-        let windowMinimumWidth = UserConfiguration.shared.windowMinimumWidth()
-        let windowMinimumHeight = UserConfiguration.shared.windowMinimumHeight()
+        let windowMinimumWidth = config.windowBehavior.minimumSize.width
+        let windowMinimumHeight = config.windowBehavior.minimumSize.height
 
         if windowMinimumWidth > frame.size.width {
             frame.origin.x -= (windowMinimumWidth - frame.size.width) / 2
@@ -101,15 +104,16 @@ struct AMScreen: ScreenType {
         }
 
          let isDisablePaddingOnBuiltinDisplay: Bool =
-             UserConfiguration.shared.disablePaddingOnBuiltinDisplay()
+             ConfigurationManager.shared.config.windowBehavior.screenPadding.disableOnBuiltinDisplay
          let isScreenBuiltin: boolean_t =
              CGDisplayIsBuiltin(screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as! CGDirectDisplayID)
          if isDisablePaddingOnBuiltinDisplay && isScreenBuiltin == 1 {return frame}
 
-        let paddingTop = UserConfiguration.shared.screenPaddingTop()
-        let paddingBottom = UserConfiguration.shared.screenPaddingBottom()
-        let paddingLeft = UserConfiguration.shared.screenPaddingLeft()
-        let paddingRight = UserConfiguration.shared.screenPaddingRight()
+        let padding = ConfigurationManager.shared.config.windowBehavior.screenPadding
+        let paddingTop = padding.top
+        let paddingBottom = padding.bottom
+        let paddingLeft = padding.left
+        let paddingRight = padding.right
         frame.origin.y += paddingTop
         frame.origin.x += paddingLeft
         // subtract the right padding, and also any amount that we pushed the frame to the left with the left padding

@@ -19,7 +19,7 @@
 		1345B2C32DB3C13E00B675E6 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 1345B2C22DB3C13E00B675E6 /* HotKey */; };
 		135A76EA2E717AB9009C1DDD /* VerticalStackLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135A76E92E717AB9009C1DDD /* VerticalStackLayout.swift */; };
 		135A76EB2E717AB9009C1DDD /* HorizontalStackLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135A76E82E717AB9009C1DDD /* HorizontalStackLayout.swift */; };
-		135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */; };
+		135B551D2DB6596D00EC05FF /* SnapdeskConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550C2DB6596D00EC05FF /* SnapdeskConfiguration.swift */; };
 		135B551E2DB6596D00EC05FF /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550D2DB6596D00EC05FF /* HotkeyManager.swift */; };
 		135B551F2DB6596D00EC05FF /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */; };
 		135B55212DB6596D00EC05FF /* AboutTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B55112DB6596D00EC05FF /* AboutTabView.swift */; };
@@ -57,7 +57,6 @@
 		13972B162E5EF2BA00588D1B /* Silica in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B152E5EF2BA00588D1B /* Silica */; };
 		13972B182E5EF2EC00588D1B /* Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B172E5EF2EA00588D1B /* Window.swift */; };
 		13972B1D2E5EF38700588D1B /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B1C2E5EF38700588D1B /* SwiftyJSON */; };
-		13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */; };
 		13972B2F2E5EF83D00588D1B /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 13972B2E2E5EF83D00588D1B /* RxSwift */; };
 		13972B402E5EFB6F00588D1B /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13972B3F2E5EFB6C00588D1B /* LogManager.swift */; };
 		13A3EEB72E6B1E0900DA7702 /* LayoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */; };
@@ -96,7 +95,7 @@
 		130647462DB38E0200A63735 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		135A76E82E717AB9009C1DDD /* HorizontalStackLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizontalStackLayout.swift; sourceTree = "<group>"; };
 		135A76E92E717AB9009C1DDD /* VerticalStackLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalStackLayout.swift; sourceTree = "<group>"; };
-		135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigurationManager.swift; sourceTree = "<group>"; };
+		135B550C2DB6596D00EC05FF /* SnapdeskConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SnapdeskConfiguration.swift; sourceTree = "<group>"; };
 		135B550D2DB6596D00EC05FF /* HotkeyManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		135B55112DB6596D00EC05FF /* AboutTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AboutTabView.swift; sourceTree = "<group>"; };
@@ -132,7 +131,6 @@
 		13858B262E5F860E00FD0DB8 /* SnapdeskLogo.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SnapdeskLogo.icns; sourceTree = "<group>"; };
 		13972B122E5EEF2C00588D1B /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
 		13972B172E5EF2EA00588D1B /* Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Window.swift; sourceTree = "<group>"; };
-		13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfiguration.swift; sourceTree = "<group>"; };
 		13972B3F2E5EFB6C00588D1B /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		13A3EEB42E6B1E0900DA7702 /* AppLifecycleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLifecycleManager.swift; sourceTree = "<group>"; };
 		13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CyclingManager.swift; sourceTree = "<group>"; };
@@ -261,7 +259,7 @@
 				13A3EEB52E6B1E0900DA7702 /* CyclingManager.swift */,
 				13A3EEB62E6B1E0900DA7702 /* LayoutManager.swift */,
 				13F42D6A2E5F18EF001F7A25 /* WorkspaceCoordinator.swift */,
-				135B550C2DB6596D00EC05FF /* ConfigurationManager.swift */,
+				135B550C2DB6596D00EC05FF /* SnapdeskConfiguration.swift */,
 				135B550D2DB6596D00EC05FF /* HotkeyManager.swift */,
 				135B550E2DB6596D00EC05FF /* SettingsWindowController.swift */,
 			);
@@ -288,7 +286,6 @@
 				13A3EEBC2E6F480400DA7702 /* Layouts2 */,
 				13858B1F2E5F4AEB00FD0DB8 /* Utils */,
 				13F42D5B2E5F0791001F7A25 /* Categories */,
-				13972B422E5F001500588D1B /* Preferences */,
 				13972B262E5EF6FC00588D1B /* Managers */,
 				135B550B2DB6596D00EC05FF /* Models */,
 				135B55102DB6596D00EC05FF /* Services */,
@@ -324,14 +321,6 @@
 				13858B192E5F3FAE00FD0DB8 /* AX+Windows.swift */,
 			);
 			path = Managers;
-			sourceTree = "<group>";
-		};
-		13972B422E5F001500588D1B /* Preferences */ = {
-			isa = PBXGroup;
-			children = (
-				13972B2C2E5EF80B00588D1B /* UserConfiguration.swift */,
-			);
-			path = Preferences;
 			sourceTree = "<group>";
 		};
 		13A3EEBC2E6F480400DA7702 /* Layouts2 */ = {
@@ -459,7 +448,6 @@
 				135A76EA2E717AB9009C1DDD /* VerticalStackLayout.swift in Sources */,
 				135A76EB2E717AB9009C1DDD /* HorizontalStackLayout.swift in Sources */,
 				1367E5D82ED0AAA40003CFDD /* WorkspaceHelpers.swift in Sources */,
-				13972B2D2E5EF80B00588D1B /* UserConfiguration.swift in Sources */,
 				135B55262DB6596D00EC05FF /* ShortcutsTabView.swift in Sources */,
 				13858B232E5F680900FD0DB8 /* NotificationService.swift in Sources */,
 				13A3EEBB2E6EC56400DA7702 /* LayoutVisualizationRenderer.swift in Sources */,
@@ -474,7 +462,7 @@
 				13F42D612E5F0894001F7A25 /* WindowSet.swift in Sources */,
 				13858B212E5F4AF600FD0DB8 /* ScanWindows.swift in Sources */,
 				13B773982DEA2753005DF3A6 /* snapdeskApp.swift in Sources */,
-				135B551D2DB6596D00EC05FF /* ConfigurationManager.swift in Sources */,
+				135B551D2DB6596D00EC05FF /* SnapdeskConfiguration.swift in Sources */,
 				1367E5DA2ED0AAAF0003CFDD /* ConfigurationHelpers.swift in Sources */,
 				1367E5DC2ED1189C0003CFDD /* NotificationPositionCalculator.swift in Sources */,
 				13726AE52E65D067005D42DF /* AppCacheManager.swift in Sources */,

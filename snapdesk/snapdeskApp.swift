@@ -12,7 +12,6 @@ import Cocoa
 class SnapdeskApp: NSObject, NSApplicationDelegate {
     var windowManager: WorkspaceCoordinator!
     var hotkeyManager: HotkeyManager!
-    var userConfiguration: UserConfiguration!
     var statusItem: NSStatusItem?
     var settingsWindowController: SettingsWindowController?
     
@@ -46,22 +45,14 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
             exit(1)
         }
 
-        // Initialize UserConfiguration
-        userConfiguration = UserConfiguration.shared
-        
-        // Apply launch at login setting if it's enabled
-        if userConfiguration.launchAtLogin() {
-            userConfiguration.setLaunchAtLogin(true)
-        }
-        
         windowManager = WorkspaceCoordinator()
-        
-        // Initialize HotkeyManager with the new simplified approach
-        hotkeyManager = HotkeyManager(windowManager: windowManager, userConfiguration: userConfiguration)
-        
+
+        // Initialize HotkeyManager
+        hotkeyManager = HotkeyManager(windowManager: windowManager)
+
         // Set up hotkeys using the protocol-based pattern
         Task {
-            await hotkeyManager.setUpWithWindowController(windowManager, configuration: userConfiguration)
+            await hotkeyManager.setUpWithWindowController(windowManager)
         }
         
         NSWorkspace.shared.notificationCenter.addObserver(

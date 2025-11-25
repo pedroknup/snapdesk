@@ -60,7 +60,7 @@ public struct ThemeConfig: Codable {
     public var accentColorAlpha: CGFloat
     public var activeWindowBorderWidth: CGFloat
     public var inactiveWindowOpacity: CGFloat
-    
+
     public init(
         accentColorRed: CGFloat = 0.007,
         accentColorGreen: CGFloat = 0.478,
@@ -76,9 +76,82 @@ public struct ThemeConfig: Codable {
         self.activeWindowBorderWidth = activeWindowBorderWidth
         self.inactiveWindowOpacity = inactiveWindowOpacity
     }
-    
+
     public var accentColor: NSColor {
         return NSColor(red: accentColorRed, green: accentColorGreen, blue: accentColorBlue, alpha: accentColorAlpha)
+    }
+}
+
+public struct WindowMarginsConfig: Codable {
+    public var enabled: Bool
+    public var smart: Bool
+    public var size: CGFloat
+
+    public init(enabled: Bool = true, smart: Bool = false, size: CGFloat = 10.0) {
+        self.enabled = enabled
+        self.smart = smart
+        self.size = size
+    }
+}
+
+public struct MinimumSizeConfig: Codable {
+    public var width: CGFloat
+    public var height: CGFloat
+
+    public init(width: CGFloat = 200.0, height: CGFloat = 150.0) {
+        self.width = width
+        self.height = height
+    }
+}
+
+public struct ScreenPaddingConfig: Codable {
+    public var left: CGFloat
+    public var right: CGFloat
+    public var top: CGFloat
+    public var bottom: CGFloat
+    public var disableOnBuiltinDisplay: Bool
+
+    public init(left: CGFloat = 0.0, right: CGFloat = 0.0, top: CGFloat = 0.0, bottom: CGFloat = 0.0, disableOnBuiltinDisplay: Bool = false) {
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+        self.disableOnBuiltinDisplay = disableOnBuiltinDisplay
+    }
+}
+
+public struct WindowBehaviorConfig: Codable {
+    public var margins: WindowMarginsConfig
+    public var minimumSize: MinimumSizeConfig
+    public var screenPadding: ScreenPaddingConfig
+    public var ignoreMenuBar: Bool
+    public var floatSmallWindows: Bool
+    public var mouseFollowsFocus: Bool
+
+    public init(
+        margins: WindowMarginsConfig = WindowMarginsConfig(),
+        minimumSize: MinimumSizeConfig = MinimumSizeConfig(),
+        screenPadding: ScreenPaddingConfig = ScreenPaddingConfig(),
+        ignoreMenuBar: Bool = false,
+        floatSmallWindows: Bool = true,
+        mouseFollowsFocus: Bool = false
+    ) {
+        self.margins = margins
+        self.minimumSize = minimumSize
+        self.screenPadding = screenPadding
+        self.ignoreMenuBar = ignoreMenuBar
+        self.floatSmallWindows = floatSmallWindows
+        self.mouseFollowsFocus = mouseFollowsFocus
+    }
+}
+
+public struct ApplicationConfig: Codable {
+    public var launchAtLogin: Bool
+    public var showAllLayoutsOnToggle: Bool
+
+    public init(launchAtLogin: Bool = false, showAllLayoutsOnToggle: Bool = true) {
+        self.launchAtLogin = launchAtLogin
+        self.showAllLayoutsOnToggle = showAllLayoutsOnToggle
     }
 }
 
@@ -87,27 +160,74 @@ public struct Config: Codable {
     public var generalShortcuts: [GeneralShortcutConfig]
     public var windowPreview: WindowPreviewConfig
     public var theme: ThemeConfig
-    
-    public init(appShortcuts: [AppShortcutConfig], generalShortcuts: [GeneralShortcutConfig], windowPreview: WindowPreviewConfig = WindowPreviewConfig(), theme: ThemeConfig = ThemeConfig()) {
+    public var windowBehavior: WindowBehaviorConfig
+    public var application: ApplicationConfig
+
+    public init(
+        appShortcuts: [AppShortcutConfig],
+        generalShortcuts: [GeneralShortcutConfig],
+        windowPreview: WindowPreviewConfig = WindowPreviewConfig(),
+        theme: ThemeConfig = ThemeConfig(),
+        windowBehavior: WindowBehaviorConfig = WindowBehaviorConfig(),
+        application: ApplicationConfig = ApplicationConfig()
+    ) {
         self.appShortcuts = appShortcuts
         self.generalShortcuts = generalShortcuts
         self.windowPreview = windowPreview
         self.theme = theme
+        self.windowBehavior = windowBehavior
+        self.application = application
     }
 }
 
 public class ConfigurationManager {
     public static let shared = ConfigurationManager()
     private let configPath: URL
-    
+
+    // Cached config - loaded on demand
+    private var _config: Config?
+    public var config: Config {
+        if let cached = _config {
+            return cached
+        }
+        let loaded = loadConfig() ?? getDefaultConfig()
+        _config = loaded
+        return loaded
+    }
+
     private init() {
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
         let configDirectory = homeDirectory.appendingPathComponent(".config")
         let snapdeskDirectory = configDirectory.appendingPathComponent("snapdesk")
         configPath = snapdeskDirectory.appendingPathComponent("config.yaml")
-        
+
         // Create config directory if it doesn't exist
         try? FileManager.default.createDirectory(at: snapdeskDirectory, withIntermediateDirectories: true)
+    }
+
+    // Helper to convert modifier strings to NSEvent.ModifierFlags
+    public func modifierFlagsForStrings(_ modifierStrings: [String]) -> NSEvent.ModifierFlags {
+        var flags: NSEvent.ModifierFlags = []
+        for modifierString in modifierStrings {
+            switch modifierString {
+            case "option":
+                flags.insert(.option)
+            case "shift":
+                flags.insert(.shift)
+            case "control":
+                flags.insert(.control)
+            case "command":
+                flags.insert(.command)
+            default:
+                print("⚠️ Unrecognized modifier string: \(modifierString)")
+            }
+        }
+        return flags
+    }
+
+    // Reload config from disk
+    public func reloadConfig() {
+        _config = nil
     }
     
     public func loadConfig() -> Config? {
@@ -372,6 +492,48 @@ public class ConfigurationManager {
                     shortcut: ShortcutConfig(key: "down", modifiers: ["command", "option"])
                 )
             ]
+        )
+    }
+
+    // MARK: - Update Methods
+
+    public func updateLaunchAtLogin(_ value: Bool) {
+        var config = self.config
+        config.application.launchAtLogin = value
+        try? saveConfig(config)
+        _config = config
+    }
+
+    public func updateShowAllLayoutsOnToggle(_ value: Bool) {
+        var config = self.config
+        config.application.showAllLayoutsOnToggle = value
+        try? saveConfig(config)
+        _config = config
+    }
+
+    // MARK: - Hotkey Integration
+
+    func constructCommand(for hotKeyRegistrar: HotKeyRegistrar, commandKey: String, handler: @escaping HotKeyHandler) {
+        let config = loadConfig() ?? getDefaultConfig()
+        let commandKeyToDisplayName = HotkeyManager.commandKeyToDisplayName()
+
+        // Look for the command key in our general shortcuts
+        guard let displayName = commandKeyToDisplayName[commandKey],
+              let generalShortcut = config.generalShortcuts.first(where: { $0.name == displayName }),
+              let shortcut = generalShortcut.shortcut, !shortcut.key.isEmpty else {
+            return
+        }
+
+        // Convert modifiers to NSEvent.ModifierFlags
+        let modifiers = modifierFlagsForStrings(shortcut.modifiers)
+
+        // Register the hotkey
+        hotKeyRegistrar.registerHotKey(
+            with: shortcut.key,
+            modifiers: modifiers,
+            handler: handler,
+            defaultsKey: commandKey,
+            override: false
         )
     }
 }
