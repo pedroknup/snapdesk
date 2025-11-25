@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 struct SettingsTabView: View {
     // Notifications & Visual Feedback
@@ -284,9 +285,9 @@ struct SettingsTabView: View {
     }
     
     // MARK: - Startup Settings
-    
+
     private func loadStartupSettings() {
-        launchAtLogin = ConfigurationManager.shared.config.application.launchAtLogin
+        launchAtLogin = SMAppService.mainApp.status == .enabled
     }
     
     // MARK: - Application Management
