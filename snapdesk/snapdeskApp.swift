@@ -69,28 +69,7 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
             object: nil
         )
 
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-
-        if let button = statusItem?.button {
-            button.image = NSImage(named: "snapdesk-status-bar-icon")
-            button.image?.isTemplate = true
-        }
-        let menu = NSMenu()
-        
-        let versionItem = NSMenuItem(title: "Version 0.0.1 (beta)", action: nil, keyEquivalent: "")
-        versionItem.isEnabled = false
-        menu.addItem(versionItem)
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Revaluate Windows", action: #selector(revaluateWindows), keyEquivalent: "r"))
-        menu.addItem(NSMenuItem(title: "Test Floating Windows", action: #selector(testFloatingWindows), keyEquivalent: "t"))
-        menu.addItem(NSMenuItem(title: "Toggle Debug Viewer", action: #selector(toggleDebugViewer), keyEquivalent: "d"))
-        
-        menu.addItem(NSMenuItem(title: "Preferences", action: #selector(openSettings), keyEquivalent: ","))
-        menu.addItem(NSMenuItem(title: "About Snapdesk", action: #selector(showAbout), keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit Snapdesk", action: #selector(quitApp), keyEquivalent: "q"))
-
-        statusItem?.menu = menu
+        setupStatusItem()
 
         log("Snapdesk is listening for hotkeys")
 
@@ -157,6 +136,31 @@ class SnapdeskApp: NSObject, NSApplicationDelegate {
         hotkeyManager?.reloadConfiguration()
     }
 
+    // MARK: - Menu Bar Icon
 
+    private func setupStatusItem() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        if let button = statusItem?.button {
+            button.image = NSImage(named: "snapdesk-status-bar-icon")
+            button.image?.isTemplate = true
+        }
+
+        let menu = NSMenu()
+
+        let versionItem = NSMenuItem(title: "Version 0.0.1 (beta)", action: nil, keyEquivalent: "")
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Revaluate Windows", action: #selector(revaluateWindows), keyEquivalent: "r"))
+        menu.addItem(NSMenuItem(title: "Test Floating Windows", action: #selector(testFloatingWindows), keyEquivalent: "t"))
+        menu.addItem(NSMenuItem(title: "Toggle Debug Viewer", action: #selector(toggleDebugViewer), keyEquivalent: "d"))
+
+        menu.addItem(NSMenuItem(title: "Preferences", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: "About Snapdesk", action: #selector(showAbout), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit Snapdesk", action: #selector(quitApp), keyEquivalent: "q"))
+
+        statusItem?.menu = menu
+    }
 }
 

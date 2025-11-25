@@ -17,7 +17,6 @@ struct SettingsTabView: View {
     
     // Startup & System
     @AppStorage("launchAtLogin") private var launchAtLogin = true
-    @AppStorage("hideMenuBarIcon") private var hideMenuBarIcon = false
     @AppStorage("enableAccessibilityOnStart") private var enableAccessibilityOnStart = true
     
     // Layout & Windows  
@@ -102,9 +101,6 @@ struct SettingsTabView: View {
                         .onChange(of: launchAtLogin) { newValue in
                             ConfigurationManager.shared.updateLaunchAtLogin(newValue)
                         }
-                    
-                    Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
-                        .help("Hide the Snapdesk icon from the menu bar (access via shortcuts only)")
                 }
 
                 // Layout & Windows
