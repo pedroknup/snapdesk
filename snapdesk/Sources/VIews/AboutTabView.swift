@@ -42,13 +42,12 @@ struct AboutTabView: View {
                         }
                     }
                     
-                    // Enhanced Description with Value Proposition
                     VStack(spacing: 12) {
-                        Text("Window management for macOS power users")
+                        Text("A window manager for macOS")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(.primary)
-                        
-                        Text("The snapiest and most efficient way to organize windows on macOS. Built for developers, designers, and power users who demand efficiency.")
+
+                        Text("I built this because other tools felt too slow, too complex, or required too much thinking. Snapdesk is simple, predictable, and fast — it stays out of the way.")
                             .font(.system(size: 15))
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
@@ -58,18 +57,17 @@ struct AboutTabView: View {
                 }
                 .padding(.top, 16)
                 
-                // Support Section - Buy Me a Coffee (Strategic Placement)
                 VStack(spacing: 16) {
                     HStack(spacing: 8) {
                         Image(systemName: "heart.fill")
                             .foregroundColor(.pink)
                             .font(.system(size: 16))
-                        Text("Love Snapdesk?")
+                        Text("Find it useful?")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.primary)
                     }
-                    
-                    Text("Help keep this project alive and support future features")
+
+                    Text("If Snapdesk fits your workflow, consider supporting the project")
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
