@@ -48,22 +48,43 @@ class LayoutManager {
     }
     
     // MARK: - Panel Size Management
-    
+
+    /// Returns the relevant screen dimension for panel size adjustment based on layout type
+    /// - Returns: `.horizontal` for layouts that stack windows side-by-side (width adjustment),
+    ///            `.vertical` for layouts that stack windows top-to-bottom (height adjustment),
+    ///            or `nil` for layouts that don't support panel size adjustment
+    private func panelDimensionType(for layout: LayoutKind) -> UnconstrainedDimension? {
+        switch layout {
+        case .wide, .horizontal_stack:
+            return .horizontal
+        case .tall, .vertical_stack:
+            return .vertical
+        case .fullscreen, .floating:
+            return nil
+        }
+    }
+
     /// Increases the main panel size for the given WindowSet
     func increaseMainPanelSize(for windowSet: WindowSet) {
         log("⬆️ Increasing main panel size")
-        
+
         // Only adjust if there are multiple windows
         guard windowSet.windows.count > 1 else {
             log("ℹ️ Cannot adjust main panel size with only one window")
             return
         }
-        
+
+        // Check if this layout supports panel size adjustment
+        guard let dimensionType = panelDimensionType(for: windowSet.layout) else {
+            log("ℹ️ Layout \(windowSet.layout) does not support panel size adjustment")
+            return
+        }
+
         // Calculate reasonable max based on window count
         // Allow main panel to take up to 70% of total space
         let screen = AMScreen.availableScreens.first { $0.screenID() == windowSet.screenID }
         let screenFrame = screen?.adjustedFrame() ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
-        let dimension = windowSet.layout == .wide ? screenFrame.width : screenFrame.height
+        let dimension = dimensionType == .horizontal ? screenFrame.width : screenFrame.height
         let maxAdjustment = dimension * 0.7 - (dimension / CGFloat(windowSet.windows.count))
         
         // Increase by 40 pixels, but respect the maximum
@@ -89,18 +110,24 @@ class LayoutManager {
     /// Decreases the main panel size for the given WindowSet
     func decreaseMainPanelSize(for windowSet: WindowSet) {
         log("⬇️ Decreasing main panel size")
-        
+
         // Only adjust if there are multiple windows
         guard windowSet.windows.count > 1 else {
             log("ℹ️ Cannot adjust main panel size with only one window")
             return
         }
-        
+
+        // Check if this layout supports panel size adjustment
+        guard let dimensionType = panelDimensionType(for: windowSet.layout) else {
+            log("ℹ️ Layout \(windowSet.layout) does not support panel size adjustment")
+            return
+        }
+
         // Calculate reasonable min based on window count
         // Prevent main panel from being smaller than 30% of equal space
         let screen = AMScreen.availableScreens.first { $0.screenID() == windowSet.screenID }
         let screenFrame = screen?.adjustedFrame() ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
-        let dimension = windowSet.layout == .wide ? screenFrame.width : screenFrame.height
+        let dimension = dimensionType == .horizontal ? screenFrame.width : screenFrame.height
         let equalSpace = dimension / CGFloat(windowSet.windows.count)
         let minAdjustment = equalSpace * 0.3 - equalSpace // This gives us -70% of equal space
         

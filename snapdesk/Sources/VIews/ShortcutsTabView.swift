@@ -132,7 +132,8 @@ struct ShortcutsTabView: View {
                                             updateAvailableKeys()
                                         }
                                     }
-                                )
+                                ),
+                                keysModel: availableKeysModel
                             )
                         }
                     }
@@ -202,17 +203,13 @@ struct ShortcutsTabView: View {
                                         refreshTrigger.toggle()
                                         updateAvailableKeys()
                                     }
-                                )
+                                ),
+                                keysModel: availableKeysModel
                             )
                         }
                     }
                 }
             }
-
-            // Available keys view at the bottom
-            AvailableKeysView(keysModel: availableKeysModel)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
         }
         .onAppear {
             loadAppsWithCache()
@@ -347,13 +344,15 @@ struct ModernShortcutRow: View {
     let icon: NSImage?
     let showIcon: Bool
     @Binding var shortcut: ShortcutConfig?
+    @ObservedObject var keysModel: AvailableKeysModel
 
-    init(title: String, subtitle: String?, icon: NSImage?, showIcon: Bool = true, shortcut: Binding<ShortcutConfig?>) {
+    init(title: String, subtitle: String?, icon: NSImage?, showIcon: Bool = true, shortcut: Binding<ShortcutConfig?>, keysModel: AvailableKeysModel) {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
         self.showIcon = showIcon
         self._shortcut = shortcut
+        self.keysModel = keysModel
     }
 
     private var hasShortcut: Bool {
@@ -418,7 +417,7 @@ struct ModernShortcutRow: View {
                         .cornerRadius(6)
                 }
 
-                ModernShortcutRecorder(shortcut: $shortcut)
+                ModernShortcutRecorder(shortcut: $shortcut, keysModel: keysModel)
             }
         }
         .padding(.vertical, 8)
@@ -496,6 +495,7 @@ struct ModernShortcutDisplay: View {
 
 struct ModernShortcutRecorder: View {
     @Binding var shortcut: ShortcutConfig?
+    @ObservedObject var keysModel: AvailableKeysModel
     @State private var showingRecorder = false
 
     var body: some View {
@@ -518,8 +518,7 @@ struct ModernShortcutRecorder: View {
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showingRecorder) {
-            ModernShortcutRecorderPopover(shortcut: $shortcut, isPresented: $showingRecorder)
-                .frame(width: 280, height: 120)
+            ModernShortcutRecorderPopover(shortcut: $shortcut, isPresented: $showingRecorder, keysModel: keysModel)
         }
     }
 }
@@ -527,9 +526,14 @@ struct ModernShortcutRecorder: View {
 struct ModernShortcutRecorderPopover: View {
     @Binding var shortcut: ShortcutConfig?
     @Binding var isPresented: Bool
+    @ObservedObject var keysModel: AvailableKeysModel
     @State private var isRecording = false
     @State private var currentModifiers: NSEvent.ModifierFlags = []
     @State private var currentKey: String?
+
+    private var availableKeys: [KeyAvailability] {
+        keysModel.availableKeys.filter { $0.isAvailable }
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -589,8 +593,25 @@ struct ModernShortcutRecorderPopover: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
+
+            if !availableKeys.isEmpty {
+                Divider()
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Available Keys")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+
+                    LazyVGrid(columns: Array(repeating: GridItem(.fixed(28), spacing: 6), count: 8), alignment: .leading, spacing: 6) {
+                        ForEach(availableKeys) { keyAvailability in
+                            KeyBadgeView(key: keyAvailability.displayName, isAvailable: true)
+                        }
+                    }
+                }
+            }
         }
         .padding()
+        .frame(width: 300)
         .onAppear {
             setupEventMonitoring()
             startRecording()
