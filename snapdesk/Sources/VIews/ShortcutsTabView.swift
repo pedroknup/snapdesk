@@ -577,7 +577,7 @@ struct ModernShortcutRecorderPopover: View {
                 .buttonStyle(.borderless)
 
                 Button("Clear") {
-                    shortcut = ShortcutConfig(key: "", modifiers: [])
+                    shortcut = nil
                     stopRecording()
                     isPresented = false
                 }
@@ -663,10 +663,23 @@ struct ModernShortcutRecorderPopover: View {
     }
 
     private func handleKeyDown(_ event: NSEvent) {
+        // Handle Escape to cancel
+        if event.keyCode == 53 {
+            stopRecording()
+            isPresented = false
+            return
+        }
+
         let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         currentModifiers = modifiers
 
         if let key = event.charactersIgnoringModifiers?.lowercased(), !key.isEmpty {
+            // Filter out non-printable characters (Enter, Tab, etc.)
+            let validCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "`-=[]\\;',./"))
+            guard key.unicodeScalars.allSatisfy({ validCharacters.contains($0) }) else {
+                return
+            }
+
             currentKey = key
 
             var modifierStrings: [String] = []
