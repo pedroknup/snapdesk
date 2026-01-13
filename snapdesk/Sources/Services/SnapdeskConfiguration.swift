@@ -269,6 +269,12 @@ public class ConfigurationManager {
             "Move Window Up in Layout",
             "Move Window Down in Layout",
 
+            // Directional window movement (step-based subdivision)
+            "Directional Move Left",
+            "Directional Move Right",
+            "Directional Move Up",
+            "Directional Move Down",
+
             // App cycling
             "Cycle Current App Backward",
 
@@ -339,6 +345,12 @@ public class ConfigurationManager {
             // Window reordering
             "Move Window Up in Layout",
             "Move Window Down in Layout",
+
+            // Directional window movement (step-based subdivision)
+            "Directional Move Left",
+            "Directional Move Right",
+            "Directional Move Up",
+            "Directional Move Down",
 
             // App cycling
             "Cycle Current App Backward",
@@ -491,6 +503,23 @@ public class ConfigurationManager {
                 GeneralShortcutConfig(
                     name: "Move Window Down in Layout",
                     shortcut: ShortcutConfig(key: "down", modifiers: ["command", "option"])
+                ),
+                // Directional window movement shortcuts (step-based subdivision)
+                GeneralShortcutConfig(
+                    name: "Directional Move Left",
+                    shortcut: ShortcutConfig(key: "left", modifiers: ["control", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Directional Move Right",
+                    shortcut: ShortcutConfig(key: "right", modifiers: ["control", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Directional Move Up",
+                    shortcut: ShortcutConfig(key: "up", modifiers: ["control", "option"])
+                ),
+                GeneralShortcutConfig(
+                    name: "Directional Move Down",
+                    shortcut: ShortcutConfig(key: "down", modifiers: ["control", "option"])
                 )
             ]
         )

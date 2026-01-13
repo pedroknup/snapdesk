@@ -342,6 +342,28 @@ class WorkspaceCoordinator: WindowManaging, WorkspaceProvider {
         guard let w = frontmostWindow() else { return }
         layoutManager.positionSingleWindow(AXWindow(axElement: w), to: "center")
     }
+
+    // MARK: - Directional Window Movement
+
+    func moveWindowLeft() {
+        guard let w = frontmostWindow() else { return }
+        layoutManager.moveWindowDirectionally(AXWindow(axElement: w), direction: .left)
+    }
+
+    func moveWindowRight() {
+        guard let w = frontmostWindow() else { return }
+        layoutManager.moveWindowDirectionally(AXWindow(axElement: w), direction: .right)
+    }
+
+    func moveWindowUp() {
+        guard let w = frontmostWindow() else { return }
+        layoutManager.moveWindowDirectionally(AXWindow(axElement: w), direction: .up)
+    }
+
+    func moveWindowDown() {
+        guard let w = frontmostWindow() else { return }
+        layoutManager.moveWindowDirectionally(AXWindow(axElement: w), direction: .down)
+    }
     
     // MARK: - Window Reordering
 

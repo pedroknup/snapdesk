@@ -57,6 +57,12 @@ protocol WindowManaging: AnyObject {
     // Window reordering commands
     func moveWindowUpInLayout()
     func moveWindowDownInLayout()
+
+    // Directional window movement (step-based subdivision)
+    func moveWindowLeft()
+    func moveWindowRight()
+    func moveWindowUp()
+    func moveWindowDown()
 }
 
 // Static storage for the active HotkeyManager instance (outside generic class)
@@ -213,6 +219,27 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
         constructCommandWithCommandKey("move-window-down-in-layout") { [weak self] in
             guard !(self?.isRecordingShortcut ?? false) else { return }
             self?.windowManager.moveWindowDownInLayout()
+        }
+
+        // Directional window movement shortcuts (step-based subdivision)
+        constructCommandWithCommandKey("directional-move-left") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.moveWindowLeft()
+        }
+
+        constructCommandWithCommandKey("directional-move-right") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.moveWindowRight()
+        }
+
+        constructCommandWithCommandKey("directional-move-up") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.moveWindowUp()
+        }
+
+        constructCommandWithCommandKey("directional-move-down") { [weak self] in
+            guard !(self?.isRecordingShortcut ?? false) else { return }
+            self?.windowManager.moveWindowDown()
         }
 
         // Global backward cycling shortcut
@@ -409,6 +436,12 @@ class HotkeyManager: NSObject, HotKeyRegistrar {
             // Window reordering
             "move-window-up-in-layout": "Move Window Up in Layout",
             "move-window-down-in-layout": "Move Window Down in Layout",
+
+            // Directional window movement (step-based subdivision)
+            "directional-move-left": "Directional Move Left",
+            "directional-move-right": "Directional Move Right",
+            "directional-move-up": "Directional Move Up",
+            "directional-move-down": "Directional Move Down",
 
             // App cycling
             "cycle-current-app-backward": "Cycle Current App Backward",

@@ -8,16 +8,89 @@
 import Foundation
 import AppKit
 
+// MARK: - Directional Window State
+
+enum HorizontalAnchor {
+    case none
+    case left
+    case right
+}
+
+enum VerticalAnchor {
+    case none
+    case top
+    case bottom
+}
+
+enum DirectionalMovement {
+    case left
+    case right
+    case up
+    case down
+}
+
+struct DirectionalWindowState {
+    var horizontalFraction: CGFloat = 1.0
+    var verticalFraction: CGFloat = 1.0
+    var horizontalAnchor: HorizontalAnchor = .none
+    var verticalAnchor: VerticalAnchor = .none
+
+    static let minimumFraction: CGFloat = 0.125  // 1/8 of screen
+
+    var isDefault: Bool {
+        return horizontalFraction == 1.0 && verticalFraction == 1.0 &&
+               horizontalAnchor == .none && verticalAnchor == .none
+    }
+
+    mutating func reset() {
+        horizontalFraction = 1.0
+        verticalFraction = 1.0
+        horizontalAnchor = .none
+        verticalAnchor = .none
+    }
+
+    mutating func resetHorizontal() {
+        horizontalFraction = 1.0
+        horizontalAnchor = .none
+    }
+
+    mutating func resetVertical() {
+        verticalFraction = 1.0
+        verticalAnchor = .none
+    }
+}
+
 protocol LayoutManagerDelegate: AnyObject {
     var workspace: WorkspaceModel { get set }
 }
 
 class LayoutManager {
-    
+
     private weak var delegate: LayoutManagerDelegate?
-    
+
+    // Directional state per window (keyed by CGWindowID)
+    private var directionalStates: [CGWindowID: DirectionalWindowState] = [:]
+
     init(delegate: LayoutManagerDelegate) {
         self.delegate = delegate
+    }
+
+    // MARK: - Directional State Access
+
+    private func getDirectionalState(for windowID: CGWindowID) -> DirectionalWindowState {
+        return directionalStates[windowID] ?? DirectionalWindowState()
+    }
+
+    private func setDirectionalState(_ state: DirectionalWindowState, for windowID: CGWindowID) {
+        directionalStates[windowID] = state
+    }
+
+    func resetDirectionalState(for windowID: CGWindowID) {
+        directionalStates.removeValue(forKey: windowID)
+    }
+
+    func resetAllDirectionalStates() {
+        directionalStates.removeAll()
     }
     
     // MARK: - Layout Management
@@ -32,18 +105,23 @@ class LayoutManager {
     func expandLayout(for windowSet: WindowSet) {
         log("🔲 Expanding layout for WindowSet")
         log("📐 Current layout: \(windowSet.layout) for WindowSet with \(windowSet.windows.count) window(s)")
-        
+
+        // Reset directional state for all windows in this WindowSet
+        for window in windowSet.windows {
+            resetDirectionalState(for: window.cgID())
+        }
+
         // If the layout is floating, change it to wide first
         if windowSet.layout == .floating {
             log("🔄 Changing layout from floating to wide before expanding")
             windowSet.layout = .wide
         }
-        
+
         // Expand the windows in the current WindowSet
         windowSet.expandWindows()
-        
+
         log("✅ Windows expanded according to \(windowSet.layout) layout")
-        
+
         // Layout indicator removed
     }
     
@@ -389,9 +467,135 @@ class LayoutManager {
         move(window: window.axElementRef, to: adjustedFrame)
         log("📐 Positioned window to \(position): \(NSStringFromRect(adjustedFrame))")
         
-        // Notification removed
+        // Reset directional state when using fixed positioning
+        resetDirectionalState(for: window.cgID())
     }
-    
+
+    // MARK: - Directional Window Positioning
+
+    func moveWindowDirectionally(_ window: AXWindow, direction: DirectionalMovement) {
+        guard let (windowSet, _, _) = findWindowSetContaining(window) else {
+            log("❌ Window not found in any WindowSet")
+            return
+        }
+
+        if windowSet.windows.count > 1 {
+            log("⚠️ Cannot position window - WindowSet has \(windowSet.windows.count) windows")
+            return
+        }
+
+        if windowSet.layout != .floating {
+            log("🔄 Changing layout to floating for directional positioning")
+            windowSet.layout = .floating
+        }
+
+        guard let nsScreen = window.snapScreen()?.screen else {
+            log("❌ Could not determine screen for window")
+            return
+        }
+        let screen = AMScreen(screen: nsScreen)
+        let screenFrame = screen.adjustedFrame()
+
+        let windowID = window.cgID()
+        var state = getDirectionalState(for: windowID)
+
+        switch direction {
+        case .left:
+            // Switching to horizontal axis resets vertical
+            state.resetVertical()
+            if state.horizontalAnchor == .right {
+                state.resetHorizontal()
+            }
+            if state.horizontalAnchor == .none {
+                state.horizontalAnchor = .left
+                state.horizontalFraction = 0.5
+            } else if state.horizontalFraction > DirectionalWindowState.minimumFraction {
+                state.horizontalFraction /= 2.0
+            }
+
+        case .right:
+            // Switching to horizontal axis resets vertical
+            state.resetVertical()
+            if state.horizontalAnchor == .left {
+                state.resetHorizontal()
+            }
+            if state.horizontalAnchor == .none {
+                state.horizontalAnchor = .right
+                state.horizontalFraction = 0.5
+            } else if state.horizontalFraction > DirectionalWindowState.minimumFraction {
+                state.horizontalFraction /= 2.0
+            }
+
+        case .up:
+            // Switching to vertical axis resets horizontal
+            state.resetHorizontal()
+            if state.verticalAnchor == .bottom {
+                state.resetVertical()
+            }
+            if state.verticalAnchor == .none {
+                state.verticalAnchor = .top
+                state.verticalFraction = 0.5
+            } else if state.verticalFraction > DirectionalWindowState.minimumFraction {
+                state.verticalFraction /= 2.0
+            }
+
+        case .down:
+            // Switching to vertical axis resets horizontal
+            state.resetHorizontal()
+            if state.verticalAnchor == .top {
+                state.resetVertical()
+            }
+            if state.verticalAnchor == .none {
+                state.verticalAnchor = .bottom
+                state.verticalFraction = 0.5
+            } else if state.verticalFraction > DirectionalWindowState.minimumFraction {
+                state.verticalFraction /= 2.0
+            }
+        }
+
+        setDirectionalState(state, for: windowID)
+
+        let targetFrame = calculateDirectionalFrame(state: state, screenFrame: screenFrame)
+
+        let windowMargin = CGFloat(UserDefaults.standard.object(forKey: "windowMargin") as? Double ?? 8.0)
+        let adjustedFrame = CGRect(
+            x: targetFrame.minX + windowMargin,
+            y: targetFrame.minY + windowMargin,
+            width: targetFrame.width - (windowMargin * 2),
+            height: targetFrame.height - (windowMargin * 2)
+        )
+
+        move(window: window.axElementRef, to: adjustedFrame)
+        log("📐 Directional move \(direction): h=\(state.horizontalFraction), v=\(state.verticalFraction)")
+    }
+
+    private func calculateDirectionalFrame(state: DirectionalWindowState, screenFrame: CGRect) -> CGRect {
+        let width = screenFrame.width * state.horizontalFraction
+        let height = screenFrame.height * state.verticalFraction
+
+        let x: CGFloat
+        switch state.horizontalAnchor {
+        case .none:
+            x = screenFrame.minX
+        case .left:
+            x = screenFrame.minX
+        case .right:
+            x = screenFrame.maxX - width
+        }
+
+        let y: CGFloat
+        switch state.verticalAnchor {
+        case .none:
+            y = screenFrame.minY
+        case .top:
+            y = screenFrame.minY
+        case .bottom:
+            y = screenFrame.maxY - height
+        }
+
+        return CGRect(x: x, y: y, width: width, height: height)
+    }
+
     /// Throws a window to the specified screen
     func throwWindow(_ window: AXWindow, toScreen screenNumber: Int) {
         
