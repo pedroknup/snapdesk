@@ -58,6 +58,18 @@ struct DirectionalWindowState {
         verticalFraction = 1.0
         verticalAnchor = .none
     }
+
+    mutating func subdivideHorizontal() {
+        if horizontalFraction > DirectionalWindowState.minimumFraction {
+            horizontalFraction /= 2.0
+        }
+    }
+
+    mutating func subdivideVertical() {
+        if verticalFraction > DirectionalWindowState.minimumFraction {
+            verticalFraction /= 2.0
+        }
+    }
 }
 
 protocol LayoutManagerDelegate: AnyObject {
@@ -499,57 +511,113 @@ class LayoutManager {
         let windowID = window.cgID()
         var state = getDirectionalState(for: windowID)
 
+        let isInCorner = state.horizontalAnchor != .none && state.verticalAnchor != .none
+        let hasHorizontalOnly = state.horizontalAnchor != .none && state.verticalAnchor == .none
+        let hasVerticalOnly = state.verticalAnchor != .none && state.horizontalAnchor == .none
+
         switch direction {
         case .left:
-            // Switching to horizontal axis resets vertical
-            state.resetVertical()
-            if state.horizontalAnchor == .right {
-                state.resetHorizontal()
-            }
-            if state.horizontalAnchor == .none {
+            if isInCorner {
+                // Any direction in corner: reset to that half
+                state.reset()
                 state.horizontalAnchor = .left
                 state.horizontalFraction = 0.5
-            } else if state.horizontalFraction > DirectionalWindowState.minimumFraction {
-                state.horizontalFraction /= 2.0
+            } else if hasVerticalOnly {
+                // Adjacent: form corner (e.g., top + left = top-left)
+                state.horizontalAnchor = .left
+                state.horizontalFraction = 0.5
+            } else if hasHorizontalOnly {
+                if state.horizontalAnchor == .left {
+                    // Same direction: subdivide
+                    state.subdivideHorizontal()
+                } else {
+                    // Opposite direction: reset to left half
+                    state.reset()
+                    state.horizontalAnchor = .left
+                    state.horizontalFraction = 0.5
+                }
+            } else {
+                // Fresh state: anchor left half
+                state.horizontalAnchor = .left
+                state.horizontalFraction = 0.5
             }
 
         case .right:
-            // Switching to horizontal axis resets vertical
-            state.resetVertical()
-            if state.horizontalAnchor == .left {
-                state.resetHorizontal()
-            }
-            if state.horizontalAnchor == .none {
+            if isInCorner {
+                // Any direction in corner: reset to that half
+                state.reset()
                 state.horizontalAnchor = .right
                 state.horizontalFraction = 0.5
-            } else if state.horizontalFraction > DirectionalWindowState.minimumFraction {
-                state.horizontalFraction /= 2.0
+            } else if hasVerticalOnly {
+                // Adjacent: form corner (e.g., top + right = top-right)
+                state.horizontalAnchor = .right
+                state.horizontalFraction = 0.5
+            } else if hasHorizontalOnly {
+                if state.horizontalAnchor == .right {
+                    // Same direction: subdivide
+                    state.subdivideHorizontal()
+                } else {
+                    // Opposite direction: reset to right half
+                    state.reset()
+                    state.horizontalAnchor = .right
+                    state.horizontalFraction = 0.5
+                }
+            } else {
+                // Fresh state: anchor right half
+                state.horizontalAnchor = .right
+                state.horizontalFraction = 0.5
             }
 
         case .up:
-            // Switching to vertical axis resets horizontal
-            state.resetHorizontal()
-            if state.verticalAnchor == .bottom {
-                state.resetVertical()
-            }
-            if state.verticalAnchor == .none {
+            if isInCorner {
+                // Any direction in corner: reset to that half
+                state.reset()
                 state.verticalAnchor = .top
                 state.verticalFraction = 0.5
-            } else if state.verticalFraction > DirectionalWindowState.minimumFraction {
-                state.verticalFraction /= 2.0
+            } else if hasHorizontalOnly {
+                // Adjacent: form corner (e.g., right + up = top-right)
+                state.verticalAnchor = .top
+                state.verticalFraction = 0.5
+            } else if hasVerticalOnly {
+                if state.verticalAnchor == .top {
+                    // Same direction: subdivide
+                    state.subdivideVertical()
+                } else {
+                    // Opposite direction: reset to top half
+                    state.reset()
+                    state.verticalAnchor = .top
+                    state.verticalFraction = 0.5
+                }
+            } else {
+                // Fresh state: anchor top half
+                state.verticalAnchor = .top
+                state.verticalFraction = 0.5
             }
 
         case .down:
-            // Switching to vertical axis resets horizontal
-            state.resetHorizontal()
-            if state.verticalAnchor == .top {
-                state.resetVertical()
-            }
-            if state.verticalAnchor == .none {
+            if isInCorner {
+                // Any direction in corner: reset to that half
+                state.reset()
                 state.verticalAnchor = .bottom
                 state.verticalFraction = 0.5
-            } else if state.verticalFraction > DirectionalWindowState.minimumFraction {
-                state.verticalFraction /= 2.0
+            } else if hasHorizontalOnly {
+                // Adjacent: form corner (e.g., right + down = bottom-right)
+                state.verticalAnchor = .bottom
+                state.verticalFraction = 0.5
+            } else if hasVerticalOnly {
+                if state.verticalAnchor == .bottom {
+                    // Same direction: subdivide
+                    state.subdivideVertical()
+                } else {
+                    // Opposite direction: reset to bottom half
+                    state.reset()
+                    state.verticalAnchor = .bottom
+                    state.verticalFraction = 0.5
+                }
+            } else {
+                // Fresh state: anchor bottom half
+                state.verticalAnchor = .bottom
+                state.verticalFraction = 0.5
             }
         }
 
