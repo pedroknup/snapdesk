@@ -307,11 +307,14 @@ class LayoutManager {
         log("📍 Window current position: \(NSStringFromRect(windowCurrentFrame)) on screen: \(windowCurrentScreen?.screenID() ?? "unknown")")
         log("🎯 Target WindowSet is on screen: \(currentWindowSet.screenID ?? "nil")")
         
+        // Remove the window from its original WindowSet first, then append to the
+        // current one. If we appended before removing, the removal pass iterates all
+        // WindowSets and can match the window in the freshly-appended slot instead of
+        // the original set, silently undoing the add.
+        removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
+
         // Add the window to the current WindowSet
         currentWindowSet.windows.append(windowToAdd)
-        
-        // Remove the window from its original WindowSet and clean up empty sets
-        removeWindowFromOriginalWindowSet(windowToAdd, bundleID: bundleID)
         
         // If the window is on a different screen than the target WindowSet, move it immediately
         if let windowScreen = windowToAdd.snapScreen()?.screenID(),

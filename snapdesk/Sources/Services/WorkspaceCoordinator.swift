@@ -160,32 +160,13 @@ class WorkspaceCoordinator: WindowManaging, WorkspaceProvider {
     
     func addWindowToLayout(_ bundleID: String) {
         log("➕ addWindowToLayout called for bundleID: \(bundleID)")
-        
-        // Try to use the current WindowSet from cycling first
-        if let currentWindowSet = cyclingManager.getCurrentWindowSet {
-            log("🎯 Using current WindowSet from cycling manager")
-            log("📊 Current WindowSet info: \(currentWindowSet.windows.count) windows on screen \(currentWindowSet.screenID ?? "nil")")
-            layoutManager.addWindowToLayout(currentWindowSet: currentWindowSet, bundleID: bundleID)
+
+        guard let targetWindowSet = getCurrentWindowSet() else {
+            log("❌ No target WindowSet could be determined - cannot add window to layout")
             return
         }
-        
-        // If no current WindowSet from cycling, find the focused window and use its WindowSet as target
-        guard let focusedWindowElement = frontmostWindow() else {
-            log("❌ No focused window found - cannot determine target WindowSet")
-            return
-        }
-        
-        let focusedWindow = AXWindow(axElement: focusedWindowElement)
-        log("🎯 Found focused window: '\(focusedWindow.title() ?? "untitled")'")
-        
-        // Find the WindowSet containing the focused window
-        guard let (targetWindowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(focusedWindow, in: workspace) else {
-            log("❌ Focused window not found in any WindowSet")
-            return
-        }
-        
-        log("🎯 Using WindowSet containing focused window as target")
-        log("📊 Target WindowSet info: \(targetWindowSet.windows.count) windows on screen \(targetWindowSet.screenID ?? "nil")")
+
+        log("🎯 Target WindowSet: \(targetWindowSet.windows.count) window(s) on screen \(targetWindowSet.screenID ?? "nil")")
         layoutManager.addWindowToLayout(currentWindowSet: targetWindowSet, bundleID: bundleID)
     }
     
@@ -392,18 +373,17 @@ class WorkspaceCoordinator: WindowManaging, WorkspaceProvider {
     // MARK: - Private Helper Methods
 
     private func getCurrentWindowSet() -> WindowSet? {
-        if let currentWindowSet = cyclingManager.getCurrentWindowSet {
-            return currentWindowSet
+        // Prefer the focused window's WindowSet. Cycling's cached WindowSet can be stale
+        // when focus changes via non-shortcut means (mouse click, Cmd-Tab): it's only
+        // reset when the same app activates (see CyclingManager.resetCycling).
+        if let focusedWindow = frontmostWindow() {
+            let axWindow = AXWindow(axElement: focusedWindow)
+            if let (windowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(axWindow, in: workspace) {
+                return windowSet
+            }
         }
 
-        guard let focusedWindow = frontmostWindow() else { return nil }
-        let axWindow = AXWindow(axElement: focusedWindow)
-
-        if let (windowSet, _, _) = WorkspaceHelpers.findWindowSetContaining(axWindow, in: workspace) {
-            return windowSet
-        }
-
-        return nil
+        return cyclingManager.getCurrentWindowSet
     }
 
     private func screenList() -> [NSScreen] {
