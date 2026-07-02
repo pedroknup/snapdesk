@@ -164,8 +164,10 @@ class AppLifecycleManager {
             log("🚀 App launched: \(app.localizedName ?? "Unknown")")
         }
         
-        // Set up observer for the new app
-        if app.bundleIdentifier != nil, app.isManageable == .manageable {
+        // Set up observer for the new app. Apps that are still .undetermined
+        // (not finished launching / activation policy not yet .regular) are
+        // handled by setupObserver's retry logic rather than skipped here.
+        if app.bundleIdentifier != nil, app.isManageable != .unmanageable {
             setupObserver(for: app)
         }
 
@@ -248,11 +250,27 @@ class AppLifecycleManager {
             return
         }
 
-        // Stop retrying if the app went away or is no longer manageable, so a
+        // Stop retrying if the app went away or is explicitly unmanageable, so a
         // retry chain can't outlive the process it targets.
-        guard !app.isTerminated, app.isManageable == .manageable else {
-            log("🛑 Aborting observer setup for \(appName) (PID: \(pid)) - app terminated or not manageable")
+        guard !app.isTerminated else {
+            log("🛑 Aborting observer setup for \(appName) (PID: \(pid)) - app terminated")
             return
+        }
+
+        switch app.isManageable {
+        case .unmanageable:
+            log("🛑 Aborting observer setup for \(appName) (PID: \(pid)) - app is unmanageable")
+            return
+        case .undetermined:
+            // Apps frequently haven't finished launching or switch their
+            // activation policy to .regular a moment after the launch
+            // notification fires. Aborting here would leave the app untracked
+            // for its whole lifetime, so retry instead.
+            log("⏳ App \(appName) (PID: \(pid)) not manageable yet - will retry")
+            scheduleObserverRetry(for: app, attempt: attempt)
+            return
+        case .manageable:
+            break
         }
 
         log("🔧 Setting up observer for \(appName) (PID: \(pid)) [attempt \(attempt + 1)]")
