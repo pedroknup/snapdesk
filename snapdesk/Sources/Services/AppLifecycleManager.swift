@@ -236,7 +236,7 @@ class AppLifecycleManager {
     
     // MARK: - Application Window Observers
     
-    private func setupObserver(for app: NSRunningApplication) {
+    private func setupObserver(for app: NSRunningApplication, attempt: Int = 0) {
         guard let bundleID = app.bundleIdentifier else { return }
 
         let pid = app.processIdentifier
@@ -248,7 +248,14 @@ class AppLifecycleManager {
             return
         }
 
-        log("🔧 Setting up observer for \(appName) (PID: \(pid))")
+        // Stop retrying if the app went away or is no longer manageable, so a
+        // retry chain can't outlive the process it targets.
+        guard !app.isTerminated, app.isManageable == .manageable else {
+            log("🛑 Aborting observer setup for \(appName) (PID: \(pid)) - app terminated or not manageable")
+            return
+        }
+
+        log("🔧 Setting up observer for \(appName) (PID: \(pid)) [attempt \(attempt + 1)]")
 
         // Create application element
         let appElement = AXUIElementCreateApplication(pid)
@@ -272,6 +279,7 @@ class AppLifecycleManager {
 
         guard result == .success, let observer = observer else {
             log("❌ Failed to create observer for \(appName) (PID: \(pid)): AXError \(result.rawValue)")
+            scheduleObserverRetry(for: app, attempt: attempt)
             return
         }
 
@@ -297,8 +305,8 @@ class AppLifecycleManager {
             }
         }
 
-        if successCount > 0 {
-            // Start observing
+        if successCount == notifications.count {
+            // Start observing - all notifications registered successfully
             CFRunLoopAddSource(
                 CFRunLoopGetCurrent(),
                 AXObserverGetRunLoopSource(observer),
@@ -307,7 +315,30 @@ class AppLifecycleManager {
             applicationObservers[pid] = observer
             log("✅ Observer registered successfully for \(appName) (PID: \(pid)) - \(successCount)/\(notifications.count) notifications")
         } else {
-            log("❌ Failed to add any notifications for \(appName) (PID: \(pid))")
+            // Partial or total failure. This almost always means the app's
+            // accessibility interface wasn't ready yet at launch time. Discard
+            // this observer (its run loop source was never added, so ARC frees
+            // it) and retry with backoff, so the app doesn't end up permanently
+            // untracked until it is quit and relaunched.
+            log("❌ Only \(successCount)/\(notifications.count) notifications registered for \(appName) (PID: \(pid)) - will retry")
+            scheduleObserverRetry(for: app, attempt: attempt)
+        }
+    }
+
+    /// Retries observer setup with exponential backoff. Apps frequently are not
+    /// accessibility-ready the instant they launch, so a single failed attempt
+    /// must not leave the app untracked for the lifetime of its process.
+    private func scheduleObserverRetry(for app: NSRunningApplication, attempt: Int) {
+        let maxAttempts = 6
+        guard attempt + 1 < maxAttempts else {
+            log("❌ Giving up on observer setup for \(app.localizedName ?? "Unknown") (PID: \(app.processIdentifier)) after \(maxAttempts) attempts")
+            return
+        }
+
+        // Backoff schedule: 0.5s, 1s, 2s, 4s, 8s
+        let delay = 0.5 * pow(2.0, Double(attempt))
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.setupObserver(for: app, attempt: attempt + 1)
         }
     }
     
