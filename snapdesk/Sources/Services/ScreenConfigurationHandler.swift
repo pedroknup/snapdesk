@@ -122,11 +122,19 @@ class ScreenConfigurationHandler {
             }
 
             log("✅ Updated screen IDs without repositioning windows")
+            // WorkspaceModel is a struct: without this write-back every change
+            // above (refreshed screens, transferred window sets) is discarded
+            // and the live workspace keeps stale NSScreen references forever.
+            provider.workspace = workspace
             return
         }
 
-        // Check if this is just a spurious screen change event (no actual changes)
-        if removedScreenIDs.isEmpty && addedScreenIDs.isEmpty && previousScreenIDs == newScreenIDs {
+        // Check if this is just a spurious screen change event (no actual changes).
+        // Also compare screen counts: screenID() is derived from the screen's frame,
+        // so when a display detaches its stale frame resolves to the remaining
+        // display's ID and the ID sets collide, masking a real change.
+        if removedScreenIDs.isEmpty && addedScreenIDs.isEmpty && previousScreenIDs == newScreenIDs
+            && workspace.screens.count == newScreens.count {
             log("⚠️ Screen parameters changed but no actual screen changes detected - skipping remapping")
             return
         }

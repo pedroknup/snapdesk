@@ -66,6 +66,14 @@ class WindowRefreshService {
                 log("➕ Adding new window \(windowID) to workspace")
                 if let screenIndex = workspace.screens.firstIndex(where: { $0.screen == screen }) {
                     addWindow(window, to: &workspace.screens[screenIndex], onVisualize: onVisualize)
+                } else {
+                    // No workspace entry matches this screen (stale screen state
+                    // after a display change). Dropping the window here would
+                    // leave it untracked until its app relaunches, so create
+                    // the missing entry instead — same fallback windowDidCreate uses.
+                    log("➕ No workspace found for screen \(screen.screenID() ?? "unknown") - creating one")
+                    workspace.screens.append(ScreenWorkspace(screen: screen))
+                    addWindow(window, to: &workspace.screens[workspace.screens.count - 1], onVisualize: onVisualize)
                 }
             }
 

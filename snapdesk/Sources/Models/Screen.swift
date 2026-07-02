@@ -74,6 +74,24 @@ struct AMScreen: ScreenType {
 
     let screen: NSScreen
 
+    /// The CGDirectDisplayID backing this screen. Stable for a connected
+    /// display even when AppKit hands out new NSScreen instances after a
+    /// display reconfiguration.
+    var displayID: CGDirectDisplayID? {
+        return (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value
+    }
+
+    /// Compare by physical display, not NSScreen instance identity. AppKit
+    /// recreates NSScreen objects on every display reconfiguration (sleep/wake,
+    /// monitor connect), so identity comparison silently fails against stored
+    /// screens and windows end up dropped or duplicated.
+    static func == (lhs: AMScreen, rhs: AMScreen) -> Bool {
+        guard let lhsID = lhs.displayID, let rhsID = rhs.displayID else {
+            return lhs.screen == rhs.screen
+        }
+        return lhsID == rhsID
+    }
+
     func adjustedFrame(disableWindowMargins: Bool) -> CGRect {
         let config = ConfigurationManager.shared.config
         var frame = config.windowBehavior.ignoreMenuBar ? frameIncludingDockAndMenu() : frameWithoutDockOrMenu()
