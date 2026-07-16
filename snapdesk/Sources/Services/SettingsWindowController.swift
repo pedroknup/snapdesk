@@ -21,8 +21,8 @@ class SettingsWindowController: NSWindowController {
         log("📐 Creating settings window...")
         let window = NSWindow(contentViewController: hostingController)
         window.title = "Snapdesk Settings"
-        window.setContentSize(NSSize(width: 800, height: 600))
-        window.styleMask = [.titled, .closable, .miniaturizable]
+        window.setContentSize(NSSize(width: 1080, height: 760))
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.center()
         
         // Additional window configuration to ensure visibility
