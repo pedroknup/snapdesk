@@ -7,7 +7,7 @@
   <br/><br/>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![macOS](https://img.shields.io/badge/macOS-13.0+-blue.svg)](https://www.apple.com/macos/)
+  [![macOS](https://img.shields.io/badge/macOS-14.0+-blue.svg)](https://www.apple.com/macos/)
   [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org/)
   
 </div>
@@ -36,11 +36,24 @@ SnapDesk is a keyboard-driven window manager for macOS. Assign shortcuts to appl
 
 ## Installation
 
-### Homebrew
+### Homebrew (recommended)
 ```bash
 brew tap pedroknup/tap
+brew trust pedroknup/tap
 brew install --cask snapdesk
 ```
+
+`brew trust` is a one-time step: Homebrew only loads casks from third-party taps you've explicitly trusted.
+
+The app is signed with a Developer ID and notarized by Apple, so it opens without Gatekeeper warnings.
+
+**First launch:** open SnapDesk, then enable it under **System Settings → Privacy & Security → Accessibility**. If you previously ran a self-built copy, remove the old SnapDesk entry there first (or run `tccutil reset Accessibility pedroknup.snapdesk`).
+
+**Update:** `brew upgrade --cask snapdesk`
+**Uninstall:** `brew uninstall --cask snapdesk` (add `--zap` to also remove `~/.config/snapdesk` and preferences)
+
+### Manual download
+Grab the latest `snapdesk-<version>.zip` from [Releases](https://github.com/pedroknup/snapdesk/releases), unzip, and move `snapdesk.app` to `/Applications`.
 
 ### Build from Source
 ```bash
@@ -49,7 +62,7 @@ cd snapdesk
 open snapdesk.xcodeproj
 ```
 
-**Requirements:** macOS 13.0+ with Accessibility permissions (no SIP disabling required)
+**Requirements:** macOS 14.0 (Sonoma) or later, with Accessibility permissions (no SIP disabling required)
 
 ## Configuration
 
@@ -63,7 +76,7 @@ open snapdesk.xcodeproj
 1. Fork the repository
 2. Create a feature branch
 3. Follow existing Swift conventions
-4. Test on macOS 13.0+
+4. Test on macOS 14.0+
 5. Submit pull request
 
 ## License
