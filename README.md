@@ -116,13 +116,3 @@ SnapDesk is released under the MIT License. See [LICENSE](LICENSE) for details.
 
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/pedroknup/snapdesk/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/pedroknup/snapdesk/discussions)
-- 📧 **Contact**: [pedro@snapdesk.app](mailto:pedro@snapdesk.app)
-
----
-
-<div align="center">
-  
-**Made with ❤️ by Pedro Knup**  
-*Transforming macOS workflows, one window at a time*
-
-</div>
